@@ -1,0 +1,14 @@
+{
+  "some_field": {
+    "reset+": {
+      "trim": " "
+    },
+    "check+": {
+      "numeric": true
+    },
+    "check-": [ "type" ]
+  },
+  "some_field2": {
+    "reset-": [ "trim" ]
+  }
+}
