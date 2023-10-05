@@ -500,7 +500,7 @@ namespace ModelOrganize
                 sw.WriteLine("    public class Data_"+ entityName + " : INotifyPropertyChanged");
                 sw.WriteLine("    {");
                 sw.WriteLine("");
-                sw.WriteLine("        public string? label { get; set; }");
+                sw.WriteLine("        public string? Label { get; set; }");
                 sw.WriteLine("");
 
                 foreach (var (fieldName, field) in fields[entityName])
