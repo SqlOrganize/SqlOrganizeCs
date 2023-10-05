@@ -2,9 +2,14 @@
 
 <configuration>
 	<appSettings>
-		<add key="modelPath" value="C:\projects\SqlOrganize\ConsoleBuildSchemaMy\model\" />
-		<add key="connectionString" value="server=localhost;database=planfi10_20203;uid=root;" />
-		<add key="dbName" value="planfi10_20203" />
+		<add key="modelPath" value="C:\projects\SqlOrganizeCs\ConsoleApp\Model\" />
+		<add key="configPath" value="C:\projects\SqlOrganizeCs\ConsoleApp\Config\" />
+		<add key="dataClassesPath" value="C:\projects\SqlOrganizeCs\WpfApp\Data\" />
+		<add key="dataClassesNamespace" value="WpfApp.Data" />
+		<add key="modelClassPath" value="C:\projects\SqlOrganizeCs\WpfApp\" />
+		<add key="modelClassNamespace" value="WpfApp" />
+		<add key="connectionString" value="server=localhost;database=dbname;uid=root;" />
+		<add key="dbName" value="dbname" />
 	</appSettings>
 </configuration>
 
