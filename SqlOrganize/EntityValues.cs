@@ -28,13 +28,13 @@ namespace SqlOrganize
         {
         }
 
-        public EntityValues Values(IDictionary<string, object> row)
+        public EntityValues Values(IDictionary<string, object?> row)
         {
             values = row;
             return this;
         }
 
-        public EntityValues Set(IDictionary<string, object> row)
+        public EntityValues Set(IDictionary<string, object?> row)
         {
             foreach (var fieldName in db.FieldNames(entityName))
                 if (row.ContainsKey(Pf() + fieldName))
@@ -43,7 +43,7 @@ namespace SqlOrganize
             return this;
         }
 
-        public EntityValues Set(string fieldName, object value)
+        public EntityValues Set(string fieldName, object? value)
         {
             string fn = fieldName;
             if (!Pf().IsNullOrEmpty() && fieldName.Contains(Pf()))
@@ -60,24 +60,24 @@ namespace SqlOrganize
 
         public object Get(string fieldName)
         {
-            return values[fieldName];
+            return values[fieldName]!;
         }
 
         public object? GetOrNull(string fieldName)
         {
-            return (values.ContainsKey(fieldName) && !values[fieldName].IsNullOrEmptyOrDbNull()) ?
+            return (values.ContainsKey(fieldName) && !values[fieldName]!.IsNullOrEmptyOrDbNull()) ?
                  values[fieldName] : null;
 
         }
 
 
 
-        public IDictionary<string, object> Get()
+        public IDictionary<string, object?> Get()
         {
-            Dictionary<string, object> response = new();
+            Dictionary<string, object?> response = new();
             foreach (var fieldName in db.FieldNames(entityName))
                 if (values.ContainsKey(fieldName))
-                    response[Pf() + fieldName] = values[fieldName];
+                    response[Pf() + fieldName] = values[fieldName]!;
 
             return response;
         }
@@ -267,6 +267,9 @@ namespace SqlOrganize
             return this;
         }
 
+
+      
+
         /// <summary>
         /// Definir valor por defecto
         /// </summary>
@@ -286,74 +289,7 @@ namespace SqlOrganize
                 return this;
             }
 
-            Field field = db.Field(entityName, fieldName);
-
-            if (field.defaultValue is null)
-            {
-                values[fieldName] = null;
-                return this;
-            }
-
-            switch (field.dataType)
-            {
-                case "string":
-                    if (field.defaultValue.ToString().ToLower().Contains("guid"))
-                        values[fieldName] = (Guid.NewGuid()).ToString();
-
-                    //generate random strings
-                    else if (field.defaultValue.ToString()!.ToLower().Contains("random"))
-                    {
-                        string param = field.defaultValue.ToString()!.SubstringBetween("(", ")");
-                        values[fieldName] = ValueTypesUtils.RandomString(Int32.Parse(param));
-                    }
-                    else
-                        values[fieldName] = field.defaultValue;
-                    break;
-                case "DateTime":
-                    if (field.defaultValue.ToString().ToLower().Contains("cur") ||
-                        field.defaultValue.ToString().ToLower().Contains("getdate")
-                        )
-                        values[fieldName] = DateTime.Now;
-                    else
-                        values[fieldName] = field.defaultValue;
-                    break;
-                
-                case "sbyte":
-                case "byte":
-                case "short":
-                case "ushort":
-                case "int":
-                case "uint":
-                case "long":
-                case "ulong":
-                case "nint":
-                case "nuint":
-                    if (field.defaultValue.ToString().ToLower().Contains("next"))
-                    {
-                        ulong next = GetNextValue(field);
-                      
-                        values[fieldName] = next;
-                    }
-                    else if (field.defaultValue.ToString().ToLower().Contains("max"))
-                    {
-                        long max = db.Query(entityName).Select("MAX($" + fieldName + ")").Value<long>();
-                        values[fieldName] = max + 1;
-                    }
-                    else if (field.defaultValue.ToString().ToLower().Contains("next"))
-                    {
-                        throw new Exception("Not implemented"); //siguiente valor de la secuencia, cada motor debe tener su propia implementacion, definir subclase
-                    }
-                    else
-                    {
-                        values[fieldName] = field.defaultValue;
-                    }
-                    break;
-
-                default:
-                    values[fieldName] = field.defaultValue;
-                    break;
-            }
-
+            values[fieldName] = db.DefaultValue(entityName, fieldName);
             return this;
         }
 
@@ -475,21 +411,9 @@ namespace SqlOrganize
             return q.Value<ulong>();
         }
 
-        public EntityValues Update()
-        {
-            db.Persist(entityName).Update(values!).Exec();
-            return this;
-        }
-
         public EntityValues Update(EntityPersist persist)
         {
             persist.Update(this);
-            return this;
-        }
-
-        public EntityValues Insert()
-        {
-            db.Persist(entityName).Insert(values!).Exec();
             return this;
         }
 
@@ -499,7 +423,12 @@ namespace SqlOrganize
             return this;
         }
 
-    
+        public EntityValues Persist(EntityPersist persist)
+        {
+            persist.Persist(this);
+            return this;
+        }
+
         public EntityValues? ValuesTree(string fieldId)
         {
             Entity entity = db.Entity(entityName);

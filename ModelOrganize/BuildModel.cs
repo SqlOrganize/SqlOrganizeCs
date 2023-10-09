@@ -505,7 +505,8 @@ namespace ModelOrganize
 
                 foreach (var (fieldName, field) in fields[entityName])
                 {
-                    sw.WriteLine("        private " + field.dataType + "? _" + fieldName + ";");
+                    string df = (field.defaultValue != null) ? "(" + field.dataType + "?)ContainerApp.db.DefaultValue(\"" + entityName + "\", \"" + fieldName + "\")" : "null";
+                    sw.WriteLine("        protected " + field.dataType + "? _" + fieldName + " = " + df + ";");
                     sw.WriteLine("        public " + field.dataType + "? " + fieldName);
                     sw.WriteLine("        {");
                     sw.WriteLine("            get { return _" + fieldName + "; }");
@@ -542,7 +543,8 @@ namespace ModelOrganize
                 foreach (var (fieldId, relation) in entities[entityName].relations)
                     foreach (var (fieldName, field) in fields[relation.refEntityName])
                     {
-                        sw.WriteLine("        private " + field.dataType + "? _" + fieldId + "__" + fieldName + ";");
+                        string df = (field.defaultValue != null) ? "(" + field.dataType + "?)ContainerApp.db.DefaultValue(\"" + relation.refEntityName + "\", \"" + fieldName + "\")" : "null";
+                        sw.WriteLine("        protected " + field.dataType + "? _" + fieldId + "__" + fieldName + " = " + df + ";");
                         sw.WriteLine("        public " + field.dataType + "? " + fieldId + "__" + fieldName);
                         sw.WriteLine("        {");
                         sw.WriteLine("            get { return _" + fieldId + "__" + fieldName + "; }");

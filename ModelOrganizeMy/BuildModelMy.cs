@@ -10,7 +10,7 @@ namespace ModelOrganizeMy
     */
     public class BuildModelMy: BuildModel
     {
-        public BuildModelMy(ConfigMy config) : base(config)
+        public BuildModelMy(Config config) : base(config)
         {
         }
 

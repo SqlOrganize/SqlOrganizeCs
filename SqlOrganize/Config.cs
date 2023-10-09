@@ -7,11 +7,6 @@
     public class Config
     {
         /// <summary>
-        /// Path a los archivos del modelo
-        /// </summary>
-        public string modelPath { get; set; } = ".\\model\\";
-        
-        /// <summary>
         /// String de conexión con la base de datos
         /// </summary>
         public string connectionString { get; set; }
@@ -24,16 +19,6 @@
         /// </remarks>
         public string concatString { get; set; } = "~";
         
-        /// <summary>
-        /// String de separacion entre fieldId y fieldName para consultas a la base de datos
-        /// </summary>
-        public string idNameSeparatorString { get; set; } = "-";
-
-        /// <summary>
-        /// String utilizado para separar fieldId y fieldName en atributos en una clase
-        /// </summary>
-        public string idAttrSeparatorString { get; set; } = "__";
-
         /// <summary>
         /// fk asociada a id
         /// </summary>

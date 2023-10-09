@@ -230,11 +230,11 @@ namespace SqlOrganize
                     fieldNamesToDelete.Add(fields[i]);
                     var en = entityName;
                     var fid = "";
-                    if (fields[i].Contains(Db.config.idNameSeparatorString))
+                    if (fields[i].Contains("-"))
                     {
-                        List<string> ff = fields[i].Split(Db.config.idNameSeparatorString).ToList();
+                        List<string> ff = fields[i].Split("-").ToList();
                         en = Db.Entity(entityName).relations[ff[0]].refEntityName;
-                        fid = ff[0] + Db.config.idNameSeparatorString;
+                        fid = ff[0] + "-";
                     }
 
                     List<string> fns = (List<string>)Db.FieldNames(en).AddPrefixToEnum(fid);
@@ -251,9 +251,9 @@ namespace SqlOrganize
 
             foreach (var fieldName in fields)
             {
-                if (fieldName.Contains(Db.config.idNameSeparatorString))
+                if (fieldName.Contains("-"))
                 {
-                    List<string> ff = fieldName.Split(Db.config.idNameSeparatorString).ToList();
+                    List<string> ff = fieldName.Split("-").ToList();
                     sql += Db.Mapping(Db.Entity(entityName).relations[ff[0]].refEntityName, ff[0]).Map(ff[1]) + " AS '" + fieldName + "', ";
                 } else
                     sql += Db.Mapping(entityName).Map(fieldName) + " AS '" + fieldName + "', ";
@@ -554,7 +554,23 @@ namespace SqlOrganize
 
 
 
+        #region metodos especiales que generan sql y devuelven directamente el valor
+        public ulong GetNextValue()
+        {
+            var q = Db.Query();
+            q.sql = @"
+                            SELECT auto_increment 
+                            FROM INFORMATION_SCHEMA.TABLES 
+                            WHERE TABLE_NAME = @0";
+            q.parameters.Add(entityName);
+            return q.Value<ulong>();
+        }
 
+        public long GetMaxValue(string fieldName)
+        {
+            return Db.Query(entityName).Select("MAX($" + fieldName + ")").Value<long>();
+        }
+        #endregion
 
 
 
@@ -653,7 +669,7 @@ namespace SqlOrganize
         /// Ejecuta consulta de datos (con relaciones).<br/>
         /// Verifica la cache para obtener el resultado de la consulta, si no existe en cache accede a la base de datos.
         /// </summary>
-        public IEnumerable<Dictionary<string, object>> ColOfDictCacheQuery()
+        public IEnumerable<Dictionary<string, object?>> ColOfDictCacheQuery()
         {
             List<string> queries;
             if (!Db.Cache.TryGetValue("queries", out queries))
@@ -697,7 +713,7 @@ namespace SqlOrganize
         /// Consulta de datos (uso de cache para consulta y resultados)<br/>
         /// </summary>
         /// <param name="query">Consulta</param>
-        public IEnumerable<Dictionary<string, object>> ColOfDictCache()
+        public IEnumerable<Dictionary<string, object?>> ColOfDictCache()
         {
             if (!this.select.IsNullOrEmpty() || !this.group.IsNullOrEmpty())
                 return ColOfDictCacheQuery();
@@ -787,7 +803,7 @@ namespace SqlOrganize
                 string? parentId = Db.Entity(fo.EntityName).relations[fieldId].parentId;
                 string fieldName = Db.Entity(fo.EntityName).relations[fieldId].fieldName;
                 string refFieldName = Db.Entity(fo.EntityName).relations[fieldId].refFieldName;
-                string fkName = (!parentId.IsNullOrEmpty()) ? parentId + Db.config.idNameSeparatorString + fieldName : fieldName;
+                string fkName = (!parentId.IsNullOrEmpty()) ? parentId + "-" + fieldName : fieldName;
 
                 List<object> ids = response.ColOfVal<object>(fkName).Distinct().ToList();
                 ids.RemoveAll(item => item == null || item == System.DBNull.Value);
@@ -820,7 +836,7 @@ namespace SqlOrganize
                             for (var k = 0; k < fo.FieldsRel[fieldId].Count; k++)
                             {
                                 var n = fo.FieldsRel[fieldId][k];
-                                response.ElementAt(i)[fieldId + Db.config.idNameSeparatorString + n] = data.ElementAt(j)[n];
+                                response.ElementAt(i)[fieldId + "-" + n] = data.ElementAt(j)[n];
                             }
                         }
                     }
@@ -856,7 +872,7 @@ namespace SqlOrganize
             {
                 var entityName = rel.refEntityName;
                 Dictionary<string, object> rowAux = new();
-                string f = fieldId + Db.config.idNameSeparatorString;
+                string f = fieldId + "-";
                 foreach (var (column, value) in row)
                 {
                     if (column.Contains(f))
@@ -919,11 +935,11 @@ namespace SqlOrganize
         */
         protected void OrganizeRelations(int index)
         {
-            if (Fields[index].Contains(Db.config.idNameSeparatorString))
+            if (Fields[index].Contains("-"))
             {
-                var f = Fields[index].Split(Db.config.idNameSeparatorString);
+                var f = Fields[index].Split("-");
                 EntityRelation r = Db.Entity(EntityName).relations[f[0]];
-                string fkName = (!r.parentId.IsNullOrEmpty()) ? r.parentId + Db.config.idNameSeparatorString + r.fieldName : r.fieldName;
+                string fkName = (!r.parentId.IsNullOrEmpty()) ? r.parentId + "-" + r.fieldName : r.fieldName;
 
                 if (!FieldsRel.ContainsKey(f[0]))
                     FieldsRel.Add(f[0], new List<string>());
@@ -946,9 +962,9 @@ namespace SqlOrganize
                 bool recorrerChildren = false;
                 for (var j = 0; j < Fields.Count; j++)
                 {
-                    if (Fields[j].Contains(Db.config.idNameSeparatorString))
+                    if (Fields[j].Contains("-"))
                     {
-                        var f = Fields[j].Split(Db.config.idNameSeparatorString);
+                        var f = Fields[j].Split("-");
                         if (f[0] == fieldId && !FieldsIdOrder.Contains(fieldId))
                         {
                             FieldsIdOrder.Add(fieldId);

@@ -135,11 +135,82 @@ namespace SqlOrganize
         /// <remarks>Asegurar existencia de caracter de separación.<br/>
         /// Se puede controlar por ej.: if (key.Contains(ContainerApp.db.config.idAttrSeparatorString)) </remarks>
         public (string fieldId, string fieldName, string refEntityName) KeyDeconstruction(string entityName, string key) {
-            int i = key.IndexOf(config.idAttrSeparatorString);
+            int i = key.IndexOf("__");
             string fieldId = key.Substring(0, i);
             string refEntityName = Entity(entityName!).relations[fieldId].refEntityName;
-            string fieldName = key.Substring(i + config.idAttrSeparatorString.Length);
+            string fieldName = key.Substring(i + 2); //se suman 2 porque es la longitud de "__" (el string de separacion)
             return (fieldId, fieldName, refEntityName);
+        }
+
+        /// <summary>
+        /// Valor por defecto de field
+        /// </summary>
+        /// <param name="entityName"></param>
+        /// <param name="fieldName"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        /// <remarks>Para facilitar la reutilizacion DefaultValue se implementa de forma independiente directamente en Db</remarks>
+        public object? DefaultValue(string entityName, string fieldName)
+        {
+            var field = fields[entityName][fieldName];
+
+            if (field.defaultValue is null)
+                return null;
+
+            switch (field.dataType)
+            {
+                case "string":
+                    if (field.defaultValue.ToString()!.ToLower().Contains("guid"))
+                        return (Guid.NewGuid()).ToString();
+
+                    //generate random strings
+                    else if (field.defaultValue.ToString()!.ToLower().Contains("random"))
+                    {
+                        string param = field.defaultValue.ToString()!.SubstringBetween("(", ")");
+                        return ValueTypesUtils.RandomString(Int32.Parse(param));
+                    }
+                    else
+                        return field.defaultValue;
+                case "DateTime":
+                    if (field.defaultValue.ToString()!.ToLower().Contains("cur") ||
+                        field.defaultValue.ToString()!.ToLower().Contains("getdate")
+                    )
+                        return DateTime.Now;
+                    else
+                        return field.defaultValue;
+
+                case "sbyte":
+                case "byte":
+                case "short":
+                case "ushort":
+                case "int":
+                case "uint":
+                case "long":
+                case "ulong":
+                case "nint":
+                case "nuint":
+                    if (field.defaultValue.ToString()!.ToLower().Contains("next"))
+                    {
+                        ulong next = Query(entityName).GetNextValue();
+                        return next;
+                    }
+                    else if (field.defaultValue.ToString()!.ToLower().Contains("max"))
+                    {
+                        long max = Query(entityName).GetMaxValue(fieldName);
+                        return max + 1;
+                    }
+                    else if (field.defaultValue.ToString()!.ToLower().Contains("next"))
+                    {
+                        throw new Exception("Not implemented"); //siguiente valor de la secuencia, cada motor debe tener su propia implementacion, definir subclase
+                    }
+                    else
+                    {
+                        return field.defaultValue;
+                    }
+
+                default:
+                    return field.defaultValue;
+            }
         }
     }
 

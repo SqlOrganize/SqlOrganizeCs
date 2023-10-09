@@ -161,24 +161,33 @@ WHERE " + id + " = @" + count + @";
         {
             _entityName = _entityName ?? entityName;
             string idKey = Db.config.id;
-            if (key.Contains(Db.config.idAttrSeparatorString))
+            if (key.Contains("__"))
             {
-                int indexSeparator = key.IndexOf(Db.config.idAttrSeparatorString);
+                int indexSeparator = key.IndexOf("__");
                 string fieldId = key.Substring(0, indexSeparator);
                 _entityName = Db.Entity(_entityName!).relations[fieldId].refEntityName;
-                idKey = fieldId + Db.config.idAttrSeparatorString + Db.config.id;
-                key = key.Substring(indexSeparator + Db.config.idAttrSeparatorString.Length); //se suma la cantidad de caracteres del separador
+                idKey = fieldId + "__" + Db.config.id;
+                key = key.Substring(indexSeparator + "__".Length); //se suma la cantidad de caracteres del separador
             }
 
             List<object> ids = new() { source[idKey] };
             return UpdateValue(key, value, ids, _entityName);
         }
 
-        public EntityPersist Insert(EntityValues values)
+        public EntityPersist Insert(EntityValues v)
         {
-            return Insert(values.values, values.entityName);
+            if (!v.values.ContainsKey(Db.config.id) || v.values[Db.config.id].IsNullOrEmptyOrDbNull())
+                v.SetDefault(Db.config.id).Reset(Db.config.id);
+            return Insert(v.values!, v.entityName);
         }
 
+        /// <summary>
+        /// Insertar
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="_entityName"></param>
+        /// <returns></returns>
+        /// <remarks>Debe estar definido el id</remarks>
         public EntityPersist Insert(IDictionary<string, object> row, string? _entityName = null)
         {
             _entityName = _entityName ?? entityName;
@@ -204,11 +213,11 @@ VALUES (";
             sql = sql.RemoveLastChar(',');
             sql += @");
 ";
-            EntityValues v = Db.Values(_entityName).Set(row_);
-            if (!v.values.ContainsKey(Db.config.id))
-                v.Set(Db.config.id, null).Reset(Db.config.id);
-            row[Db.config.id] = v.Get(Db.config.id);
-            detail.Add((_entityName!, row[Db.config.id] as string));
+            //EntityValues v = Db.Values(_entityName).Set(row_);
+            //if (!v.values.ContainsKey(Db.config.id))
+            //    v.Set(Db.config.id, null).Reset(Db.config.id);
+            //row[Db.config.id] = v.Get(Db.config.id);
+            detail.Add((_entityName!, row[Db.config.id]));
 
             return this;
         }
@@ -233,8 +242,8 @@ VALUES (";
         {
             _entityName = _entityName ?? entityName;
 
-            EntityValues v = Db.Values(_entityName!).Set(row).Reset();
-            return PersistValues(v);
+            EntityValues v = Db.Values(_entityName!).Set(row);
+            return Persist(v);
         }
     
         /// <summary>
@@ -244,8 +253,9 @@ VALUES (";
         /// <param name="v"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public EntityPersist PersistValues(EntityValues v)
+        public EntityPersist Persist(EntityValues v)
         {
+            v.Reset();
             var q = Db.Query(v.entityName!).Unique(v.values);
             var rows = q.ColOfDict();
 
@@ -254,7 +264,9 @@ VALUES (";
 
             if (rows.Count() == 1)
             {
-                if(v.values.ContainsKey(Db.config.id) && v.Get(Db.config.id) != rows.ElementAt(0)[Db.config.id])
+                var val1 = rows.ElementAt(0)[Db.config.id];
+                var val2 = v.Get(Db.config.id);
+                if (v.values.ContainsKey(Db.config.id) && v.Get(Db.config.id).ToString() != rows.ElementAt(0)[Db.config.id].ToString())
                     throw new Exception("Los id son diferentes");
 
                 v.Set(Db.config.id, rows.ElementAt(0)[Db.config.id]).Reset().Check();
@@ -264,7 +276,11 @@ VALUES (";
                 return Update(v.values, v.entityName);
             }
 
-            v.Default().Reset().Check();
+
+            if (!v.values.ContainsKey(Db.config.id) || v.values[Db.config.id].IsNullOrEmptyOrDbNull())
+                v.SetDefault(Db.config.id);
+                    
+            v.Default().Reset(Db.config.id).Check();
 
             if (v.logging.HasErrors())
                 throw new Exception("Los campos a insertar poseen errores: " + v.logging.ToString());
