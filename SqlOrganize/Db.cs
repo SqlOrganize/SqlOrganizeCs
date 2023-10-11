@@ -152,7 +152,7 @@ namespace SqlOrganize
         /// <remarks>Para facilitar la reutilizacion DefaultValue se implementa de forma independiente directamente en Db</remarks>
         public object? DefaultValue(string entityName, string fieldName)
         {
-            var field = fields[entityName][fieldName];
+            var field = Field(entityName, fieldName);
 
             if (field.defaultValue is null)
                 return null;
