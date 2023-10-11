@@ -492,6 +492,7 @@ namespace ModelOrganize
             foreach(var (entityName, entity) in entities)
             {
                 using StreamWriter sw = File.CreateText(Config.dataClassesPath + entityName + ".cs");
+                sw.WriteLine("using SqlOrganize;");
                 sw.WriteLine("using System;");
                 sw.WriteLine("using System.ComponentModel;");
                 sw.WriteLine("");
@@ -499,14 +500,51 @@ namespace ModelOrganize
                 sw.WriteLine("{");
                 sw.WriteLine("    public class Data_"+ entityName + " : INotifyPropertyChanged");
                 sw.WriteLine("    {");
+
                 sw.WriteLine("");
+
+                sw.WriteLine("        public Data_" + entityName + " ()");
+                sw.WriteLine("        {");
+                sw.WriteLine("            Initialize();");
+                sw.WriteLine("        }");
+
+                sw.WriteLine("");
+
+                sw.WriteLine("        public Data_" + entityName + "(DataInitMode mode = DataInitMode.Default)");
+                sw.WriteLine("        {");
+                sw.WriteLine("            Initialize(mode);");
+                sw.WriteLine("        }");
+
+                sw.WriteLine("");
+
+                sw.WriteLine("        protected virtual void Initialize(DataInitMode mode = DataInitMode.Default)");
+                sw.WriteLine("        {");
+                sw.WriteLine("            switch(mode)");
+                sw.WriteLine("            {");
+                sw.WriteLine("                case DataInitMode.Default:");
+                sw.WriteLine("                case DataInitMode.DefaultMain:");
+
+                foreach (var (fieldName, field) in fields[entityName])
+                {
+                    if (field.defaultValue != null)
+                    {
+                        string df = "(" + field.dataType + "?)ContainerApp.db.DefaultValue(\"" + entityName + "\", \"" + fieldName + "\")";
+                        sw.WriteLine("                    _" + fieldName + " = " + df + ";");
+                    }
+                }
+
+                sw.WriteLine("                break;");
+                sw.WriteLine("            }");
+                sw.WriteLine("        }");
+
+                sw.WriteLine("");
+
                 sw.WriteLine("        public string? Label { get; set; }");
                 sw.WriteLine("");
 
                 foreach (var (fieldName, field) in fields[entityName])
                 {
-                    string df = (field.defaultValue != null) ? "(" + field.dataType + "?)ContainerApp.db.DefaultValue(\"" + entityName + "\", \"" + fieldName + "\")" : "null";
-                    sw.WriteLine("        protected " + field.dataType + "? _" + fieldName + " = " + df + ";");
+                    sw.WriteLine("        protected " + field.dataType + "? _" + fieldName + " = null;");
                     sw.WriteLine("        public " + field.dataType + "? " + fieldName);
                     sw.WriteLine("        {");
                     sw.WriteLine("            get { return _" + fieldName + "; }");
@@ -532,7 +570,8 @@ namespace ModelOrganize
 
             foreach (var (entityName, entity) in entities)
             {
-                using StreamWriter sw = File.CreateText(Config.dataClassesPath + entityName + "_r.cs");
+                using StreamWriter sw = File.CreateText(Config.dataClassesPath + entityName + "_r.cs");                
+                sw.WriteLine("using SqlOrganize;");
                 sw.WriteLine("using System;");
                 sw.WriteLine("");
                 sw.WriteLine("namespace " + Config.dataClassesNamespace);
@@ -540,11 +579,45 @@ namespace ModelOrganize
                 sw.WriteLine("    public class Data_" + entityName + "_r" + " : Data_" + entityName);
                 sw.WriteLine("    {");
 
+                sw.WriteLine("");
+
+                sw.WriteLine("        public Data_" + entityName + "_r () : base()");
+                sw.WriteLine("        {");
+                sw.WriteLine("            Initialize();");
+                sw.WriteLine("        }");
+                sw.WriteLine("");
+                sw.WriteLine("        public Data_" + entityName + "_r (DataInitMode mode = DataInitMode.Default) : base(mode)");
+                sw.WriteLine("        {");
+                sw.WriteLine("            Initialize(mode);");
+                sw.WriteLine("        }");
+
+                sw.WriteLine("");
+
+                sw.WriteLine("        protected override void Initialize(DataInitMode mode = DataInitMode.Default)");
+                sw.WriteLine("        {");
+                sw.WriteLine("            base.Initialize(mode);");
+                sw.WriteLine("            switch(mode)");
+                sw.WriteLine("            {");
+                sw.WriteLine("                case DataInitMode.Default:");
+
+                foreach (var (fieldId, relation) in entities[entityName].relations)
+                    foreach (var (fieldName, field) in fields[relation.refEntityName])
+                        if (field.defaultValue != null)
+                        {
+                            string df = "(" + field.dataType + "?)ContainerApp.db.DefaultValue(\"" + relation.refEntityName + "\", \"" + fieldName + "\")";
+                            sw.WriteLine("                    _" + fieldId + "__" + fieldName + " = " + df + ";");
+                        }
+
+                sw.WriteLine("                break;");
+                sw.WriteLine("            }");
+                sw.WriteLine("        }");
+
+                sw.WriteLine("");
+
                 foreach (var (fieldId, relation) in entities[entityName].relations)
                     foreach (var (fieldName, field) in fields[relation.refEntityName])
                     {
-                        string df = (field.defaultValue != null) ? "(" + field.dataType + "?)ContainerApp.db.DefaultValue(\"" + relation.refEntityName + "\", \"" + fieldName + "\")" : "null";
-                        sw.WriteLine("        protected " + field.dataType + "? _" + fieldId + "__" + fieldName + " = " + df + ";");
+                        sw.WriteLine("        protected " + field.dataType + "? _" + fieldId + "__" + fieldName + " = null;");
                         sw.WriteLine("        public " + field.dataType + "? " + fieldId + "__" + fieldName);
                         sw.WriteLine("        {");
                         sw.WriteLine("            get { return _" + fieldId + "__" + fieldName + "; }");

@@ -14,6 +14,11 @@ namespace SqlOrganizeSs
         {
         }
 
+        protected override void AddWithValue(DbCommand command, string columnName, object value)
+        {
+            (command as SqlCommand)!.Parameters.AddWithValue(columnName, value);
+        }
+
         public override List<Dictionary<string, object>> ColOfDict()
         {
             using SqlConnection connection = new(db.config.connectionString);
@@ -98,11 +103,6 @@ namespace SqlOrganizeSs
 " + sql + @"
 COMMIT TRAN;";
             Exec();
-        }
-
-        protected override void AddWithValue(DbCommand command, string columnName, object value)
-        {
-            (command as SqlCommand)!.Parameters.AddWithValue(columnName, value);
         }
     }
 

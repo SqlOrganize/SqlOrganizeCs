@@ -264,8 +264,6 @@ VALUES (";
 
             if (rows.Count() == 1)
             {
-                var val1 = rows.ElementAt(0)[Db.config.id];
-                var val2 = v.Get(Db.config.id);
                 if (v.values.ContainsKey(Db.config.id) && v.Get(Db.config.id).ToString() != rows.ElementAt(0)[Db.config.id].ToString())
                     throw new Exception("Los id son diferentes");
 

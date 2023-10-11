@@ -44,10 +44,5 @@ namespace SqlOrganizeSs
             return new QuerySs(this);
         }
 
-        public EntityValues Values(string entityName, string? fieldId = null)
-        {
-            return new EntityValuesSs(this, entityName, fieldId);
-        }
-
     }
 }
