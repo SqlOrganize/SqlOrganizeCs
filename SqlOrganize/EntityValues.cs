@@ -1,4 +1,5 @@
 ﻿
+using Newtonsoft.Json.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Utils;
@@ -31,6 +32,12 @@ namespace SqlOrganize
         public EntityValues Values(IDictionary<string, object?> row)
         {
             values = row;
+            return this;
+        }
+
+        public EntityValues Clear()
+        {
+            values.Clear();
             return this;
         }
 
@@ -117,7 +124,7 @@ namespace SqlOrganize
 
 
 
-        public EntityValues Sset(string fieldName, object value)
+        public EntityValues Sset(string fieldName, object? value)
         {
             var method = "Sset_" + fieldName;
             Type thisType = this.GetType();
@@ -486,6 +493,40 @@ namespace SqlOrganize
 
             return fields;
         }
+
+
+        public (string? fieldId, string fieldName, string entityName, object? value) ParentVariables(string mainEntityName)
+        {
+            object? value;
+            string fieldName;
+            string entityName = mainEntityName;
+            string? newFieldId = null;
+
+            string? parentId = db.Entity(mainEntityName).relations[fieldId!].parentId;
+            if (parentId != null)
+            {
+                //sea por ejemplo alumnoT.personaF (con fieldId alumno) = personaT.id (con fieldId = persona), entones:
+                //parentFieldName = personaF
+                //value = personaValues.values["id"]
+                //fieldId = alumno
+                //fieldName = personaF
+                //entityName = alumnoT
+                string parentFieldName = db.Entity(mainEntityName).relations[fieldId!].fieldName;
+                value = values[db.Entity(mainEntityName).relations[fieldId!].refFieldName];
+                newFieldId = parentId;
+                fieldName = parentFieldName;
+                entityName = db.Entity(mainEntityName).relations[parentId].refEntityName;
+
+            }
+            else
+            {
+                fieldName = db.Entity(mainEntityName).relations[fieldId!].fieldName;
+                value = values[db.Entity(mainEntityName).relations[fieldId!].refFieldName];
+            }
+
+            return (newFieldId, fieldName, entityName, value);
+        }
+    }
 
 
     }
