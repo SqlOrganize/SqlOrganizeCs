@@ -58,13 +58,13 @@ namespace Utils
                 if (
                     propT.IsNullOrEmpty() || (
                         targetNotNull
-                        && !propT.GetValue(target, null).IsNullOrEmpty()
+                        && !propT!.GetValue(target, null).IsNullOrEmpty()
                     )
                 )
                     continue;
 
-                if (compareNotNull && !prop.GetValue(source, null).IsNullOrEmpty() && !propT.GetValue(target, null).IsNullOrEmpty())
-                    if (!prop.GetValue(source, null).ToString().Equals(propT.GetValue(target, null).ToString()))
+                if (compareNotNull && !prop.GetValue(source, null).IsNullOrEmpty() && !propT!.GetValue(target, null).IsNullOrEmpty())
+                    if (!prop!.GetValue(source, null)!.ToString()!.Equals(propT!.GetValue(target, null)!.ToString()))
                         throw new Exception("Valores diferentes");
 
                 var value = prop.GetValue(source, null);
@@ -154,12 +154,12 @@ namespace Utils
         /// <param name="rows">Lista de diccionarios</param>
         /// <param name="key">Llave del diccionario</param>
         /// <returns>Lista de valores de una entrada del diccionario</returns>
-        public static IEnumerable<T> ColOfVal<T>(this IEnumerable<Dictionary<string, object>> rows, string key)
+        public static IEnumerable<T> ColOfVal<T>(this IEnumerable<Dictionary<string, object?>> rows, string key)
         {
             List<T> response = new();
-            foreach (Dictionary<string, object> row in rows)
+            foreach (Dictionary<string, object?> row in rows)
                 foreach (var (k, v) in row)
-                    if (k == key)
+                    if (k == key && v != null)
                         response.Add((T)v);
 
             return response;
@@ -179,7 +179,7 @@ namespace Utils
             return response;
         }
 
-        public static IEnumerable<T> ColOfObj<T>(this IEnumerable<Dictionary<string, object>> rows) where T : class, new()
+        public static IEnumerable<T> ColOfObj<T>(this IEnumerable<Dictionary<string, object?>> rows) where T : class, new()
         {
             var results = new List<T>();
 
@@ -189,7 +189,7 @@ namespace Utils
             return results;
         }
 
-        public static T Obj<T>(this IDictionary<string, object> source) where T : class, new()
+        public static T Obj<T>(this IDictionary<string, object?> source) where T : class, new()
         {
             var someObject = new T();
             var someObjectType = someObject.GetType();
@@ -233,7 +233,7 @@ namespace Utils
         }
 
 
-        public static void MergeByKeys(this IEnumerable<Dictionary<string, object>> source, IEnumerable<Dictionary<string, object>> source2, string key1, string? key2 = null, string prefix = "")
+        public static void MergeByKeys(this IEnumerable<Dictionary<string, object>> source, IEnumerable<Dictionary<string, object?>> source2, string key1, string? key2 = null, string prefix = "")
         {
             key2 = key2 ?? key1;
 
@@ -274,7 +274,7 @@ namespace Utils
             return response;
         }
 
-        public static IDictionary<object, Dictionary<string, object>> DictOfDictByKey(this IEnumerable<Dictionary<string, object>> source, string key)
+        public static IDictionary<object, Dictionary<string, object>> DictOfDictByKey(this IEnumerable<Dictionary<string, object?>> source, string key)
         {
             Dictionary<object, Dictionary<string, object>> response = new();
             foreach (Dictionary<string, object> row in source)
@@ -290,20 +290,20 @@ namespace Utils
             return dictionary;
         }
 
-        public static IDictionary<string, object> AddPrefixToKeysOfDict(this IDictionary<string, object> source, string prefix)
+        public static IDictionary<string, object?> AddPrefixToKeysOfDict(this IDictionary<string, object?> source, string prefix)
         {
-            Dictionary<string, object> response = new();
+            Dictionary<string, object?> response = new();
             foreach(var (key, obj) in source)
                 response[prefix + key] = obj;
 
             return response;
         }
 
-        public static List<Dictionary<string, object>> AddPrefixToKeysOfDicts(this IEnumerable<Dictionary<string, object>> source, string prefix)
+        public static List<Dictionary<string, object?>> AddPrefixToKeysOfDicts(this IEnumerable<Dictionary<string, object?>> source, string prefix)
         {
-            List<Dictionary<string, object>> response = new();
-            foreach(Dictionary<string, object> row in source)
-                response.Add((Dictionary<string, object>)row.AddPrefixToKeysOfDict(prefix));
+            List<Dictionary<string, object?>> response = new();
+            foreach(Dictionary<string, object?> row in source)
+                response.Add((Dictionary<string, object?>)row.AddPrefixToKeysOfDict(prefix));
             return response;
         }
 
