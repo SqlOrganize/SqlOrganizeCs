@@ -29,15 +29,15 @@ namespace SqlOrganize
 
         public MemoryCache? Cache { get; set; } = null;
 
-        public Db(Config _config, Model model, MemoryCache? Cache = null)
+        public Db(Config _config, Schema schema, MemoryCache? Cache = null)
         {
             config = _config;
             this.Cache = Cache;
-            entities = model.Entities();
+            entities = schema.Entities();
             foreach (Entity e in entities.Values)
                 e.db = this;
 
-            fields = model.Fields();
+            fields = schema.Fields();
             foreach (Dictionary<string, Field> df in fields.Values)
                 foreach (Field f in df.Values)
                     f.db = this;

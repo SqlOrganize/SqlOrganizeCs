@@ -417,30 +417,29 @@ namespace ModelOrganize
 
         public void CreateFileEntitites()
         {
-            if (!Directory.Exists(Config.modelPath))
-                Directory.CreateDirectory(Config.modelPath);
+            if (!Directory.Exists(Config.docPath))
+                Directory.CreateDirectory(Config.docPath);
 
-            if (File.Exists(Config.modelPath + "entities.json"))
-                File.Delete(Config.modelPath + "entities.json");
+            if (File.Exists(Config.docPath + "entities.json"))
+                File.Delete(Config.docPath + "entities.json");
 
             var file = JsonConvert.SerializeObject(entities, Newtonsoft.Json.Formatting.Indented);
-            File.WriteAllText(Config.modelPath + "entities.json", file);
+            File.WriteAllText(Config.docPath + "entities.json", file);
         }
 
         public void CreateClassModel()
         {
-            if (!Directory.Exists(Config.modelClassPath))
-                Directory.CreateDirectory(Config.modelClassPath);
+            if (!Directory.Exists(Config.schemaClassPath))
+                Directory.CreateDirectory(Config.schemaClassPath);
 
-            using StreamWriter sw = File.CreateText(Config.modelClassPath + "Model.cs");
+            using StreamWriter sw = File.CreateText(Config.schemaClassPath + "Schema.cs");
 
             var file = JsonConvert.SerializeObject(entities, Newtonsoft.Json.Formatting.Indented);
-            sw.WriteLine("using System;");
             sw.WriteLine("using System.Collections.Generic;");
             sw.WriteLine("");
-            sw.WriteLine("namespace " + Config.modelClassNamespace);
+            sw.WriteLine("namespace " + Config.schemaClassNamespace);
             sw.WriteLine("{");
-            sw.WriteLine("    public class Model : SqlOrganize.Model");
+            sw.WriteLine("    public class Schema : SqlOrganize.Schema");
             sw.WriteLine("    {");
             sw.WriteLine("        private string _entities = " + JsonConvert.ToString(file) + ";");
             sw.WriteLine("");
@@ -464,16 +463,16 @@ namespace ModelOrganize
 
         public void CreateFileFields()
         {
-            if (!Directory.Exists(Config.modelPath + "Fields/"))
-                Directory.CreateDirectory(Config.modelPath + "Fields/");
+            if (!Directory.Exists(Config.docPath + "Fields/"))
+                Directory.CreateDirectory(Config.docPath + "Fields/");
 
             foreach(var (entityName, field) in fields)
             {
-                if (File.Exists(Config.modelPath + entityName + ".json"))
-                    File.Delete(Config.modelPath + entityName + ".json");
+                if (File.Exists(Config.docPath + entityName + ".json"))
+                    File.Delete(Config.docPath + entityName + ".json");
 
                 var file = JsonConvert.SerializeObject(fields[entityName], Newtonsoft.Json.Formatting.Indented);
-                File.WriteAllText(Config.modelPath + "Fields/" + entityName + ".json", file);
+                File.WriteAllText(Config.docPath + "Fields/" + entityName + ".json", file);
             }
 
         }

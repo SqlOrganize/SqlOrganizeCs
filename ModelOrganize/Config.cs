@@ -6,9 +6,9 @@
         public string dbName { get; set; }
 
         /// <summary>
-        /// Indica el lugar donde se generara json del modelo
+        /// Indica el lugar donde se generaran los archivos json para documentar el modelo
         /// </summary>
-        public string modelPath { get; set; } = "./Model/";
+        public string docPath { get; set; } = "./Doc/";
 
         /// <summary>
         /// Alias reservados que no deben ser incluidos en el modelo
@@ -37,12 +37,12 @@
         public string dataClassesNamespace { get; set; } = "App.Data";
 
         /// <summary>
-        /// Indica el lugar donde se almacenara la clase del Modelo
+        /// Indica el lugar donde se almacenara la clase que describe el esquema de la base de datos
         /// </summary>
-        public string modelClassPath { get; set; } = "./Model/Data";
+        public string schemaClassPath { get; set; } = "./";
 
-        /// Indica el namespace asignado a la clase del Modelo
-        public string modelClassNamespace { get; set; } = "App.Model";
+        /// Indica el namespace asignado a la clase Schema
+        public string schemaClassNamespace { get; set; } = "App";
 
         /// <summary>
         /// Referencia para definir los alias e identificadores de fields 

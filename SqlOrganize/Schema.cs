@@ -7,7 +7,11 @@ using System.Threading.Tasks;
 
 namespace SqlOrganize
 {
-    public abstract class Model
+
+    /// <summary>
+    /// Configuracion del esquema de la base de datos
+    /// </summary>
+    public abstract class Schema
     {
         /// <summary>
         /// JSON con entidades del modelo
