@@ -528,7 +528,7 @@ namespace ModelOrganize
                 {
                     if (field.defaultValue != null)
                     {
-                        string df = "(" + field.dataType + "?)ContainerApp.db.DefaultValue(\"" + entityName + "\", \"" + fieldName + "\")";
+                        string df = "(" + field.dataType + "?)ContainerApp.db.Values(\"" + entityName + "\").Default(\"" + fieldName + "\").Get(\"" + fieldName + "\")";
                         sw.WriteLine("                    _" + fieldName + " = " + df + ";");
                     }
                 }
@@ -604,7 +604,7 @@ namespace ModelOrganize
                     foreach (var (fieldName, field) in fields[relation.refEntityName])
                         if (field.defaultValue != null)
                         {
-                            string df = "(" + field.dataType + "?)ContainerApp.db.DefaultValue(\"" + relation.refEntityName + "\", \"" + fieldName + "\")";
+                            string df = "(" + field.dataType + "?)ContainerApp.db.Values(\"" + relation.refEntityName + "\").Default(\"" + fieldName + "\").Get(\"" + fieldName + "\")";
                             sw.WriteLine("                    _" + fieldId + "__" + fieldName + " = " + df + ";");
                         }
 
@@ -612,9 +612,11 @@ namespace ModelOrganize
                 sw.WriteLine("            }");
                 sw.WriteLine("        }");
 
-                sw.WriteLine("");
-
                 foreach (var (fieldId, relation) in entities[entityName].relations)
+                {
+                    sw.WriteLine("");
+                    sw.WriteLine("        public string? " + fieldId + "__Label { get; set; }");
+                    sw.WriteLine("");
                     foreach (var (fieldName, field) in fields[relation.refEntityName])
                     {
                         sw.WriteLine("        protected " + field.dataType + "? _" + fieldId + "__" + fieldName + " = null;");
@@ -624,7 +626,7 @@ namespace ModelOrganize
                         sw.WriteLine("            set { _" + fieldId + "__" + fieldName + " = value; NotifyPropertyChanged(); }");
                         sw.WriteLine("        }");
                     }
-
+                }
                 sw.WriteLine("    }");
                 sw.WriteLine("}");
             }
