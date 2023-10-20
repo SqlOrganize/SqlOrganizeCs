@@ -78,6 +78,11 @@ namespace SqlOrganize
 
         protected abstract void AddWithValue(DbCommand command, string columnName, object value);
 
+        /// <summary>
+        /// Ejecutar command
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="command"></param>
         protected void SqlExecute(DbConnection connection, DbCommand command)
         {
             connection.Open();
@@ -101,10 +106,18 @@ namespace SqlOrganize
 
             for (var i = 0; i < parameters.Count; i++)
             {
-                if (parameters[i].IsList())
+                var list = parameters[i] as IList;
+                int j = 0;
+                List<Tuple<string, object>> _parameters = new();
+                if (list != null)
                 {
-                    //cuidado con el tipo de entrada, no se puede hacer cast de List<string> a List<object> por ejemplo
-                    var _parameters = (parameters[i] as List<object>).Select((x, j) => Tuple.Create($"@{i}_{j}", x));
+                    foreach (object item in list)
+                    {
+                        var t = Tuple.Create($"@{i}_{j}", item);
+                        _parameters.Add(t);
+                        j++;
+                    }
+
                     sql = sql.ReplaceFirst("@" + i.ToString(), string.Join(",", _parameters.Select(x => x.Item1)));
                     foreach (var parameter in _parameters)
                         AddWithValue(command, parameter.Item1, parameter.Item2);

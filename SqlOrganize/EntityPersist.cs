@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using Utils;
+﻿using Utils;
 
 namespace SqlOrganize
 {
@@ -41,6 +33,62 @@ namespace SqlOrganize
             this.parameters.AddRange(parameters.ToList());
             return this;
         }
+
+        /// <summary>
+        /// Se separa el método WhereIds para procesar la cantidad de parametros
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <param name="_entityName"></param>
+        /// <returns></returns>
+        protected void WhereIds(IEnumerable<object> ids, string entityName)
+        {
+            string idMap = Db.Mapping(entityName!).Map(Db.config.id);
+
+            if ((ids.Count() + count) > 2100) //SQL Server no admite mas de 2100 parametros, se define consulta alternativa para estos casos
+            {
+                List<object> ids_ = new();
+                var v = Db.Values(entityName!);
+                foreach (var id in ids)
+                {
+                    v.Set(Db.config.id, id);
+                    var id_ = v.Sql(Db.config.id);
+                    ids_.Add(id_);
+                    detail.Add((entityName!, id));
+
+                }
+                sql += @"WHERE " + idMap + " IN (" + String.Join(",", ids_) + @");
+";
+            }
+            else
+            {
+                sql += @"WHERE " + idMap + " IN (@" + count + @");
+";
+                count++;
+                parameters.Add(ids.ToList());
+
+                foreach (var id in ids)
+                    detail.Add((entityName!, id));
+            }
+        }
+
+
+        public EntityPersist DeleteIds(IEnumerable<object> ids, string? _entityName = null)
+        {
+            _entityName = _entityName ?? entityName;
+
+            Entity e = Db.Entity(_entityName!);
+  
+            sql += @"
+DELETE " + e.alias + " FROM " + e.name + " " + e.alias + @"
+";
+
+            WhereIds(ids, _entityName!);
+
+            return this;
+        }
+
+
+
 
         abstract protected EntityPersist _Update(IDictionary<string, object> row, string? _entityName = null);
 
