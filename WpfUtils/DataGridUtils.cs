@@ -1,7 +1,4 @@
-﻿using Fines2Wpf;
-using Google.Protobuf.WellKnownTypes;
-using SqlOrganize;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Data;
 
 namespace WpfUtils
