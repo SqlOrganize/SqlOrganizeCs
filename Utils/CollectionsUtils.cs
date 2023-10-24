@@ -373,6 +373,13 @@ namespace Utils
             PropertyInfo property = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
             property.SetValue(@this, value, null);
         }
+
+        public static object? GetPropertyValue<T>(this T @this, string propertyName)
+        {
+            Type type = @this.GetType();
+            PropertyInfo property = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+            return property.GetValue(@this);
+        }
     }
 
 }

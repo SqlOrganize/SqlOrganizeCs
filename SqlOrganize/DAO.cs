@@ -20,7 +20,7 @@ namespace SqlOrganize
             return Db.Query(entityName).Search(param).Size(0).ColOfDictCache();
         }
 
-        public EntityPersist UpdateValueRel(string entityName, string key, object value, Dictionary<string, object> source)
+        public EntityPersist UpdateValueRel(string entityName, string key, object? value, IDictionary<string, object?> source)
         {
             return Db.Persist(entityName).UpdateValueRel(key, value, source).Exec().RemoveCache();
         }
