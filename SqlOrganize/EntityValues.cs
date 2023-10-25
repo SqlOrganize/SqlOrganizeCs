@@ -106,7 +106,7 @@ namespace SqlOrganize
             
             Field field = db.Field(entityName, fieldName);
 
-            switch (field.type) //solo funciona para tipos especificos, para mapear correctamente deberia almacenarse en field, el tipo original sql.
+            switch (field.dataType) //solo funciona para tipos especificos, para mapear correctamente deberia almacenarse en field, el tipo original sql.
             {
                 case "varchar":
                     return "'" + (string)value + "'";
