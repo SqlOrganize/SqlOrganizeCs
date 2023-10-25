@@ -28,30 +28,16 @@ namespace ModelOrganize
         */
         public string? refFieldName { get; set; }
 
-        /* 
-        tipo de datos generico 
-            int
-            blob
-            string
-            boolean
-            float
-            text
-            timestamp
-            date               
-         */
+      
+        /// <summary>
+        /// Tipo de datos del motor
+        /// </summary>
         public string dataType { get; set; }
 
-        /* 
-        tipo de datos generico 
-            int
-            blob
-            string
-            boolean
-            float
-            text
-            timestamp
-            date               
-         */
+        /// <summary>
+        /// tipo de datos del lenguaje
+        /// </summary>
+        /// <remarks></remarks>
         public string type { get; set; }
 
         /* 

@@ -528,7 +528,7 @@ namespace ModelOrganize
                 {
                     if (field.defaultValue != null)
                     {
-                        string df = "(" + field.dataType + "?)ContainerApp.db.Values(\"" + entityName + "\").Default(\"" + fieldName + "\").Get(\"" + fieldName + "\")";
+                        string df = "(" + field.type + "?)ContainerApp.db.Values(\"" + entityName + "\").Default(\"" + fieldName + "\").Get(\"" + fieldName + "\")";
                         sw.WriteLine("                    _" + fieldName + " = " + df + ";");
                     }
                 }
@@ -544,8 +544,8 @@ namespace ModelOrganize
 
                 foreach (var (fieldName, field) in fields[entityName])
                 {
-                    sw.WriteLine("        protected " + field.dataType + "? _" + fieldName + " = null;");
-                    sw.WriteLine("        public " + field.dataType + "? " + fieldName);
+                    sw.WriteLine("        protected " + field.type + "? _" + fieldName + " = null;");
+                    sw.WriteLine("        public " + field.type + "? " + fieldName);
                     sw.WriteLine("        {");
                     sw.WriteLine("            get { return _" + fieldName + "; }");
                     sw.WriteLine("            set { _" + fieldName + " = value; NotifyPropertyChanged(); }");
@@ -604,7 +604,7 @@ namespace ModelOrganize
                     foreach (var (fieldName, field) in fields[relation.refEntityName])
                         if (field.defaultValue != null)
                         {
-                            string df = "(" + field.dataType + "?)ContainerApp.db.Values(\"" + relation.refEntityName + "\").Default(\"" + fieldName + "\").Get(\"" + fieldName + "\")";
+                            string df = "(" + field.type + "?)ContainerApp.db.Values(\"" + relation.refEntityName + "\").Default(\"" + fieldName + "\").Get(\"" + fieldName + "\")";
                             sw.WriteLine("                    _" + fieldId + "__" + fieldName + " = " + df + ";");
                         }
 
@@ -619,8 +619,8 @@ namespace ModelOrganize
                     sw.WriteLine("");
                     foreach (var (fieldName, field) in fields[relation.refEntityName])
                     {
-                        sw.WriteLine("        protected " + field.dataType + "? _" + fieldId + "__" + fieldName + " = null;");
-                        sw.WriteLine("        public " + field.dataType + "? " + fieldId + "__" + fieldName);
+                        sw.WriteLine("        protected " + field.type + "? _" + fieldId + "__" + fieldName + " = null;");
+                        sw.WriteLine("        public " + field.type + "? " + fieldId + "__" + fieldName);
                         sw.WriteLine("        {");
                         sw.WriteLine("            get { return _" + fieldId + "__" + fieldName + "; }");
                         sw.WriteLine("            set { _" + fieldId + "__" + fieldName + " = value; NotifyPropertyChanged(); }");
