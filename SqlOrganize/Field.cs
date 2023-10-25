@@ -29,18 +29,15 @@ namespace SqlOrganize
         */
         public string? refFieldName { get; set; } = "id";
 
-        /* 
-        tipo de datos generico 
-            int
-            blob
-            string
-            boolean
-            float
-            text
-            timestamp
-            date               
-         */
-        public string dataType { get; set; } = "string";
+        /// <summary>
+        /// Tipo de datos del motor
+        /// </summary>
+        public string dataType { get; set; } = "varchar";
+
+        /// <summary>
+        /// Tipo de datos del lenguaje
+        /// </summary>
+        public string type { get; set; } = "string";
 
         /* 
         string con el tipo de field

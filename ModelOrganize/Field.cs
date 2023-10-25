@@ -42,6 +42,19 @@ namespace ModelOrganize
         public string dataType { get; set; }
 
         /* 
+        tipo de datos generico 
+            int
+            blob
+            string
+            boolean
+            float
+            text
+            timestamp
+            date               
+         */
+        public string type { get; set; }
+
+        /* 
         string con el tipo de field
             "pk": Clave primaria
             "nf": Field normal

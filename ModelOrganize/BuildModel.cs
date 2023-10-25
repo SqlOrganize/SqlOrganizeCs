@@ -24,13 +24,13 @@ namespace ModelOrganize
         {
             f.checks = new()
                     {
-                        { "type", f.dataType },
+                        { "type", f.type },
                     };
 
             if (f.notNull)
                 f.checks["required"] = true;
 
-            if (f.dataType == "string")
+            if (f.type == "string")
             {
                 f.resets = new()
                         {
@@ -41,10 +41,10 @@ namespace ModelOrganize
                     f.resets["nullIfEmpty"] = true;
             }
 
-            if (f.dataType == "bool" && f.defaultValue is not null)
+            if (f.type == "bool" && f.defaultValue is not null)
                 f.defaultValue = ((string)f.defaultValue).ToBool();
 
-            if (f.dataType == "string" && f.defaultValue is not null)
+            if (f.type == "string" && f.defaultValue is not null)
                 f.defaultValue = f.defaultValue.ToString()!.Trim('\'');
         }
 
@@ -55,6 +55,7 @@ namespace ModelOrganize
             else if (!c.MAX_LENGTH.IsNullOrEmpty() && !c.MAX_LENGTH.IsDbNull())
                 f.maxLength = Convert.ToUInt64(c.MAX_LENGTH)!;
 
+            f.dataType = c.DATA_TYPE;
             switch (c.DATA_TYPE)
             {
                 case "varchar":
@@ -63,50 +64,50 @@ namespace ModelOrganize
                 case "nvarchar":
                 case "text":
                 case "mediumtext":
-                    f.dataType = "string";
+                    f.type = "string";
                     break;
                 case "real":
-                    f.dataType = "float";
+                    f.type = "float";
                     break;
                 case "bit":
-                    f.dataType = "bool";
+                    f.type = "bool";
                     break;
 
                 case "datetime":
                 case "timestamp":
                 case "date":
                 case "time":
-                    f.dataType = "DateTime";
+                    f.type = "DateTime";
                     break;
 
                 case "smallint":
                 case "year":
-                    f.dataType = (c.IS_UNSIGNED == 1) ? "ushort" : "short";
+                    f.type = (c.IS_UNSIGNED == 1) ? "ushort" : "short";
                     break;
 
                 case "int":
-                    f.dataType = (c.IS_UNSIGNED == 1) ? "uint" : "int";
+                    f.type = (c.IS_UNSIGNED == 1) ? "uint" : "int";
                     break;
 
                 case "tinyint":
                     if (f.maxLength == 1)
-                        f.dataType = "bool";
+                        f.type = "bool";
                     else if (c.IS_UNSIGNED == 1)
-                        f.dataType = "ubyte";
+                        f.type = "ubyte";
                     else
-                        f.dataType = "byte";
+                        f.type = "byte";
                     break;
 
                 case "bigint":
-                    f.dataType = (c.IS_UNSIGNED == 1) ? "ulong" : "long";
+                    f.type = (c.IS_UNSIGNED == 1) ? "ulong" : "long";
                     break;
 
                 case "uniqueidentifier":
-                    f.dataType = "Guid";
+                    f.type = "Guid";
                     break;
 
                 default:
-                    f.dataType = c.DATA_TYPE!;
+                    f.type = c.DATA_TYPE!;
                     break;
             }
 
