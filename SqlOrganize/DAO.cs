@@ -41,7 +41,7 @@ namespace SqlOrganize
             var q = Db.Query(entityName).Unique(source);
 
             if (source.ContainsKey(Db.config.id) && !source[Db.config.id]!.IsNullOrEmptyOrDbNull())
-                q.WhereAnd("$" + Db.config.id + " != @").Parameters(source[Db.config.id]!);
+                q.And("$" + Db.config.id + " != @").Parameters(source[Db.config.id]!);
 
             return q.DictCache();
         }

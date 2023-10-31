@@ -274,6 +274,28 @@ namespace Utils
             return response;
         }
 
+        public static IDictionary<string, List<Dictionary<string, object>>> DictOfListByKeys(this IEnumerable<Dictionary<string, object>> source, params string[] keys)
+        {
+            Dictionary<string, List<Dictionary<string, object>>> response = new();
+            foreach (Dictionary<string, object> row in source)
+            {
+                List<string> val = new();
+                foreach (var k in keys)
+                    val.Add(row[k].ToString()!);
+
+                string key = String.Join("~", val.ToArray());
+
+                if (!response.ContainsKey(key))
+                    response[key] = new();
+                response[key].Add(row);
+            }
+            return response;
+        }
+
+
+
+
+
         public static IDictionary<object, Dictionary<string, object>> DictOfDictByKey(this IEnumerable<Dictionary<string, object?>> source, string key)
         {
             Dictionary<object, Dictionary<string, object>> response = new();
@@ -282,6 +304,38 @@ namespace Utils
 
             return response;
         }
+
+        public static IDictionary<string, Dictionary<string, object>> DictOfDictByKeys(this IEnumerable<Dictionary<string, object?>> source, params string[] keys)
+        {
+            Dictionary<object, Dictionary<string, object>> response = new();
+            foreach (Dictionary<string, object> row in source) {
+                List<string> val = new();
+                foreach (var k in keys)
+                    val.Add(row[k].ToString()!);
+
+                string key = String.Join("~", val.ToArray());
+                response[key] = row;
+            }
+
+            return (IDictionary<string, Dictionary<string, object>>)response;
+        }
+
+        public static IDictionary<string, object> DictOfDictByKeysValue(this IEnumerable<Dictionary<string, object?>> source, string keyValue, params string[] keys)
+        {
+            Dictionary<string, object> response = new();
+            foreach (Dictionary<string, object> row in source)
+            {
+                List<string> val = new();
+                foreach (var k in keys)
+                    val.Add(row[k].ToString()!);
+
+                string key = String.Join("~", val.ToArray());
+                response[key] = row[keyValue];
+            }
+
+            return response;
+        }
+
 
         public static IDictionary<string, T> Dict<T>(this object obj)
         {

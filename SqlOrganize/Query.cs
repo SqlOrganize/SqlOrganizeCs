@@ -51,7 +51,7 @@ namespace SqlOrganize
         /// </summary>
         /// <returns>Resultado como List -Dictionary -string, object- -</returns>
         /// <remarks>Convert the result to json with "JsonConvert.SerializeObject(data, Formatting.Indented)"</remarks>
-        public abstract IEnumerable<Dictionary<string, object>> ColOfDict();
+        public abstract IEnumerable<Dictionary<string, object?>> ColOfDict();
 
         public abstract IEnumerable<T> ColOfObj<T>() where T : class, new();
 

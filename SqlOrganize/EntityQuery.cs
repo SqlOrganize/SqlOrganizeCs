@@ -59,7 +59,7 @@ namespace SqlOrganize
             this.entityName = entityName;
         }
 
-        public EntityQuery WhereAnd(string w)
+        public EntityQuery And(string w)
         {
             if(where.IsNullOrEmpty())
                 where += w;
@@ -68,7 +68,7 @@ namespace SqlOrganize
             return this;
         }
 
-        public EntityQuery WhereOr(string w)
+        public EntityQuery Or(string w)
         {
             if (where.IsNullOrEmpty())
                 where += w;
@@ -481,7 +481,7 @@ namespace SqlOrganize
         /// </summary>
         /// <remarks>Convert the result to json with "JsonConvert.SerializeObject(data, Formatting.Indented)</remarks>
         /// <returns></returns>
-        public IEnumerable<Dictionary<string, object>> ColOfDict()
+        public IEnumerable<Dictionary<string, object?>> ColOfDict()
         {
             var q = Db.Query();
             q.sql = Sql();
