@@ -40,6 +40,12 @@ namespace SqlOrganize
             return this;
         }
 
+        public EntityValues SetObj(object o)
+        {
+            var d = o.Dict();
+            return Set(d);
+        }
+
         public EntityValues Set(IDictionary<string, object?> row)
         {
             foreach (var fieldName in db.FieldNames(entityName))
