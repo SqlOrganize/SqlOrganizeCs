@@ -199,7 +199,7 @@ namespace Utils
                 string fieldName = item.Key.Replace("-", "__");
 
                 if(someObjectType.GetProperty(fieldName) != null)
-                    if (item.Value != System.DBNull.Value)
+                    if (!item.Value.IsNullOrEmptyOrDbNull())
                         someObjectType
                             .GetProperty(fieldName)!
                             .SetValue(someObject, item.Value, null);
@@ -212,14 +212,26 @@ namespace Utils
             return someObject;
         }
 
+        /// <summary>
+        /// Convertir objeto a diccionario
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="bindingAttr"></param>
+        /// <returns></returns>
         public static IDictionary<string, object?> Dict(this object source, BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.Instance)
         {
-            return source.GetType().GetProperties(bindingAttr).ToDictionary
-            (
-                propInfo => propInfo.Name.Replace("__", "-"),
-                propInfo => propInfo.GetValue(source, null)
-            );
-
+            var properties = source.GetType().GetProperties();
+            Dictionary<string, object?> response = new();
+            foreach (var propInfo in properties)
+            {
+                try
+                {
+                    response[propInfo.Name.Replace("__", "-")] = propInfo.GetValue(source, null);
+                }catch(TargetParameterCountException ex) {
+                    continue;
+                }
+            }
+            return response;
         }
 
         public static IEnumerable<Dictionary<string, object?>> ColOfDict(this IEnumerable<object> source, BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.Instance)
