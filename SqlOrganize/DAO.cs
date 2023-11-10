@@ -25,12 +25,12 @@ namespace SqlOrganize
             return Db.Persist(entityName).UpdateValueRel(key, value, source).Exec().RemoveCache();
         }
 
-        public IDictionary<string, object> Get(string entityName, object id)
+        public IDictionary<string, object?> Get(string entityName, object id)
         {
             return Db.Query(entityName).CacheByIds(new List<object>() { id }).ElementAt(0);
         }
 
-        public IDictionary<string, object>? RowByFieldValue(string entityName, string fieldName, object value)
+        public IDictionary<string, object?>? RowByFieldValue(string entityName, string fieldName, object value)
         {
             return Db.Query(entityName).Where("$" + fieldName + " = @0").Parameters(value).DictCache();
         }

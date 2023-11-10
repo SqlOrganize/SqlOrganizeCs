@@ -9,7 +9,7 @@
         /// <summary>
         /// String de conexión con la base de datos
         /// </summary>
-        public string connectionString { get; set; }
+        public virtual string connectionString { get; set; }
         
         /// <summary>
         /// String de concatenacion
@@ -17,7 +17,7 @@
         /// <remarks>
         /// Se utiliza para ciertas operaciones como por ejemplo la concatenación de campos
         /// </remarks>
-        public string concatString { get; set; } = "~";
+        public virtual string concatString { get; set; } = "~";
         
         /// <summary>
         /// fk asociada a id
@@ -26,17 +26,16 @@
         /// Para algunas base de datos las fk están directamente asociadas a las Id.<br/>
         /// Se debe indicar para que las operaciones sean mas eficientes
         /// </remarks>
-        public bool fkId = true;
+        public virtual bool fkId { get; set; } = true;
 
         /// <summary>
         /// Nombre del identificador único de las tablas       
         /// </summary>
         /// <remarks>
-        /// Todas las tablas deben tener un campos id con el mismo nombre de tipo string<br/>
-        /// Si no existe, debe indicarse "_Id", _Id es un identificador único calculado
+        /// Todas las tablas deben tener un identificador, que puede ser real o ficticio<br/>
+        /// El identificador ficticio se define como "_Id"
         /// </remarks>
-        public string id = "_Id";
-
+        public virtual string id { get; set; } = "_Id";
     }
 
 }
