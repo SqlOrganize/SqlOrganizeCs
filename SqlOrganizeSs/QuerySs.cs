@@ -37,7 +37,7 @@ namespace SqlOrganizeSs
             return reader.ColOfObj<T>();
         }
 
-        public override Dictionary<string, object> Dict()
+        public override Dictionary<string, object?> Dict()
         {
             using SqlConnection connection = new(db.config.connectionString);
             using SqlCommand command = new();

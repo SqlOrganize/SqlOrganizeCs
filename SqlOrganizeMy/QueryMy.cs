@@ -32,7 +32,7 @@ namespace SqlOrganizeMy
             return reader.ColOfObj<T>();
         }
 
-        public override Dictionary<string, object> Dict()
+        public override Dictionary<string, object?> Dict()
         {
             using MySqlConnection connection = new(db.config.connectionString);
             using MySqlCommand command = new();
