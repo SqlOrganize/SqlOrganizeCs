@@ -48,5 +48,15 @@
         /// Referencia para definir los alias e identificadores de fields 
         /// </summary>
         public string idSource { get; set; } = "entity_name"; //field_name or entity_name
+
+        /// <summary>
+        /// Nombre del identificador único de las tablas       
+        /// </summary>
+        /// <remarks>
+        /// Todas las tablas deben tener un identificador, que puede ser real o ficticio<br/>
+        /// El identificador ficticio se define como "_Id"
+        /// </remarks>
+        public string id = "_Id";
+
     }
 }

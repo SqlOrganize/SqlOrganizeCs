@@ -1,10 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Xml;
 using Utils;
 
 namespace ModelOrganize
@@ -392,7 +386,7 @@ namespace ModelOrganize
             return aliasAux;
         }
 
-        protected abstract List<String> GetTableNames();
+        protected abstract List<string> GetTableNames();
 
         protected abstract List<Column> GetColumns(string tableName);
 
@@ -495,28 +489,27 @@ namespace ModelOrganize
                 sw.WriteLine("using SqlOrganize;");
                 sw.WriteLine("using System;");
                 sw.WriteLine("using System.ComponentModel;");
+                sw.WriteLine("using System.Collections.Generic;");
+                sw.WriteLine("using System.Reflection;");
+                sw.WriteLine("using Utils;");
                 sw.WriteLine("");
                 sw.WriteLine("namespace " + Config.dataClassesNamespace);
                 sw.WriteLine("{");
-                sw.WriteLine("    public class Data_"+ entityName + " : INotifyPropertyChanged");
+                sw.WriteLine("    public class Data_"+ entityName + " : INotifyPropertyChanged, IDataErrorInfo");
                 sw.WriteLine("    {");
-
                 sw.WriteLine("");
-
+                sw.WriteLine("        public bool Validate = false;");
+                sw.WriteLine("");
                 sw.WriteLine("        public Data_" + entityName + " ()");
                 sw.WriteLine("        {");
                 sw.WriteLine("            Initialize();");
                 sw.WriteLine("        }");
-
                 sw.WriteLine("");
-
                 sw.WriteLine("        public Data_" + entityName + "(DataInitMode mode = DataInitMode.Default)");
                 sw.WriteLine("        {");
                 sw.WriteLine("            Initialize(mode);");
                 sw.WriteLine("        }");
-
                 sw.WriteLine("");
-
                 sw.WriteLine("        protected virtual void Initialize(DataInitMode mode = DataInitMode.Default)");
                 sw.WriteLine("        {");
                 sw.WriteLine("            switch(mode)");
@@ -542,7 +535,18 @@ namespace ModelOrganize
                 sw.WriteLine("        public string? Label { get; set; }");
                 sw.WriteLine("");
 
-                foreach (var (fieldName, field) in fields[entityName])
+                Dictionary<string, Field> _fields = new(fields[entityName]);
+                if(!_fields.ContainsKey(Config.id)) {
+                    Field _Id = new Field()
+                    {
+                        entityName = entityName,
+                        name = Config.id,
+                        type = "string"
+                    };
+                    _fields[Config.id] = _Id;
+                }
+
+                foreach (var (fieldName, field) in _fields)
                 {
                     sw.WriteLine("        protected " + field.type + "? _" + fieldName + " = null;");
                     sw.WriteLine("        public " + field.type + "? " + fieldName);
@@ -557,8 +561,75 @@ namespace ModelOrganize
                 sw.WriteLine("        {");
                 sw.WriteLine("            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));");
                 sw.WriteLine("        }");
+
+                sw.WriteLine("        public string Error");
+                sw.WriteLine("        {");
+                sw.WriteLine("            get");
+                sw.WriteLine("            {");
+                sw.WriteLine("                PropertyInfo[] properties = this.GetType().GetProperties();");
+                sw.WriteLine("");
+                sw.WriteLine("                List<string> errors = new ();");
+                sw.WriteLine("                foreach (PropertyInfo property in properties)");
+                sw.WriteLine("                    if (this[property.Name] != \"\")");
+                sw.WriteLine("                    {");
+                sw.WriteLine("                        NotifyPropertyChanged(property.Name);");
+                sw.WriteLine("                        errors.Add(this[property.Name]);");
+                sw.WriteLine("                    }");
+                sw.WriteLine("");
+                sw.WriteLine("                if(errors.Count > 0)");
+                sw.WriteLine("                    return String.Join(\" - \", errors.ToArray());");
+                sw.WriteLine("");
+                sw.WriteLine("                return \"\";");
+                sw.WriteLine("            }");
+                sw.WriteLine("        }");
+                sw.WriteLine("");
+                sw.WriteLine("        public string this[string columnName]");
+                sw.WriteLine("        {");
+                sw.WriteLine("            get");
+                sw.WriteLine("            {");
+                sw.WriteLine("                if (!Validate)");
+                sw.WriteLine("                    return \"\";");
+                sw.WriteLine("");
+                sw.WriteLine("                // If there's no error, empty string gets returned");
+                sw.WriteLine("                return ValidateField(columnName);");
+                sw.WriteLine("            }");
+                sw.WriteLine("        }");
+                sw.WriteLine("");
+                sw.WriteLine("        protected virtual string ValidateField(string columnName)");
+                sw.WriteLine("        {");
+                sw.WriteLine("");
+                sw.WriteLine("            switch (columnName)");
+                sw.WriteLine("            {");
+                sw.WriteLine("");
+                foreach (var (fieldName, field) in fields[entityName])
+                {
+                    sw.WriteLine("                case \"" + fieldName + "\":");
+
+                    if (field.notNull)
+                    {
+                        sw.WriteLine("                    if (_" + fieldName +" == null)");
+                        sw.WriteLine("                        return \"Debe completar valor.\";");
+
+                    }
+                    if (entity.unique.Contains(field.name))
+                    {
+                        sw.WriteLine("                    if (!_" + fieldName + ".IsNullOrEmptyOrDbNull()) {");
+                        sw.WriteLine("                        var row = ContainerApp.db.Query(\"" + entityName + "\").Where(\"$" + fieldName + " = @0\").Parameters(_" + fieldName + ").DictCache();");
+                        sw.WriteLine("                        if (!row.IsNullOrEmpty() && !_" + Config.id + ".ToString().Equals(row![\"" + Config.id + "\"]!.ToString()))");
+                        sw.WriteLine("                            return \"Valor existente.\";");
+                        sw.WriteLine("                    }");
+                    }
+                    sw.WriteLine("                    return \"\";");
+                    sw.WriteLine("");
+
+                }
+                sw.WriteLine("            }");
+                sw.WriteLine("");
+                sw.WriteLine("            return \"\";");
+                sw.WriteLine("        }");
                 sw.WriteLine("    }");
                 sw.WriteLine("}");
+
             }
         }
 
