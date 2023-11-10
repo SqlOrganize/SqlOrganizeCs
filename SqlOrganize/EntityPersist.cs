@@ -274,6 +274,14 @@ VALUES (";
         {
             return sql;
         }
+        
+
+        public EntityPersist PersistObj(object obj)
+        {
+            IDictionary<string, object?> row = obj.Dict();
+            return Persist(row);
+        }
+
 
         /// <summary>
         /// Verifica existencia de valor unico en base a la configuracion de la entidad
