@@ -114,6 +114,11 @@ namespace SqlOrganize
             return this;
         }
 
+        public EntityQuery UniqueObj(object obj)
+        {
+            var d = obj.Dict();
+            return Unique(d);
+        }
 
         public EntityQuery Unique(EntityValues values)
         {
