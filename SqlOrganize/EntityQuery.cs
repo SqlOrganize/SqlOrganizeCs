@@ -504,13 +504,21 @@ namespace SqlOrganize
             return q.ColOfObj<T>();
         }
 
-        public IDictionary<string, object> Dict()
+        public IDictionary<string, object>? Dict()
         {
             var q = Db.Query();
             q.sql = Sql();
             q.parameters.AddRange(parameters);
             q.parametersDict.Merge(parametersDict);
             return q.Dict();
+        }
+
+        public EntityValues? Values()
+        {
+            IDictionary<string, object>? dict = Dict();
+            if (dict.IsNullOrEmpty())
+                return null;
+            return Db.Values(entityName).Values(dict!);
         }
 
         public T Obj<T>() where T : class, new()
