@@ -14,7 +14,7 @@ namespace Utils
         */
         public static T? Obj<T>(this DbDataReader rd) where T : class, new()
         {
-            return rd.SerializeRow()?.Obj<T>();
+            return rd.SerializeRow()?.Obj<T>() ?? null;
         }
 
         /// <summary>
