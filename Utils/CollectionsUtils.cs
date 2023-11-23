@@ -189,16 +189,24 @@ namespace Utils
             return results;
         }
 
-        public static T Obj<T>(this IDictionary<string, object?> source) where T : class, new()
+        public static T Obj<T>(this IDictionary<string, object?> source, string? fieldId = null) where T : class, new()
         {
             var someObject = new T();
             var someObjectType = someObject.GetType();
 
+            string fieldName = "";
             foreach (var item in source)
             {
-                string fieldName = item.Key.Replace("-", "__");
-
-                if(someObjectType.GetProperty(fieldName) != null)
+                if(fieldId != null)
+                {
+                    if (!item.Key.Contains(fieldId + "-"))
+                        continue;
+                    
+                    fieldName = item.Key.Replace(fieldId + "-", "");
+                } else { 
+                    fieldName = item.Key.Replace("-", "__");
+                }
+                if (someObjectType.GetProperty(fieldName) != null)
                     if (!item.Value.IsNullOrEmptyOrDbNull())
                         someObjectType
                             .GetProperty(fieldName)!
@@ -249,7 +257,7 @@ namespace Utils
         {
             key2 = key2 ?? key1;
 
-            var s = source2.DictOfDictByKey(key2);
+            var s = source2.DictOfDictByKey<object>(key2);
 
             foreach (var item in source)
             {
@@ -262,7 +270,7 @@ namespace Utils
         {
             key2 = key2 ?? key1;
 
-            var s = source2.DictOfDictByKey(key2);
+            var s = source2.DictOfDictByKey<object>(key2);
 
             foreach (var item in source)
             {
@@ -274,10 +282,10 @@ namespace Utils
             }
         }
 
-        public static IDictionary<string, List<Dictionary<string, object>>> DictOfListByKey(this IEnumerable<Dictionary<string, object>> source, string key)
+        public static IDictionary<string, List<Dictionary<string, object?>>> DictOfListByKey(this IEnumerable<Dictionary<string, object?>> source, string key)
         {
-            Dictionary<string, List<Dictionary<string, object>>> response = new();
-            foreach(Dictionary<string, object> row in source)
+            Dictionary<string, List<Dictionary<string, object?>>> response = new();
+            foreach(Dictionary<string, object?> row in source)
             {
                 if (!response.ContainsKey(key))
                     response[key] = new();
@@ -286,10 +294,10 @@ namespace Utils
             return response;
         }
 
-        public static IDictionary<string, List<Dictionary<string, object>>> DictOfListByKeys(this IEnumerable<Dictionary<string, object>> source, params string[] keys)
+        public static IDictionary<string, List<Dictionary<string, object?>>> DictOfListByKeys(this IEnumerable<Dictionary<string, object?>> source, params string[] keys)
         {
-            Dictionary<string, List<Dictionary<string, object>>> response = new();
-            foreach (Dictionary<string, object> row in source)
+            Dictionary<string, List<Dictionary<string, object?>>> response = new();
+            foreach (Dictionary<string, object?> row in source)
             {
                 List<string> val = new();
                 foreach (var k in keys)
@@ -308,11 +316,11 @@ namespace Utils
 
 
 
-        public static IDictionary<object, Dictionary<string, object>> DictOfDictByKey(this IEnumerable<Dictionary<string, object?>> source, string key)
+        public static IDictionary<T, Dictionary<string, object?>> DictOfDictByKey<T>(this IEnumerable<Dictionary<string, object?>> source, string key)
         {
-            Dictionary<object, Dictionary<string, object>> response = new();
-            foreach (Dictionary<string, object> row in source)
-                response[row[key]] = row;
+            Dictionary<T, Dictionary<string, object?>> response = new();
+            foreach (Dictionary<string, object?> row in source)
+                response[(T)row[key]!] = row;
 
             return response;
         }
