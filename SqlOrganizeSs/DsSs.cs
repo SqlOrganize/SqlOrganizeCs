@@ -28,7 +28,6 @@ namespace SqlOrganizeSs
         {
         }
 
-
         public override EntityPersist Persist(string entityName)
         {
             return new EntityPersistSs(this, entityName);

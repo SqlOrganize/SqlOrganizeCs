@@ -189,23 +189,13 @@ namespace Utils
             return results;
         }
 
-        public static T Obj<T>(this IDictionary<string, object?> source, string? fieldId = null) where T : class, new()
+        public static void SetData(this object someObject, IDictionary<string, object?> source)
         {
-            var someObject = new T();
             var someObjectType = someObject.GetType();
 
-            string fieldName = "";
             foreach (var item in source)
             {
-                if(fieldId != null)
-                {
-                    if (!item.Key.Contains(fieldId + "-"))
-                        continue;
-                    
-                    fieldName = item.Key.Replace(fieldId + "-", "");
-                } else { 
-                    fieldName = item.Key.Replace("-", "__");
-                }
+                string fieldName = item.Key.Replace("-", "__");
                 if (someObjectType.GetProperty(fieldName) != null)
                     if (!item.Value.IsNullOrEmptyOrDbNull())
                         someObjectType
@@ -216,7 +206,12 @@ namespace Utils
                             .GetProperty(fieldName)!
                             .SetValue(someObject, null, null);
             }
+        }
 
+        public static T Obj<T>(this IDictionary<string, object?> source) where T : class, new()
+        {
+            var someObject = new T();
+            someObject.SetData(source);
             return someObject;
         }
 

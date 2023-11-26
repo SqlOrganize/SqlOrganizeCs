@@ -2,12 +2,12 @@
 
 <configuration>
 	<appSettings>
-		<add key="modelPath" value="C:\projects\SqlOrganizeCs\ConsoleApp\Model\" />
-		<add key="configPath" value="C:\projects\SqlOrganizeCs\ConsoleApp\Config\" />
-		<add key="dataClassesPath" value="C:\projects\SqlOrganizeCs\WpfApp\Data\" />
+		<add key="docPath" value="C:\projects\Project1\Model\Doc\" />
+		<add key="configPath" value="C:\projects\Project1\Model\Config\" />
+		<add key="dataClassesPath" value="C:\projects\Project1\WpfApp\Data\" />
 		<add key="dataClassesNamespace" value="WpfApp.Data" />
-		<add key="modelClassPath" value="C:\projects\SqlOrganizeCs\WpfApp\" />
-		<add key="modelClassNamespace" value="WpfApp" />
+		<add key="schemaClassPath" value="C:\projects\Project1\WpfApp\" />
+		<add key="schemaClassNamespace" value="WpfApp" />
 		<add key="connectionString" value="server=localhost;database=dbname;uid=root;" />
 		<add key="dbName" value="dbname" />
 	</appSettings>
