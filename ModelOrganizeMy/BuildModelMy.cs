@@ -19,9 +19,8 @@ namespace ModelOrganizeMy
             using MySqlConnection connection = new MySqlConnection(Config.connectionString);
             connection.Open();
             using MySqlCommand command = new();
-            command.CommandText = @"SHOW TABLES FROM @dbName";
+            command.CommandText = @"SHOW TABLES FROM " + Config.dbName;
             command.Connection = connection;
-            command.Parameters.AddWithValue("dbName", Config.dbName);
             command.ExecuteNonQuery();
             using MySqlDataReader reader = command.ExecuteReader();
             return SqlUtils.ColumnValues<string>(reader, 0);
