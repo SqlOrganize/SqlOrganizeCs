@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -116,5 +118,51 @@ namespace Utils
                 @this.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s[0])
             );
         }
+
+        /// <summary>
+        /// Open url in default browser
+        /// </summary>
+        /// <param name="url"></param>
+        /// <remarks>
+        /// - https://brockallen.com/2016/09/24/process-start-for-urls-on-net-core/<br/>
+        /// - https://stackoverflow.com/questions/7888871/hyperlink-keeps-failing
+        /// </remarks>
+        /// <example>
+        /// private void DescargarAdjunto_Click(object sender, RoutedEventArgs e)
+        /// {
+        ///     e.Handled = true;
+        ///     var url = ((Hyperlink)e.OriginalSource).NavigateUri.OriginalString;
+        ///     ValueTypesUtils.OpenBrowser(url);
+        /// }
+        /// </example>
+        public static void OpenBrowser(string url)
+        {
+            try
+            {
+                Process.Start(url);
+            }
+            catch
+            {
+                // hack because of this: https://github.com/dotnet/corefx/issues/10361
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    url = url.Replace("&", "^&");
+                    Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("xdg-open", url);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", url);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
     }
 }

@@ -107,7 +107,7 @@ namespace SqlOrganize
                     if (!where.IsNullOrEmpty())
                         Where(" AND ");
                     Where("$"+key+" = @" + count.ToString());
-                    Parameters(value);
+                    Parameters(value!);
                     count++;
                 }
             }
@@ -661,7 +661,7 @@ namespace SqlOrganize
         /// <param name="ids"></param>
         /// <remarks>IMPORTANTE! No devuelve relaciones!!!</remarks>
         /// <returns></returns>
-        public List<Dictionary<string, object>> _CacheByIds(IEnumerable<object> ids)
+        public List<Dictionary<string, object?>> _CacheByIds(IEnumerable<object> ids)
         {
             ids = ids.Distinct().ToArray();
 
@@ -672,7 +672,7 @@ namespace SqlOrganize
             for (var i = 0; i < ids.Count(); i++)
             {
                 object? data;
-                if (Db.Cache.TryGetValue(entityName + ids.ElementAt(i), out data))
+                if (Db.Cache!.TryGetValue(entityName + ids.ElementAt(i), out data))
                 {
                     response.Insert(i, (Dictionary<string, object>)data!);
                 }
@@ -808,9 +808,9 @@ namespace SqlOrganize
         {
             FieldsOrganize fo = new(Db, entityName, fields);
 
-            List<Dictionary<string, object>> data = _CacheByIds(ids);
+            List<Dictionary<string, object?>> data = _CacheByIds(ids);
 
-            List<Dictionary<string, object>> response = new();
+            List<Dictionary<string, object?>> response = new();
 
             for (var i = 0; i < data.Count; i++)
             {
@@ -892,7 +892,7 @@ namespace SqlOrganize
             if (!Db.Entity(entityName).relations.IsNullOrEmpty())
                 EntityCacheRecursive(Db.Entity(entityName).relations!, row);
 
-            Db.Cache.Set(entityName + row[Db.config.id].ToString(), row);
+            Db.Cache!.Set(entityName + row[Db.config.id].ToString(), row);
             return row;
         }
 
