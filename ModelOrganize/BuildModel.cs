@@ -58,6 +58,8 @@ namespace ModelOrganize
                 case "nvarchar":
                 case "text":
                 case "mediumtext":
+                case "tinytext":
+                case "longtext":
                     f.type = "string";
                     break;
                 case "real":
@@ -80,14 +82,13 @@ namespace ModelOrganize
                     break;
 
                 case "int":
+                case "mediumint":
                     f.type = (c.IS_UNSIGNED == 1) ? "uint" : "int";
                     break;
 
                 case "tinyint":
                     if (f.maxLength == 1)
                         f.type = "bool";
-                    else if (c.IS_UNSIGNED == 1)
-                        f.type = "ubyte";
                     else
                         f.type = "byte";
                     break;
@@ -303,7 +304,7 @@ namespace ModelOrganize
                             {
                                 if (fields[entityName].ContainsKey(e.Key))
                                 {
-                                    fields[entityName][e.Key].CopyValues(e.Value);
+                                    fields[entityName][e.Key].CopyValues(e.Value, targetNull:false, sourceNotNull:true, compareNotNull:false);
 
                                     resetField(fields[entityName][e.Key]);
 

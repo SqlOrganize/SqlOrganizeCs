@@ -46,7 +46,13 @@ namespace Utils
         /// <typeparam name="W"></typeparam>
         /// <param name="target"></param>
         /// <param name="source"></param>
-        public static void CopyValues<T, W>(this T target, W source, bool targetNotNull = true, bool sourceNotNull = false, bool compareNotNull = false)
+        /// <param name="targetNull">La copia se realiza solamente si el campo del target es null</param>
+        /// <param name="sourceNotNull">La copia se realiza solamente si el campo del surce es not null</param>
+        /// <param name="compareNotNull">Se realiza comparacion de valores no nulos, si son distintos, dispara excepcion</param>
+
+
+
+        public static void CopyValues<T, W>(this T target, W source, bool targetNull = true, bool sourceNotNull = false, bool compareNotNull = false)
         {
             Type t = typeof(W);
 
@@ -55,16 +61,20 @@ namespace Utils
             foreach (var prop in properties)
             {
                 var propT = target.GetType().GetProperty(prop.Name);
+                var valorTarget = propT!.GetValue(target, null);
+                var valorSource = prop.GetValue(source, null);
+
                 if (
                     propT.IsNullOrEmpty() || (
-                        targetNotNull
-                        && !propT!.GetValue(target, null).IsNullOrEmpty()
+                        targetNull
+                        && (valorTarget != null)
                     )
                 )
                     continue;
 
-                if (compareNotNull && !prop.GetValue(source, null).IsNullOrEmpty() && !propT!.GetValue(target, null).IsNullOrEmpty())
-                    if (!prop!.GetValue(source, null)!.ToString()!.Equals(propT!.GetValue(target, null)!.ToString()))
+
+                if (compareNotNull && valorSource != null && valorTarget != null)
+                    if (!valorSource.ToString()!.Equals(valorTarget.ToString()))
                         throw new Exception("Valores diferentes");
 
                 var value = prop.GetValue(source, null);
