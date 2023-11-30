@@ -21,7 +21,7 @@ namespace Utils
         /// <param name="target"></param>
         /// <param name="source"></param>
         /// <remarks>https://stackoverflow.com/questions/8702603/merging-two-objects-in-c-sharp</remarks>
-        public static void CopyValues<T>(this T target, T source, bool targetNotNull = true, bool sourceNotNull = false)
+        public static void CopyValues<T>(this T target, T source, bool targetNull = true, bool sourceNotNull = false)
         {
             Type t = typeof(T);
 
@@ -29,13 +29,17 @@ namespace Utils
 
             foreach (var prop in properties)
             {
-                if (sourceNotNull && !prop.GetValue(source, null).IsNullOrEmpty())
+                var propT = target.GetType().GetProperty(prop.Name);
+                var valorTarget = propT!.GetValue(target, null);
+                var valorSource = prop.GetValue(source, null);
+
+                if (sourceNotNull && valorSource == null)
                     continue;
 
-                var value = prop.GetValue(source, null);
+                if (targetNull && valorTarget != null)
+                    continue;
 
-                if (targetNotNull && !value.IsNullOrEmpty())
-                    prop.SetValue(target, value, null);
+                prop.SetValue(target, valorSource, null);
             }
         }
 
