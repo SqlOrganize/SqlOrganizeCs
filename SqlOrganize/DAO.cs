@@ -15,9 +15,9 @@ namespace SqlOrganize
             this.Db = db;
         }
 
-        public IEnumerable<Dictionary<string, object?>> Search<T>(string entityName, T param) where T : class
+        public IEnumerable<Dictionary<string, object?>> SearchObj(string entityName, object param)
         {
-            return Db.Query(entityName).Search(param).Size(0).ColOfDictCache();
+            return Db.Query(entityName).SearchObj(param).Size(0).ColOfDictCache();
         }
 
         public EntityPersist UpdateValueRel(string entityName, string key, object? value, IDictionary<string, object?> source)
