@@ -34,6 +34,12 @@ namespace SqlOrganize
             return this;
         }
 
+        public EntityValues ValuesObj(object obj)
+        {
+            values = obj.Dict() ?? new Dictionary<string, object?>();
+            return this;
+        }
+
         public EntityValues Clear()
         {
             values.Clear();
