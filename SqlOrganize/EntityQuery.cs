@@ -83,7 +83,7 @@ namespace SqlOrganize
             return this;
         }
 
-        public EntityQuery Search<T>(T param) where T : class
+        public EntityQuery SearchObj(object param)
         {
             var d = param.Dict();
             return Search(d);
