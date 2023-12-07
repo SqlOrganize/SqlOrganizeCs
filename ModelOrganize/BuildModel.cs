@@ -221,7 +221,7 @@ namespace ModelOrganize
                         if (!entities.ContainsKey(e.Key))
                             continue;
 
-                        entities[e.Key].CopyValues(e.Value);
+                        entities[e.Key].CopyValues(e.Value, sourceNotNull:true);
 
                         var f = new List<string>();
                         f.AddRange(entities[e.Key].fields);

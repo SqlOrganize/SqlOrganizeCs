@@ -166,7 +166,11 @@ namespace SqlOrganize
                     if (value is decimal)
                         values[fieldName] = (Decimal)value;
                     else
-                        values[fieldName] = Decimal.Parse(value.ToString()!);
+                    {
+                        var v = value.ToString()!;
+                        values[fieldName] =  (v == "") ? null : Decimal.Parse(v);
+                    }
+
                     break;
 
                 case "int":
@@ -174,7 +178,10 @@ namespace SqlOrganize
                     if (value is Int32)
                         values[fieldName] = (Int32)value;
                     else
-                        values[fieldName] = Int32.Parse(value.ToString()!);
+                    {
+                        var v = value.ToString()!;
+                        values[fieldName] = (v == "") ? null : Int32.Parse(v);
+                    }
                     break;
 
                 case "bool":

@@ -18,6 +18,16 @@ namespace SqlOrganize
     public abstract class Query
     {
         /// <summary>
+        /// conexion opcional, si no existe al ejecutar se crea
+        /// </summary>       
+        public DbConnection? connection;
+
+        /// <summary>
+        /// transaccion opcional, si no existe al ejecutar se crea
+        /// </summary>
+        public DbTransaction? transaction;
+
+
         /// Contenedor principal del proyecto
         /// </summary>
         public Db db { get; }
@@ -55,7 +65,8 @@ namespace SqlOrganize
 
         public abstract IEnumerable<T> ColOfObj<T>() where T : class, new();
 
-        public abstract IDictionary<string, object>? Dict();
+        public abstract IDictionary<string, object?>? Dict();
+
         public abstract T Obj<T>() where T : class, new();
 
         public abstract IEnumerable<T> Column<T>(string columnName);
@@ -81,11 +92,10 @@ namespace SqlOrganize
         /// <summary>
         /// Ejecutar command
         /// </summary>
-        /// <param name="connection"></param>
-        /// <param name="command"></param>
+        /// <param name="connection">Conexión abierta</param>
+        /// <param name="command">Comando</param>
         protected void SqlExecute(DbConnection connection, DbCommand command)
         {
-            connection.Open();
             command.Connection = connection;
 
             if (parametersDict.Keys.Count > 0)
@@ -131,6 +141,27 @@ namespace SqlOrganize
 
             command.CommandText = sql;
             command.ExecuteNonQuery();
+        }
+
+
+        /// <summary>
+        /// Metodo general para ejecutar transaccion
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="command"></param>
+        protected void TransactionExecute(DbConnection connection, DbCommand command)
+        {
+            using DbTransaction tran = connection.BeginTransaction();
+            try
+            {
+                SqlExecute(connection!, command);
+                tran.Commit();
+            }
+            catch (Exception)
+            {
+                tran.Rollback();
+                throw;
+            }
         }
     }
 

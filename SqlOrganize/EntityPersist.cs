@@ -1,9 +1,20 @@
-﻿using Utils;
+﻿using System.Data.Common;
+using System.Transactions;
+using Utils;
 
 namespace SqlOrganize
 {
     public abstract class EntityPersist
     {
+
+        protected DbConnection? connection;
+
+        /// <summary>
+        /// transaccion opcional
+        /// </summary>
+        protected DbTransaction? transaction;
+
+
         public Db Db { get; }
 
         public string? entityName { get; }
@@ -21,6 +32,19 @@ namespace SqlOrganize
         /// Para poder identificar rapidamente todas las entidades que se modificaron de la base de datos
         /// </remarks>
         public List<(string entityName, object id)> detail = new();
+
+
+        public EntityPersist SetConn(DbConnection connection)
+        {
+            this.connection = connection;
+            return this;
+        }
+
+        public EntityPersist SetTran(DbTransaction transaction)
+        {
+            this.transaction = transaction;
+            return this;
+        }
 
         public EntityPersist(Db db, string? _entityName = null)
         {
@@ -86,9 +110,6 @@ DELETE " + e.alias + " FROM " + e.name + " " + e.alias + @"
 
             return this;
         }
-
-
-
 
         abstract protected EntityPersist _Update(IDictionary<string, object> row, string? _entityName = null);
 
@@ -179,7 +200,6 @@ WHERE " + id + " = @" + count + @";
             return UpdateIds(row, ids, _entityName);
         }
 
-
         /// <summary>
         /// Actualizar un unico campo
         /// </summary>
@@ -193,9 +213,6 @@ WHERE " + id + " = @" + count + @";
             Dictionary<string, object> row = new Dictionary<string, object>() { { key, value } };
             return UpdateAll(row, _entityName);
         }
-
-
-
 
         /// <summary>
         /// Actualiza valor local o de relacion
@@ -318,8 +335,8 @@ VALUES (";
         public EntityPersist Persist(EntityValues v)
         {
             v.Reset();
-            var q = Db.Query(v.entityName!).Unique(v.values);
-            var rows = q.ColOfDict();
+            EntityQuery q = Db.Query(v.entityName!).Unique(v.values);
+            IEnumerable<Dictionary<string, object?>> rows = q.ColOfDict();
 
             if (rows.Count() > 1)
                 throw new Exception("La consulta por campos unicos retorno mas de un resultado");
@@ -334,9 +351,8 @@ VALUES (";
                 if (v.logging.HasErrors())
                     throw new Exception("Los campos a actualizar poseen errores: " + v.logging.ToString());
 
-                return Update(v.values, v.entityName);
+                return Update(v.values!, v.entityName);
             }
-
 
             if (!v.values.ContainsKey(Db.config.id) || v.values[Db.config.id].IsNullOrEmptyOrDbNull())
                 v.SetDefault(Db.config.id);
@@ -352,6 +368,8 @@ VALUES (";
         public EntityPersist Exec()
         {
             var q = Db.Query();
+            q.connection = connection;
+            q.transaction = transaction;
             q.sql = sql;
             q.parameters = parameters;
             q.Exec();
@@ -361,6 +379,8 @@ VALUES (";
         public EntityPersist Transaction()
         {
             var q = Db.Query();
+            q.connection = connection;
+            q.transaction = transaction;
             q.sql = sql;
             q.parameters = parameters;
             q.Transaction();

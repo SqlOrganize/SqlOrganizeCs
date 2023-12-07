@@ -1,8 +1,4 @@
-﻿using Microsoft.VisualBasic;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Utils;
+﻿using Utils;
 
 namespace SqlOrganize
 {
@@ -22,7 +18,7 @@ namespace SqlOrganize
 
         public Validation Required()
         {
-            if (value.IsNullOrEmpty()) {
+            if (value.IsNullOrEmptyOrDbNull()) {
                 errors.Add(("Value is null or empty", "required"));
             }
             return this;
@@ -33,13 +29,13 @@ namespace SqlOrganize
             switch (type)
             {
                 case "string":
-                    if(!value.IsNullOrEmpty() && value is not String)
+                    if(!value.IsNullOrEmptyOrDbNull() && value is not String)
                         errors.Add(("Value is not string", "type"));
                 break;
 
                 case "integer":
                 case "int":
-                    if (value is not null && value is not int)
+                    if (!value.IsNullOrEmptyOrDbNull() && value is not int)
                         errors.Add(("Value is not int", "type"));
 
                 break;

@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SqlOrganize.Exceptions;
+using System.Data.Common;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Utils;
@@ -23,6 +24,12 @@ namespace SqlOrganize
     */
     public abstract class EntityQuery
     {
+        /// <summary>
+        /// coneccion opcional
+        /// </summary>
+        protected DbConnection? connection;
+
+
         public Db Db { get; }
 
 
@@ -57,6 +64,12 @@ namespace SqlOrganize
         {
             Db = db;
             this.entityName = entityName;
+        }
+
+        public EntityQuery SetConn(DbConnection connection)
+        {
+            this.connection = connection;
+            return this;
         }
 
         public EntityQuery And(string w)
@@ -488,88 +501,61 @@ namespace SqlOrganize
         /// <returns></returns>
         public IEnumerable<Dictionary<string, object?>> ColOfDict()
         {
-            var q = Db.Query();
-            q.sql = Sql();
-            q.parameters.AddRange(parameters);
-            q.parametersDict.Merge(parametersDict);
-            return q.ColOfDict();
+            return Query().ColOfDict();
         }
 
         public IEnumerable<T> ColOfObj<T>() where T : class, new()
         {
-            var q = Db.Query();
-            q.sql = Sql();
-            q.parameters.AddRange(parameters);
-            q.parametersDict.Merge(parametersDict);
-            return q.ColOfObj<T>();
+            return Query().ColOfObj<T>();
         }
 
         public IDictionary<string, object>? Dict()
         {
-            var q = Db.Query();
-            q.sql = Sql();
-            q.parameters.AddRange(parameters);
-            q.parametersDict.Merge(parametersDict);
-            return q.Dict();
+            return Query().Dict();
         }
 
-        public EntityValues? Values()
-        {
-            IDictionary<string, object>? dict = Dict();
-            if (dict.IsNullOrEmpty())
-                return null;
-            return Db.Values(entityName).Values(dict!);
-        }
+        
 
         public T Obj<T>() where T : class, new()
         {
-            var q = Db.Query();
-            q.sql = Sql();
-            q.parameters.AddRange(parameters);
-            q.parametersDict.Merge(parametersDict);
-            return q.Obj<T>();
-
+            return Query().Obj<T>();
         }
 
         public IEnumerable<T> Column<T>(string columnName)
         {
-            var q = Db.Query();
-            q.sql = Sql();
-            q.parameters.AddRange(parameters);
-            q.parametersDict.Merge(parametersDict);
-            return q.Column<T>(columnName);
+            return Query().Column<T>(columnName);
         }
 
         public IEnumerable<T> Column<T>(int columnValue = 0)
         {
-            var q = Db.Query();
-            q.sql = Sql();
-            q.parameters.AddRange(parameters);
-            q.parametersDict.Merge(parametersDict);
-            return q.Column<T>(columnValue);
+            return Query().Column<T>(columnValue);
         }
+
         public T Value<T>(string columnName)
         {
-            var q = Db.Query();
-            q.sql = Sql();
-            q.parameters.AddRange(parameters);
-            q.parametersDict.Merge(parametersDict);
-            return q.Value<T>(columnName);
+            return Query().Value<T>(columnName);
         }
 
         public T Value<T>(int columnValue = 0)
         {
+            return Query().Value<T>(columnValue);
+        }
+
+        public Query Query()
+        {
             var q = Db.Query();
+            q.connection = connection;
             q.sql = Sql();
             q.parameters.AddRange(parameters);
             q.parametersDict.Merge(parametersDict);
-            return q.Value<T>(columnValue);
+            return q;
         }
 
         public abstract EntityQuery Clone();
 
         protected EntityQuery _Clone(EntityQuery eq)
         {
+            eq.connection = connection;
             eq.entityName = entityName;
             eq.size = size;
             eq.where = where;
@@ -590,6 +576,7 @@ namespace SqlOrganize
         public ulong GetNextValue()
         {
             var q = Db.Query();
+            q.connection = connection;
             q.sql = @"
                             SELECT auto_increment 
                             FROM INFORMATION_SCHEMA.TABLES 
