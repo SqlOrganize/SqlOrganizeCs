@@ -20,6 +20,15 @@ namespace SqlOrganize
             return Db.Query(entityName).SearchObj(param).Size(0).ColOfDictCache();
         }
 
+        public IEnumerable<Dictionary<string, object?>> SearchKeyValue(string entityName, string key, object value)
+        {
+            return Db.Query(entityName).
+                Where(key + " = @0").
+                Parameters(value).
+                Size(0).
+                ColOfDictCache();
+        }
+
         public EntityPersist UpdateValueRel(string entityName, string key, object? value, IDictionary<string, object?> source)
         {
             return Db.Persist(entityName).UpdateValueRel(key, value, source).Exec().RemoveCache();
@@ -35,7 +44,7 @@ namespace SqlOrganize
             return Db.Query(entityName).Where("$" + fieldName + " = @0").Parameters(value).DictCache();
         }
 
-        public IDictionary<string, object>? RowByUniqueWithoutIdIfExists(string entityName, IDictionary<string, object?> source)
+        public IDictionary<string, object?>? RowByUniqueWithoutIdIfExists(string entityName, IDictionary<string, object?> source)
         {
 
             var q = Db.Query(entityName).Unique(source);
@@ -44,6 +53,27 @@ namespace SqlOrganize
                 q.And("$" + Db.config.id + " != @").Parameters(source[Db.config.id]!);
 
             return q.DictCache();
+        }
+
+
+        public IDictionary<string, object?>? RowByUnique(EntityValues ev)
+        {
+            return RowByUnique(ev.entityName, ev.values);
+        }
+
+        public IDictionary<string, object?>? RowByUnique(string entityName, IDictionary<string, object?> source)
+        {
+            EntityQuery q = Db.Query(entityName).Unique(source);
+            IEnumerable<Dictionary<string, object?>> rows = q.ColOfDict();
+
+            if (rows.Count() > 1)
+                throw new Exception("La consulta por campos unicos retorno mas de un resultado");
+
+            if (rows.Count() == 1)
+                return rows.ElementAt(0);
+
+            else
+                return null;
         }
 
         public void Persist(EntityValues v)
