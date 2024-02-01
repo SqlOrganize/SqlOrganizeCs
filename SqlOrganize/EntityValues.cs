@@ -340,7 +340,11 @@ namespace SqlOrganize
             return this;
         }
 
-
+        /// <summary>
+        /// Verificar campos
+        /// </summary>
+        /// <returns>true si la verificacion es correcta, false caso contrario</returns>
+        /// <remarks>Para obtener los errores utilizar logging.ToString()</remarks>
         public bool Check()
         {
             logging.Clear();

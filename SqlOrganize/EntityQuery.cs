@@ -112,18 +112,14 @@ namespace SqlOrganize
         {
             var count = parameters.Count;
             foreach(var (key, value) in param)
-            {
-                if (!Db.FieldNamesRel(entityName).Contains(key))
-                    continue;
-                if(!value.IsNullOrEmpty())
+                if (Db.FieldNamesRel(entityName).Contains(key) && !value.IsNullOrEmpty())
                 {
                     if (!where.IsNullOrEmpty())
                         Where(" AND ");
-                    Where("$"+key+" = @" + count.ToString());
+                    Where("$" + key + " = @" + count.ToString());
                     Parameters(value!);
                     count++;
                 }
-            }
             return this;
         }
 
@@ -673,11 +669,11 @@ namespace SqlOrganize
             if (searchIds.Count == 0)
                 return response;
 
-            IEnumerable<Dictionary<string, object>> rows = Db.Query(entityName).Size(0).Where("$" + Db.config.id + " IN (@0)").Parameters(searchIds).ColOfDict();
+            IEnumerable<Dictionary<string, object?>> rows = Db.Query(entityName).Size(0).Where("$" + Db.config.id + " IN (@0)").Parameters(searchIds).ColOfDict();
 
             if (rows.IsNullOrEmpty())
-                throw new Exception("La consulta a traves de ids existentes no arrojo ningun resultado. Se estan usando ids correspondientes a otra entidad?");
-            foreach (Dictionary<string, object> row in rows)
+                throw new Exception("La consulta a traves de ids existentes no arrojo ningun resultado. Se estan usando ids correspondientes a otra entidad? Existe el id utilizado en la base de datos?");
+            foreach (Dictionary<string, object?> row in rows)
             {
                 int index = Array.IndexOf(ids.ToArray(), row[Db.config.id]);
                 response[index] = EntityCache(entityName, row);
@@ -874,12 +870,12 @@ namespace SqlOrganize
         /// <param name="entityName">Nombre de la entidad principal de la fila</param>
         /// <param name="row">Fila de datos (tupla)</param>
         /// <returns>Resultado filtrado solo para la entidad principal</returns>
-        protected Dictionary<string, object> EntityCache(string entityName, Dictionary<string, object> row)
+        protected Dictionary<string, object?> EntityCache(string entityName, Dictionary<string, object?> row)
         {
             if (!Db.Entity(entityName).relations.IsNullOrEmpty())
                 EntityCacheRecursive(Db.Entity(entityName).relations!, row);
 
-            Db.Cache!.Set(entityName + row[Db.config.id].ToString(), row);
+            Db.Cache!.Set(entityName + row[Db.config.id]!.ToString(), row);
             return row;
         }
 
@@ -888,12 +884,12 @@ namespace SqlOrganize
         /// </summary>
         /// <param name="relations">Relaciones de una entidad</param>
         /// <param name="row">Fila de datos (tupla)</param>
-        protected void EntityCacheRecursive(Dictionary<string, EntityRelation> relations, Dictionary<string, object> row)
+        protected void EntityCacheRecursive(Dictionary<string, EntityRelation> relations, Dictionary<string, object?> row)
         {
             foreach (var (fieldId, rel) in relations)
             {
                 var entityName = rel.refEntityName;
-                Dictionary<string, object> rowAux = new();
+                Dictionary<string, object?> rowAux = new();
                 string f = fieldId + "-";
                 foreach (var (column, value) in row)
                 {
@@ -905,7 +901,7 @@ namespace SqlOrganize
                     }
                 }
                 if (rowAux.Count > 0)
-                    Db.Cache.Set(entityName + rowAux[Db.config.id].ToString(), rowAux);
+                    Db.Cache!.Set(entityName + rowAux[Db.config.id]!.ToString(), rowAux);
             }
         }
         #endregion
