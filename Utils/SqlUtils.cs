@@ -23,7 +23,7 @@ namespace Utils
         /// <typeparam name="T"></typeparam>
         /// <param name="rd"></param>
         /// <returns></returns>
-        public static List<T> ColOfObj<T>(this DbDataReader rd) where T : class, new()
+        public static IEnumerable<T> ColOfObj<T>(this DbDataReader rd) where T : class, new()
         {
             var results = new List<T>();
             var cols = rd.ColumnNames();
@@ -37,7 +37,7 @@ namespace Utils
         /*
         https://stackoverflow.com/questions/5083709/convert-from-sqldatareader-to-json 
         */
-        public static List<Dictionary<string, object?>> Serialize(this DbDataReader reader)
+        public static IEnumerable<Dictionary<string, object?>> Serialize(this DbDataReader reader)
         {
             var cols = reader.ColumnNames();
             var results = new List<Dictionary<string, object?>>();

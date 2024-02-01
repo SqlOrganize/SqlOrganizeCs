@@ -16,7 +16,7 @@ namespace SqlOrganizeMy
         }
 
 
-        public override List<Dictionary<string, object?>> ColOfDict()
+        public override IEnumerable<Dictionary<string, object?>> ColOfDict()
         {
             using MySqlCommand command = new ();
             if (connection.IsNullOrEmpty())

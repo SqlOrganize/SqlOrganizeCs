@@ -14,90 +14,186 @@ namespace SqlOrganizeSs
         {
         }
 
-        public override List<Dictionary<string, object>> ColOfDict()
+        public override IEnumerable<Dictionary<string, object?>> ColOfDict()
         {
-            using SqlConnection connection = new(db.config.connectionString);
             using SqlCommand command = new();
-            SqlExecute(connection, command);
-            using SqlDataReader reader = command.ExecuteReader();
-            return reader.Serialize();
+            if (connection.IsNullOrEmpty())
+            {
+                using SqlConnection conn = new(db.config.connectionString);
+                conn.Open();
+                SqlExecute(conn, command);
+                using DbDataReader reader = command.ExecuteReader();
+                return reader.Serialize();
+            }
+            else
+            {
+                SqlExecute(connection!, command);
+                using DbDataReader reader = command.ExecuteReader();
+                return reader.Serialize();
+            }
+
         }
 
-        public override List<T> ColOfObj<T>()
+        public override IEnumerable<T> ColOfObj<T>()
         {
-            using SqlConnection connection = new(db.config.connectionString);
             using SqlCommand command = new();
-            SqlExecute(connection, command);
-            using SqlDataReader reader = command.ExecuteReader();
-            return reader.ColOfObj<T>();
+            if (connection.IsNullOrEmpty())
+            {
+                using SqlConnection conn = new(db.config.connectionString);
+                conn.Open();
+                SqlExecute(conn, command);
+                using DbDataReader reader = command.ExecuteReader();
+                return reader.ColOfObj<T>();
+            }
+            else
+            {
+                SqlExecute(connection!, command);
+                using DbDataReader reader = command.ExecuteReader();
+                return reader.ColOfObj<T>();
+            }
         }
 
         public override Dictionary<string, object?>? Dict()
         {
-            using SqlConnection connection = new(db.config.connectionString);
             using SqlCommand command = new();
-            SqlExecute(connection, command);
-            using SqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
-            return reader.SerializeRow();
+            if (connection.IsNullOrEmpty())
+            {
+                using SqlConnection conn = new(db.config.connectionString);
+                conn.Open();
+                SqlExecute(conn, command);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                return reader.SerializeRow();
+            }
+            else
+            {
+                SqlExecute(connection!, command);
+                using SqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                return reader.SerializeRow();
+            }
         }
 
         public override T? Obj<T>() where T : class
         {
-            using SqlConnection connection = new(db.config.connectionString);
-            using SqlCommand command = new();
-            SqlExecute(connection, command);
-            using SqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
-            return reader.Obj<T>();
+            using SqlCommand command = new SqlCommand();
+            if (connection.IsNullOrEmpty())
+            {
+                using SqlConnection conn = new SqlConnection(db.config.connectionString);
+                conn.Open();
+                SqlExecute(conn, command);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                return reader.Obj<T>();
+            }
+            else
+            {
+                SqlExecute(connection!, command);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                return reader.Obj<T>();
+            }
         }
 
         public override IEnumerable<T> Column<T>(string columnName)
         {
-            using SqlConnection connection = new(db.config.connectionString);
-            using SqlCommand command = new();
-            SqlExecute(connection, command);
-            using SqlDataReader reader = command.ExecuteReader();
-            return reader.ColumnValues<T>(columnName);
+            using SqlCommand command = new SqlCommand();
+            if (connection.IsNullOrEmpty())
+            {
+                using SqlConnection conn = new SqlConnection(db.config.connectionString);
+                conn.Open();
+                SqlExecute(conn, command);
+                using DbDataReader reader = command.ExecuteReader();
+                return reader.ColumnValues<T>(columnName);
+            }
+            else
+            {
+                SqlExecute(connection!, command);
+                using DbDataReader reader = command.ExecuteReader();
+                return reader.ColumnValues<T>(columnName);
+            }
         }
 
         public override IEnumerable<T> Column<T>(int columnNumber = 0)
         {
-            using SqlConnection connection = new(db.config.connectionString);
             using SqlCommand command = new();
-            SqlExecute(connection, command);
-            using SqlDataReader reader = command.ExecuteReader();
-            return reader.ColumnValues<T>(columnNumber);
+            if (connection.IsNullOrEmpty())
+            {
+                using SqlConnection conn = new(db.config.connectionString);
+                conn.Open();
+                SqlExecute(conn, command);
+                using DbDataReader reader = command.ExecuteReader();
+                return reader.ColumnValues<T>(columnNumber);
+            }
+            else
+            {
+                SqlExecute(connection!, command);
+                using DbDataReader reader = command.ExecuteReader();
+                return reader.ColumnValues<T>(columnNumber);
+            }
         }
+
         public override T Value<T>(string columnName)
         {
-            using SqlConnection connection = new(db.config.connectionString);
             using SqlCommand command = new();
-            SqlExecute(connection, command);
-            using SqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
-            return reader.Read() ? (T)reader[columnName] : default(T);
+            if (connection.IsNullOrEmpty())
+            {
+                using SqlConnection conn = new((string)db.config.connectionString);
+                conn.Open();
+                SqlExecute(conn, command);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                return reader.Read() ? (T)reader[columnName] : default(T);
+            }
+            else
+            {
+                SqlExecute(connection!, command);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                return reader.Read() ? (T)reader[columnName] : default(T);
+            }
         }
 
         public override T Value<T>(int columnNumber = 0)
         {
-            using SqlConnection connection = new(db.config.connectionString);
             using SqlCommand command = new();
-            SqlExecute(connection, command);
-            using SqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
-            return (reader.Read()) ? (T)reader.GetValue(columnNumber) : default(T);
+            if (connection.IsNullOrEmpty())
+            {
+                using SqlConnection conn = new(db.config.connectionString);
+                conn.Open();
+                SqlExecute(conn, command);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                return (reader.Read()) ? (T)reader.GetValue(columnNumber) : default(T);
+            }
+            else
+            {
+                SqlExecute(connection!, command);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                return (reader.Read()) ? (T)reader.GetValue(columnNumber) : default(T);
+            }
         }
 
         public override void Exec()
         {
-            using SqlConnection connection = new SqlConnection((string)db.config.connectionString);
-            using SqlCommand command = new SqlCommand();
-            SqlExecute(connection, command);
+            using SqlCommand command = new();
+            if (connection.IsNullOrEmpty())
+            {
+                using SqlConnection conn = new(db.config.connectionString);
+                conn.Open();
+                SqlExecute(conn, command);
+                conn.Close();
+            }
+            else
+                SqlExecute(connection!, command);
         }
 
         public override void Transaction()
         {
-            sql = @"BEGIN TRAN; 
-" + sql + @"
-COMMIT TRAN;";
-            Exec();
+            using SqlCommand command = new();
+
+            if (connection.IsNullOrEmpty())
+            {
+                using SqlConnection conn = new(db.config.connectionString);
+                conn.Open();
+                TransactionExecute(conn, command);
+                conn.Close();
+            }
+            else
+                TransactionExecute(connection!, command);
         }
 
         protected override void AddWithValue(DbCommand command, string columnName, object value)
