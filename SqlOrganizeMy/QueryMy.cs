@@ -18,19 +18,19 @@ namespace SqlOrganizeMy
 
         public override List<Dictionary<string, object?>> ColOfDict()
         {
-            using MySqlCommand command = new MySqlCommand();
+            using MySqlCommand command = new ();
             if (connection.IsNullOrEmpty())
             {
-                using MySqlConnection conn = new MySqlConnection((string)db.config.connectionString);
+                using MySqlConnection conn = new (db.config.connectionString);
                 conn.Open();
                 SqlExecute(conn, command);
-                using MySqlDataReader reader = command.ExecuteReader();
+                using DbDataReader reader = command.ExecuteReader();
                 return reader.Serialize();
             }
             else
             {
                 SqlExecute(connection!, command);
-                using MySqlDataReader reader = command.ExecuteReader();
+                using DbDataReader reader = command.ExecuteReader();
                 return reader.Serialize();
             }
             
@@ -38,32 +38,32 @@ namespace SqlOrganizeMy
 
         public override List<T> ColOfObj<T>()
         {
-            using MySqlCommand command = new MySqlCommand();
+            using MySqlCommand command = new ();
             if (connection.IsNullOrEmpty())
             {
-                using MySqlConnection conn = new MySqlConnection((string)db.config.connectionString);
+                using MySqlConnection conn = new (db.config.connectionString);
                 conn.Open();
                 SqlExecute(conn, command);
-                using MySqlDataReader reader = command.ExecuteReader();
+                using DbDataReader reader = command.ExecuteReader();
                 return reader.ColOfObj<T>();
             }
             else
             {
                 SqlExecute(connection!, command);
-                using MySqlDataReader reader = command.ExecuteReader();
+                using DbDataReader reader = command.ExecuteReader();
                 return reader.ColOfObj<T>();
             }
         }
 
         public override Dictionary<string, object?>? Dict()
         {
-            using MySqlCommand command = new MySqlCommand();
+            using MySqlCommand command = new ();
             if (connection.IsNullOrEmpty())
             {
-                using MySqlConnection conn = new MySqlConnection((string)db.config.connectionString);
+                using MySqlConnection conn = new (db.config.connectionString);
                 conn.Open();
                 SqlExecute(conn, command);
-                using MySqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.SerializeRow();
             }
             else
@@ -79,16 +79,16 @@ namespace SqlOrganizeMy
             using MySqlCommand command = new MySqlCommand();
             if (connection.IsNullOrEmpty())
             {
-                using MySqlConnection conn = new MySqlConnection((string)db.config.connectionString);
+                using MySqlConnection conn = new MySqlConnection(db.config.connectionString);
                 conn.Open();
                 SqlExecute(conn, command);
-                using MySqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.Obj<T>();
             }
             else
             {
                 SqlExecute(connection!, command);
-                using MySqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.Obj<T>();
             }
         }
@@ -98,83 +98,83 @@ namespace SqlOrganizeMy
             using MySqlCommand command = new MySqlCommand();
             if (connection.IsNullOrEmpty())
             {
-                using MySqlConnection conn = new MySqlConnection((string)db.config.connectionString);
+                using MySqlConnection conn = new MySqlConnection(db.config.connectionString);
                 conn.Open();
                 SqlExecute(conn, command);
-                using MySqlDataReader reader = command.ExecuteReader();
+                using DbDataReader reader = command.ExecuteReader();
                 return reader.ColumnValues<T>(columnName);
             }
             else
             {
                 SqlExecute(connection!, command);
-                using MySqlDataReader reader = command.ExecuteReader();
+                using DbDataReader reader = command.ExecuteReader();
                 return reader.ColumnValues<T>(columnName);
             }
         }
 
         public override IEnumerable<T> Column<T>(int columnNumber = 0)
         {
-            using MySqlCommand command = new MySqlCommand();
+            using MySqlCommand command = new ();
             if (connection.IsNullOrEmpty())
             {
-                using MySqlConnection conn = new MySqlConnection((string)db.config.connectionString);
+                using MySqlConnection conn = new (db.config.connectionString);
                 conn.Open();
                 SqlExecute(conn, command);
-                using MySqlDataReader reader = command.ExecuteReader();
+                using DbDataReader reader = command.ExecuteReader();
                 return reader.ColumnValues<T>(columnNumber);
             }
             else
             {
                 SqlExecute(connection!, command);
-                using MySqlDataReader reader = command.ExecuteReader();
+                using DbDataReader reader = command.ExecuteReader();
                 return reader.ColumnValues<T>(columnNumber);
             }
         }
 
         public override T Value<T>(string columnName)
         {
-            using MySqlCommand command = new MySqlCommand();
+            using MySqlCommand command = new ();
             if (connection.IsNullOrEmpty())
             {
-                using MySqlConnection conn = new MySqlConnection((string)db.config.connectionString);
+                using MySqlConnection conn = new ((string)db.config.connectionString);
                 conn.Open();
                 SqlExecute(conn, command);
-                using MySqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.Read() ? (T)reader[columnName] : default(T);
             }
             else
             {
                 SqlExecute(connection!, command);
-                using MySqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.Read() ? (T)reader[columnName] : default(T);
             }
         }
 
         public override T Value<T>(int columnNumber = 0)
         {
-            using MySqlCommand command = new MySqlCommand();
+            using MySqlCommand command = new ();
             if (connection.IsNullOrEmpty())
             {
-                using MySqlConnection conn = new MySqlConnection((string)db.config.connectionString);
+                using MySqlConnection conn = new (db.config.connectionString);
                 conn.Open();
                 SqlExecute(conn, command);
-                using MySqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return (reader.Read()) ? (T)reader.GetValue(columnNumber) : default(T);
             }
             else
             {
                 SqlExecute(connection!, command);
-                using MySqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return (reader.Read()) ? (T)reader.GetValue(columnNumber) : default(T);
             }
         }
 
         public override void Exec()
         {
-            using MySqlCommand command = new MySqlCommand();
+            using MySqlCommand command = new ();
             if (connection.IsNullOrEmpty())
             {
-                using MySqlConnection conn = new MySqlConnection((string)db.config.connectionString);
+                using MySqlConnection conn = new (db.config.connectionString);
                 conn.Open();
                 SqlExecute(conn, command);
                 conn.Close();
@@ -184,11 +184,11 @@ namespace SqlOrganizeMy
 
         public override void Transaction()
         {
-            using MySqlCommand command = new MySqlCommand();
+            using MySqlCommand command = new ();
 
             if (connection.IsNullOrEmpty())
             {
-                using MySqlConnection conn = new MySqlConnection((string)db.config.connectionString);
+                using MySqlConnection conn = new (db.config.connectionString);
                 conn.Open();
                 TransactionExecute(conn, command);
                 conn.Close();

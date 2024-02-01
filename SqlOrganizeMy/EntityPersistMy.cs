@@ -11,14 +11,13 @@ namespace SqlOrganizeMy
         {
         }
 
-        protected override EntityPersist _Update(IDictionary<string, object> row, string? _entityName = null)
+        protected override EntityPersist _Update(string _entityName, IDictionary<string, object?> row)
         {
-            _entityName = _entityName ?? entityName;
-            string sna = Db.Entity(_entityName).schemaNameAlias;
+            string sna = Db.Entity(_entityName!).schemaNameAlias;
             sql += @"
 UPDATE " + sna + @" SET
 ";
-            List<string> fieldNames = Db.FieldNamesAdmin(_entityName);
+            List<string> fieldNames = Db.FieldNamesAdmin(_entityName!);
 
             foreach (string fieldName in fieldNames)
                 if (row.ContainsKey(fieldName))
