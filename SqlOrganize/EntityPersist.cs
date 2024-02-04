@@ -6,15 +6,11 @@ namespace SqlOrganize
 {
     public abstract class EntityPersist
     {
-
-        protected DbConnection? connection;
-
         /// <summary>
-        /// transaccion opcional
+        /// conexion opcional
         /// </summary>
-        protected DbTransaction? transaction;
-
-
+        protected DbConnection? connection;
+        
         public Db Db { get; }
 
         public string? entityName { get; }
@@ -37,12 +33,6 @@ namespace SqlOrganize
         public EntityPersist SetConn(DbConnection connection)
         {
             this.connection = connection;
-            return this;
-        }
-
-        public EntityPersist SetTran(DbTransaction transaction)
-        {
-            this.transaction = transaction;
             return this;
         }
 
@@ -224,7 +214,7 @@ WHERE " + id + " = @" + count + @";
             {
                 { key, value }
             };
-            return UpdateIds(row, ids, _entityName);
+            return UpdateIds(_entityName, row, ids);
         }
 
         public EntityPersist UpdateValueAll(string key, object value)
@@ -414,48 +404,48 @@ VALUES (";
             return Insert(v.entityName, v.values);
         }
 
+        /// <summary>
+        /// Ejecuta verificando conexion, si no existe la crea
+        /// </summary>
+        /// <returns></returns>
         public EntityPersist Exec()
         {
             var q = Db.Query();
             q.connection = connection;
-            q.transaction = transaction;
             q.sql = sql;
             q.parameters = parameters;
             q.Exec();
             return this;
         }
 
-        public EntityPersist Transaction()
-        {
-            var q = Db.Query();
-            q.connection = connection;
-            q.transaction = transaction;
-            q.sql = sql;
-            q.parameters = parameters;
-            q.Transaction();
-            return this;
-        }
-
         /// <summary>
-        /// Ejecucion individual de sentencias
+        /// Ejecuta, abriendo una transaccion, realiza commit al finalizar o rollback si falla
+        /// Si no existe conexion la crea
         /// </summary>
         /// <returns></returns>
-        /// <remarks>Metodo especial de ejecucion, ejecuta una a una todas las sentencias definidas</remarks>
-        public EntityPersist ExecIndividual()
+        abstract public EntityPersist Transaction();
+        /// <summary>
+        /// Ejecuta, abriendo una transaccion, realiza commit al finalizar o rollback si falla
+        /// Debe existir una conexion abierta
+        /// </summary>
+        /// <returns></returns>
+        protected void _Transaction()
         {
-            string[] sqls = sql.Split(";");
-            foreach(string s in sqls)
+            using DbTransaction tran = connection.BeginTransaction();
+            try
             {
-                var q = Db.Query();
-            q.connection = connection;
-            q.transaction = transaction;
-            q.sql = sql;
-            q.parameters = parameters;
-            
+                Exec();
+                tran.Commit();
             }
-
-            return this;
+            catch (Exception)
+            {
+                tran.Rollback();
+                throw;
+            }
         }
+
+
+
 
         public EntityPersist RemoveCacheQueries()
         {
@@ -479,21 +469,21 @@ VALUES (";
         {
             RemoveCacheQueries();
             foreach (var d in detail)
-                Db.Cache.Remove(d.entityName + d.id);
+                Db.Cache!.Remove(d.entityName + d.id);
             return this;
         }
 
         public EntityPersist RemoveCache(string entityName, object id)
         {
             RemoveCacheQueries();
-            Db.Cache.Remove(entityName + id);
+            Db.Cache!.Remove(entityName + id);
             return this;
         }
 
         public EntityPersist RemoveCache(EntityValues values)
         {
             RemoveCacheQueries();
-            Db.Cache.Remove(values.entityName + values.Get(Db.config.id));
+            Db.Cache!.Remove(values.entityName + values.Get(Db.config.id));
             return this;
         }
     }
