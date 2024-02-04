@@ -1,5 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Tls;
 using SqlOrganize;
+using System.Data.Common;
 using Utils;
 
 namespace SqlOrganizeMy
@@ -27,6 +29,24 @@ UPDATE " + sna + @" SET
                     parameters.Add(row[fieldName]);
                 }
             sql = sql.RemoveLastChar(',');
+            return this;
+        }
+
+
+        public override EntityPersist Transaction()
+        {
+            using MySqlCommand command = new();
+
+            if (connection.IsNullOrEmpty())
+            {
+                connection = new MySqlConnection(Db.config.connectionString);
+                connection.Open();
+                _Transaction();
+                connection.Close();
+            }
+            else
+                _Transaction();
+
             return this;
         }
 

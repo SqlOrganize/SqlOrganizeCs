@@ -428,15 +428,15 @@ namespace SqlOrganize
 
         /// <returns>Valores del parametro que son diferentes o que no estan definidos localmente</returns>
         /// <remarks>Solo compara fieldNames</remarks>
-        public virtual IDictionary<string, object?> Compare(IDictionary<string, object> val, IEnumerable<string>? ignoreFields = null, bool ignoreNull = true, bool ignoreNonExistent = true)
+        public virtual IDictionary<string, object?> Compare(IDictionary<string, object?> val, IEnumerable<string>? ignoreFields = null, bool ignoreNull = true, bool ignoreNonExistent = true)
         {
-            Dictionary<string, object> dict1_ = new(values);
-            Dictionary<string, object> dict2_ = new(val);
-            Dictionary<string, object> response = new();
+            Dictionary<string, object?> dict1_ = new(values);
+            Dictionary<string, object?> dict2_ = new(val);
+            Dictionary<string, object?> response = new();
 
 
             if (!ignoreFields.IsNullOrEmpty())
-                foreach (var key in ignoreFields)
+                foreach (var key in ignoreFields!)
                 {
                     dict1_.Remove(key);
                     dict2_.Remove(key);
@@ -446,10 +446,12 @@ namespace SqlOrganize
                 if (ignoreNonExistent && !dict1_.ContainsKey(fieldName))
                     continue;
 
-                if (dict2_.ContainsKey(fieldName) && (ignoreNull && dict2_[fieldName] != null && !dict2_[fieldName].IsDbNull()))
+                if (dict2_.ContainsKey(fieldName) && (ignoreNull && !dict2_[fieldName]!.IsDbNull()))
                     if (
                         !dict1_.ContainsKey(fieldName)
-                        || !dict1_[fieldName].ToString().Equals(dict2_[fieldName].ToString())
+                        || (dict1_[fieldName].IsNullOrEmptyOrDbNull() && !dict2_[fieldName].IsNullOrEmptyOrDbNull())
+                        || (!dict1_[fieldName].IsNullOrEmptyOrDbNull() && dict2_[fieldName].IsNullOrEmptyOrDbNull())
+                        || !dict1_[fieldName]!.ToString()!.Equals(dict2_[fieldName]!.ToString()!)
                     )
                         response[fieldName] = dict2_[fieldName];
             }

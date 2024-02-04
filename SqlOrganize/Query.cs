@@ -1,13 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Net;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
 using Utils;
 
 namespace SqlOrganize
@@ -21,11 +14,6 @@ namespace SqlOrganize
         /// conexion opcional, si no existe al ejecutar se crea
         /// </summary>       
         public DbConnection? connection;
-
-        /// <summary>
-        /// transaccion opcional, si no existe al ejecutar se crea
-        /// </summary>
-        public DbTransaction? transaction;
 
 
         /// Contenedor principal del proyecto
@@ -78,23 +66,19 @@ namespace SqlOrganize
         public abstract T Value<T>(int columnValue = 0);
         
         /// <summary>
-        /// Ejecutar como transacción
+        /// Verifica conexion, si no existe la crea
         /// </summary>
-        /// <remarks>
-        /// Incorpora las sentencias BEGIN y COMMIT (O ROLLBACK en caso de falla)
-        /// </remarks>
-        public abstract void Transaction();
-
         public abstract void Exec();
 
         protected abstract void AddWithValue(DbCommand command, string columnName, object value);
+
 
         /// <summary>
         /// Ejecutar command
         /// </summary>
         /// <param name="connection">Conexión abierta</param>
         /// <param name="command">Comando</param>
-        protected void SqlExecute(DbConnection connection, DbCommand command)
+        protected void Exec(DbConnection connection, DbCommand command)
         {
             command.Connection = connection;
 
@@ -142,28 +126,6 @@ namespace SqlOrganize
             command.CommandText = sql;
             command.ExecuteNonQuery();
         }
-
-
-        /// <summary>
-        /// Metodo general para ejecutar transaccion
-        /// </summary>
-        /// <param name="connection"></param>
-        /// <param name="command"></param>
-        protected void TransactionExecute(DbConnection connection, DbCommand command)
-        {
-            using DbTransaction tran = connection.BeginTransaction();
-            try
-            {
-                SqlExecute(connection!, command);
-                tran.Commit();
-            }
-            catch (Exception)
-            {
-                tran.Rollback();
-                throw;
-            }
-        }
     }
-
 }
  

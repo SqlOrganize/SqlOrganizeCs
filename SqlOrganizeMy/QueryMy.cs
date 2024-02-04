@@ -23,13 +23,13 @@ namespace SqlOrganizeMy
             {
                 using MySqlConnection conn = new (db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.Serialize();
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.Serialize();
             }
@@ -43,13 +43,13 @@ namespace SqlOrganizeMy
             {
                 using MySqlConnection conn = new (db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.ColOfObj<T>();
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.ColOfObj<T>();
             }
@@ -62,13 +62,13 @@ namespace SqlOrganizeMy
             {
                 using MySqlConnection conn = new (db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.SerializeRow();
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using MySqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.SerializeRow();
             }
@@ -81,13 +81,13 @@ namespace SqlOrganizeMy
             {
                 using MySqlConnection conn = new MySqlConnection(db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.Obj<T>();
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.Obj<T>();
             }
@@ -100,13 +100,13 @@ namespace SqlOrganizeMy
             {
                 using MySqlConnection conn = new MySqlConnection(db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.ColumnValues<T>(columnName);
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.ColumnValues<T>(columnName);
             }
@@ -119,13 +119,13 @@ namespace SqlOrganizeMy
             {
                 using MySqlConnection conn = new (db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.ColumnValues<T>(columnNumber);
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.ColumnValues<T>(columnNumber);
             }
@@ -138,13 +138,13 @@ namespace SqlOrganizeMy
             {
                 using MySqlConnection conn = new ((string)db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.Read() ? (T)reader[columnName] : default(T);
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.Read() ? (T)reader[columnName] : default(T);
             }
@@ -157,17 +157,18 @@ namespace SqlOrganizeMy
             {
                 using MySqlConnection conn = new (db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return (reader.Read()) ? (T)reader.GetValue(columnNumber) : default(T);
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return (reader.Read()) ? (T)reader.GetValue(columnNumber) : default(T);
             }
         }
+
 
         public override void Exec()
         {
@@ -176,26 +177,12 @@ namespace SqlOrganizeMy
             {
                 using MySqlConnection conn = new (db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 conn.Close();
             } else
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
         }
-
-        public override void Transaction()
-        {
-            using MySqlCommand command = new ();
-
-            if (connection.IsNullOrEmpty())
-            {
-                using MySqlConnection conn = new (db.config.connectionString);
-                conn.Open();
-                TransactionExecute(conn, command);
-                conn.Close();
-            }
-            else
-                TransactionExecute(connection!, command);
-        }
+       
 
         protected override void AddWithValue(DbCommand command, string columnName, object value)
         {

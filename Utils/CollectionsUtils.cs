@@ -364,7 +364,7 @@ namespace Utils
 
         public static IDictionary<string, T> DictOfObjByPropertyNames<T>(this IEnumerable<T> source, params string[] propertyNames)
         {
-            Dictionary<object, T> response = new();
+            Dictionary<string, T> response = new();
             foreach (T obj in source)
             {
                 List<string> val = new();
