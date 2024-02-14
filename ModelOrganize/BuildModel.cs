@@ -49,7 +49,7 @@ namespace ModelOrganize
             else if (!c.MAX_LENGTH.IsNullOrEmpty() && !c.MAX_LENGTH.IsDbNull())
                 f.maxLength = Convert.ToUInt64(c.MAX_LENGTH)!;
 
-            f.dataType = c.DATA_TYPE;
+            f.dataType = c.DATA_TYPE!;
             switch (c.DATA_TYPE)
             {
                 case "varchar":
@@ -86,7 +86,7 @@ namespace ModelOrganize
                     f.type = (c.IS_UNSIGNED == 1) ? "uint" : "int";
                     break;
 
-                case "tinyint":
+                case "tinyint": 
                     if (f.maxLength == 1)
                         f.type = "bool";
                     else
@@ -146,7 +146,7 @@ namespace ModelOrganize
                 foreach (Column col in table.Columns)
                 {
                     if (col.IS_FOREIGN_KEY == 1 && !Config.reservedEntities.Contains(col.REFERENCED_TABLE_NAME!)) {
-                        string idSource = (Config.idSource == "field_name") ? col.COLUMN_NAME : col.REFERENCED_TABLE_NAME;
+                        string idSource = ((Config.idSource == "field_name") ? col.COLUMN_NAME : col.REFERENCED_TABLE_NAME)!;
                         col.Alias = GetAlias(idSource, fieldAlias, 3);
                         fieldAlias.Add(col.Alias);
                     }
@@ -389,7 +389,7 @@ namespace ModelOrganize
 
         protected abstract List<string> GetTableNames();
 
-        protected abstract List<Column> GetColumns(string tableName);
+        protected abstract IEnumerable<Column> GetColumns(string tableName);
 
         protected abstract Dictionary<string, List<string>> GetInfoUnique(string tableName);
 

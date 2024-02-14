@@ -7,7 +7,7 @@ namespace ModelOrganize
     {
         public string? Name { get; set; }
         public string? Alias { get; set; }
-        public List<Column> Columns { get; set; } = new();
+        public IEnumerable<Column> Columns { get; set; }
         public List<string> Pk { get; set; } = new();
         public List<string> ColumnNames { get; set; } = new();
         public List<string> Fk { get; set; } = new();
