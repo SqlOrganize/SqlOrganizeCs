@@ -35,9 +35,9 @@ namespace SqlOrganizeMy
             */
         }
 
-        public override EntityPersist Persist(string entityName)
+        public override EntityPersist Persist()
         {
-            return new EntityPersistMy(this, entityName);
+            return new EntityPersistMy(this);
         }
 
         public override EntityQuery Query(string entity_name)

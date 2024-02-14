@@ -29,7 +29,7 @@ namespace ModelOrganizeSs
             return SqlUtils.ColumnValues<string>(reader, "TABLE_NAME");
         }
 
-        protected override List<Column> GetColumns(string tableName)
+        protected override IEnumerable<Column> GetColumns(string tableName)
         {
             using SqlConnection connection = new SqlConnection(Config.connectionString);
             connection.Open();

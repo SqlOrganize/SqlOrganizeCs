@@ -36,7 +36,7 @@ namespace SqlOrganizeMy
             
         }
 
-        public override List<T> ColOfObj<T>()
+        public override IEnumerable<T> ColOfObj<T>()
         {
             using MySqlCommand command = new ();
             if (connection.IsNullOrEmpty())

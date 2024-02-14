@@ -26,7 +26,7 @@ namespace ModelOrganizeMy
             return SqlUtils.ColumnValues<string>(reader, 0);
         }
 
-        protected override List<Column> GetColumns(string tableName)
+        protected override IEnumerable<Column> GetColumns(string tableName)
         {
             using MySqlConnection connection = new MySqlConnection(Config.connectionString);
             connection.Open();

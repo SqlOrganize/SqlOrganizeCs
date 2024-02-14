@@ -13,8 +13,6 @@ namespace SqlOrganize
         
         public Db Db { get; }
 
-        public string? entityName { get; }
-
         public List<object?> parameters { get; set; } = new List<object?> { };
 
         public int count = 0;
@@ -36,10 +34,9 @@ namespace SqlOrganize
             return this;
         }
 
-        public EntityPersist(Db db, string? _entityName = null)
+        public EntityPersist(Db db)
         {
             Db = db;
-            entityName = _entityName;
         }
 
         public EntityPersist Parameters(params object[] parameters)
@@ -85,11 +82,6 @@ namespace SqlOrganize
             }
         }
 
-        public EntityPersist DeleteIds(params object[] ids)
-        {
-            return DeleteIds(entityName!, ids);
-        }
-
         public EntityPersist DeleteIds(string _entityName, params object[] ids)
         {
             Entity e = Db.Entity(_entityName);
@@ -103,11 +95,6 @@ DELETE " + e.alias + " FROM " + e.name + " " + e.alias + @"
             return this;
         }
 
-        protected EntityPersist _Update(IDictionary<string, object?> row)
-        {
-            return _Update(entityName!, row);
-        }
-
         abstract protected EntityPersist _Update(string _entityName, IDictionary<string, object?> row);
 
         public EntityPersist Update(EntityValues values)
@@ -115,15 +102,8 @@ DELETE " + e.alias + " FROM " + e.name + " " + e.alias + @"
             return Update(values.entityName, values.values);
         }
 
-        public EntityPersist Update(IDictionary<string, object?> row)
-        {
-            return Update(entityName!, row);
-        }
-
         public EntityPersist Update(string _entityName, IDictionary<string, object?> row)
         {
-            _entityName = _entityName ?? entityName;
-
             _Update(_entityName, row);
             string id = Db.Mapping(_entityName!).Map(Db.config.id);
             sql += @"
@@ -135,11 +115,6 @@ WHERE " + id + " = @" + count + @";
             return this;
         }
 
-
-        public EntityPersist UpdateIds(Dictionary<string, object?> row, params object[] ids)
-        {
-            return UpdateIds(entityName!, row, ids);
-        }
 
         public EntityPersist UpdateIds(string _entityName, Dictionary<string, object?> row, params object[] ids)
         {
@@ -175,11 +150,6 @@ WHERE " + id + " = @" + count + @";
             return this;
         }
 
-        public EntityPersist UpdateAll(Dictionary<string, object?> row)
-        {
-            return UpdateAll(entityName!, row);
-        }
-
 
         /// <summary>
         /// Actualizar valores de todas las entradas de una tabla
@@ -190,7 +160,6 @@ WHERE " + id + " = @" + count + @";
         /// <returns></returns>
         public EntityPersist UpdateAll(string _entityName, Dictionary<string, object?> row)
         {
-            _entityName = _entityName ?? entityName;
             var ids = Db.Query(_entityName).Fields(Db.config.id).Size(0).Column<object>();
             return (ids.Count() > 0) ? UpdateIds(_entityName, row, ids) : this;
         }
@@ -203,11 +172,6 @@ WHERE " + id + " = @" + count + @";
         /// <param name="id">Identificacion de la fila a actualizar</param>
         /// <param name="_entityName">Nombre de la entidad, si no se especifica se toma el atributo</param>
         /// <returns>Mismo objeto</returns>
-        public EntityPersist UpdateValueIds(string key, object? value, params object[] ids)
-        {
-            return UpdateValueIds(entityName!, key, value, ids);
-        }
-
         public EntityPersist UpdateValueIds(string _entityName, string key, object? value, params object[] ids)
         {
             Dictionary<string, object?> row = new Dictionary<string, object?>()
@@ -215,11 +179,6 @@ WHERE " + id + " = @" + count + @";
                 { key, value }
             };
             return UpdateIds(_entityName, row, ids);
-        }
-
-        public EntityPersist UpdateValueAll(string key, object value)
-        {
-            return UpdateValueAll(entityName!, key, value);
         }
 
         /// <summary>
@@ -236,10 +195,6 @@ WHERE " + id + " = @" + count + @";
             return UpdateAll(_entityName, row);
         }
 
-        public EntityPersist UpdateValueRel(string key, object? value, IDictionary<string, object?> source)
-        {
-            return UpdateValueRel(entityName!, key, value, source);
-        }
 
         /// <summary>
         /// Actualiza valor local o de relacion
@@ -262,12 +217,7 @@ WHERE " + id + " = @" + count + @";
             }
 
             List<object> ids = new() { source[idKey]! };
-            return UpdateValueIds(key, value, ids, _entityName);
-        }
-
-        public EntityPersist InsertObj(object obj)
-        {
-            return InsertObj(entityName!, obj);
+            return UpdateValueIds(_entityName, key, value, ids);
         }
 
         public EntityPersist InsertObj(string _entityName, object obj)
@@ -281,12 +231,6 @@ WHERE " + id + " = @" + count + @";
             if (!v.values.ContainsKey(Db.config.id) || v.values[Db.config.id].IsNullOrEmptyOrDbNull())
                 v.SetDefault(Db.config.id);
             return Insert(v.entityName, v.values!);
-        }
-
-
-        public EntityPersist Insert(IDictionary<string, object?> row)
-        {
-            return Insert(entityName!, row);
         }
 
 
@@ -335,10 +279,10 @@ VALUES (";
         }
         
 
-        public EntityPersist PersistObj(object obj)
+        public EntityPersist PersistObj(string entityName, object obj)
         {
             IDictionary<string, object?> row = obj.Dict();
-            return Persist(row);
+            return Persist(entityName, row);
         }
 
 
@@ -358,10 +302,7 @@ VALUES (";
             EntityValues v = Db.Values(_entityName!).Set(row);
             return Persist(v);
         }
-        public EntityPersist Persist(IDictionary<string, object?> row)
-        {
-            return Persist(entityName!, row);
-        }
+        
 
 
         /// <summary>
@@ -424,6 +365,46 @@ VALUES (";
         /// </summary>
         /// <returns></returns>
         abstract public EntityPersist Transaction();
+
+        /// <summary>
+        /// Metodo especial de ejecucion de transacciones que realiza un split en el sql para ejecutar las transacciones una por una.
+        /// </summary>
+        /// <returns></returns>
+        abstract public EntityPersist TransactionSplit();
+
+        /// <summary>
+        /// Transaction Split, debe existir una conexion abierta obligatorimientae
+        /// </summary>
+        protected void _TransactionSplit()
+        {
+            using DbTransaction tran = connection!.BeginTransaction();
+
+            try
+            {
+                string[] sqls = sql.Split(";");
+
+                foreach (string s in sqls)
+                {
+                    if (s.Trim().IsNullOrEmpty())
+                        continue;
+
+                    var qu = Db.Query();
+                    qu.connection = connection;
+                    qu.sql = s;
+                    qu.parameters = parameters;
+                    qu.Exec();
+                }
+
+                tran.Commit();
+            }
+
+            catch (Exception)
+            {
+                tran.Rollback();
+                throw;
+            }
+        }
+
         /// <summary>
         /// Ejecuta, abriendo una transaccion, realiza commit al finalizar o rollback si falla
         /// Debe existir una conexion abierta

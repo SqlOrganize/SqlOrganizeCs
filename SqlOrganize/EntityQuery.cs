@@ -569,6 +569,10 @@ namespace SqlOrganize
 
 
         #region metodos especiales que generan sql y devuelven directamente el valor
+        /// <summary>
+        /// Cada motor debe tener su propia forma de definir Next Value!!! Derivar metodo a subclase
+        /// </summary>
+        /// <returns></returns>
         public ulong GetNextValue()
         {
             var q = Db.Query();
@@ -581,6 +585,10 @@ namespace SqlOrganize
             return q.Value<ulong>();
         }
 
+        /// <summary>
+        /// Cada motor debe tener su propia forma de definir Max Value!!! Derivar metodo a subclase
+        /// </summary>
+        /// <returns></returns>
         public long GetMaxValue(string fieldName)
         {
             return Db.Query(entityName).Select("MAX($" + fieldName + ")").Value<long>();
@@ -601,7 +609,7 @@ namespace SqlOrganize
         /// <remarks>Solo analiza el atributo fields (devuelve relaciones)</remarks>
         /// <param name="ids"></param>
         /// <returns></returns>
-        public IEnumerable<Dictionary<string, object?>> CacheByIds(IEnumerable<object> ids)
+        public IEnumerable<Dictionary<string, object?>> CacheByIds(params object[] ids)
         {
             if (this.fields.IsNullOrEmpty())
                 this.Fields();
@@ -628,7 +636,7 @@ namespace SqlOrganize
 
         public IDictionary<string, object>? _CacheById(object id)
         {
-            var list = _CacheByIds(new List<object>() { id });
+            var list = _CacheByIds(id);
             if (list.IsNullOrEmpty())
                 return null;
 
@@ -644,9 +652,9 @@ namespace SqlOrganize
         /// <param name="ids"></param>
         /// <remarks>IMPORTANTE! No devuelve relaciones!!!</remarks>
         /// <returns></returns>
-        public List<Dictionary<string, object?>> _CacheByIds(IEnumerable<object> ids)
+        public List<Dictionary<string, object?>> _CacheByIds(params object[] ids)
         {
-            ids = ids.Distinct().ToArray();
+            ids.Distinct();
 
             List<Dictionary<string, object>> response = new(ids.Count()); //respuesta que sera devuelta
 
@@ -750,7 +758,7 @@ namespace SqlOrganize
 
             IEnumerable<object> ids = queryAux.ColOfDictCacheQuery().ColOfVal<object>(Db.config.id);
 
-            return PreColOfDictCacheRecursive(_fields, ids);
+            return PreColOfDictCacheRecursive(_fields, ids.ToArray());
         }
 
         /// <summary>
@@ -777,8 +785,7 @@ namespace SqlOrganize
 
             List<string> fields = this.fields!.Replace("$", "").Split(',').ToList().Select(s => s.Trim()).ToList();
 
-            List<object> ids = new() { id };
-            IEnumerable<Dictionary<string, object?>> response = PreColOfDictCacheRecursive(fields, ids);
+            IEnumerable<Dictionary<string, object?>> response = PreColOfDictCacheRecursive(fields, id);
 
             return response.ElementAt(0);
         }
@@ -787,7 +794,7 @@ namespace SqlOrganize
         /// <summary>
         /// Organiza los elementos a consultar y efectua la consulta a la base de datos.
         /// </summary>
-        protected IEnumerable<Dictionary<string, object?>> PreColOfDictCacheRecursive(List<string> fields, IEnumerable<object> ids)
+        protected IEnumerable<Dictionary<string, object?>> PreColOfDictCacheRecursive(List<string> fields, params object[] ids)
         {
             FieldsOrganize fo = new(Db, entityName, fields);
 
@@ -833,12 +840,12 @@ namespace SqlOrganize
                     //Si las fk estan asociadas a una unica pk, debe indicarse para mayor eficiencia
                     if (Db.config.fkId)
                     {
-                        data = Db.Query(refEntityName)._CacheByIds(ids);
+                        data = Db.Query(refEntityName)._CacheByIds(ids.ToArray());
                     }
                     else
                     {
                         //data = Db.Query(refEntityName).Where("$"+Db.config.id+" IN (@0)").Parameters(ids).ColOfDictCacheQuery();
-                        data = Db.Query(refEntityName).CacheByIds(ids);
+                        data = Db.Query(refEntityName).CacheByIds(ids.ToArray());
                     }
                 }
 

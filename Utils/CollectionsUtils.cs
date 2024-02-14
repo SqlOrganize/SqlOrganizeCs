@@ -326,18 +326,6 @@ namespace Utils
             }
         }
 
-        public static IDictionary<string, List<Dictionary<string, object?>>> DictOfListByKey(this IEnumerable<Dictionary<string, object?>> source, string key)
-        {
-            Dictionary<string, List<Dictionary<string, object?>>> response = new();
-            foreach(Dictionary<string, object?> row in source)
-            {
-                if (!response.ContainsKey(key))
-                    response[key] = new();
-                response[key].Add(row);
-            }
-            return response;
-        }
-
         public static IDictionary<string, List<Dictionary<string, object?>>> DictOfListByKeys(this IEnumerable<Dictionary<string, object?>> source, params string[] keys)
         {
             Dictionary<string, List<Dictionary<string, object?>>> response = new();
@@ -394,14 +382,14 @@ namespace Utils
             return (IDictionary<string, Dictionary<string, object?>>)response;
         }
 
-        public static IDictionary<string, object> DictOfDictByKeysValue(this IEnumerable<Dictionary<string, object?>> source, string keyValue, params string[] keys)
+        public static IDictionary<string, object?> DictOfDictByKeysValue(this IEnumerable<Dictionary<string, object?>> source, string keyValue, params string[] keys)
         {
-            Dictionary<string, object> response = new();
-            foreach (Dictionary<string, object> row in source)
+            Dictionary<string, object?> response = new();
+            foreach (Dictionary<string, object?> row in source)
             {
                 List<string> val = new();
                 foreach (var k in keys)
-                    val.Add(row[k].ToString()!);
+                    val.Add(row[k]!.ToString()!);
 
                 string key = String.Join("~", val.ToArray());
                 response[key] = row[keyValue];

@@ -1,8 +1,10 @@
-﻿using Fines2Wpf;
-using Fines2Wpf.Model;
+﻿using Fines2App;
 using Google.Protobuf.WellKnownTypes;
+using Org.BouncyCastle.Bcpg;
 using SqlOrganize;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Data;
 using Utils;
@@ -10,71 +12,52 @@ using Utils;
 namespace WpfUtils
 {
     public static class DataGridUtils
-    {
+    {   
 
         /// <summary>
-        /// Obtener key and value, en el procesamiento de columnas.
+        /// Comportamiento general para persistir una celda
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="e"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="mainEntityName"></param>
         /// <returns></returns>
-        public static (string key, object? value) GetKeyAndValue(this DataGridCellEditEndingEventArgs e)
+        public static bool DataGridCellEditEndingEventArgs_CellEditEnding<T>(this DataGridCellEditEndingEventArgs e, string mainEntityName, string key, object? value) where T : class, new()
         {
-            string key = "";
-            object? value = null;
-
-            var columnCh = e.Column as DataGridCheckBoxColumn; //los campos checkbox se procesan de forma independiente.
-            if (columnCh != null)
-                return (key, value);
-
-            var columnCo = e.Column as DataGridComboBoxColumn;
-            if (columnCo != null)
-            {
-                key = ((Binding)columnCo.SelectedValueBinding).Path.Path; //column's binding
-                value = (e.EditingElement as ComboBox)!.SelectedValue;
-                return (key, value);
-            }
-
-            var column = e.Column as DataGridBoundColumn;
-            if (column != null)
-            {
-                key = ((Binding)column.Binding).Path.Path; //column's binding
-                value = (e.EditingElement as TextBox)!.Text;
-                return (key, value);
-            }
-
-            return (key, value);
-        }
-
-        public static bool DataGridCellEditEndingEventArgs_CellEditEnding<T>(this DataGridCellEditEndingEventArgs e, string mainEntityName) where T : class, new()
-        {
-            if(e.EditAction != DataGridEditAction.Commit)
-                return false;
-
-            var result = e.GetKeyAndValue();
-            string key = result.key;
-            object? value = result.value;
-
-            if (key.IsNullOrEmpty())
-                return false;
-
-            DataGridRow row = e.Row;
-
             string? fieldId = null;
             string entityName = mainEntityName;
             string fieldName = key;
             if (key.Contains("__"))
                 (fieldId, fieldName, entityName) = ContainerApp.db.KeyDeconstruction(entityName, key);
 
-            return row.DataGridRow_RecursiveEdit<T>(mainEntityName, entityName, fieldName, value, fieldId, false);
+            return e.Row.DataGridRow_RecursiveEdit<T>(mainEntityName, entityName, fieldName, value, fieldId, false);
         }
 
+
+        /// <summary>
+        /// Comportamiento general para persistir una celda (metodo recursivo)
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="e"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="mainEntityName"></param>
+        /// <returns></returns>
         public static bool DataGridRow_RecursiveEdit<T>(this DataGridRow row, string mainEntityName, string entityName, string fieldName, object? value, string? fieldId = null, bool reload = false) where T : class, new()
         {
             IDictionary<string, object?> source = row.DataContext.Dict();
 
             EntityValues v = ContainerApp.db.Values(entityName, fieldId).Set(source);
-            if (v.GetOrNull(fieldName).Equals(value))
-                return reload;
+            var val = v.GetOrNull(fieldName);
+            if (val.IsNullOrEmptyOrDbNull())
+            { 
+                if (value.IsNullOrEmptyOrDbNull())
+                    return reload;
+            }
+            else
+                if(val.Equals(value))
+                    return reload;
 
             v.Sset(fieldName, value);
             IDictionary<string, object>? rowDb = ContainerApp.dao.RowByUniqueFieldOrValues(fieldName, v);
@@ -102,6 +85,16 @@ namespace WpfUtils
 
             return reload;
         }
+
+        /// <summary>
+        /// Comportamiento general para persistir una celda (DataGridCheckBoxColumn)
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="e"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="mainEntityName"></param>
+        /// <returns></returns>
 
         public static bool DataGridCell_CheckBoxClick<T>(this DataGridCell cell, string entityName) where T : class, new()
         {
@@ -137,7 +130,7 @@ namespace WpfUtils
                 return false;
 
             List<object> ids = new List<object>() { v.Get(ContainerApp.db.config.id) };
-            ContainerApp.db.Persist(entityName).UpdateValue(fieldName, value, ids).Exec().RemoveCache();
+            ContainerApp.db.Persist(entityName).UpdateValueIds(fieldName, value, ids).Exec().RemoveCache();
             if (fieldId != null)
                 return true;
 

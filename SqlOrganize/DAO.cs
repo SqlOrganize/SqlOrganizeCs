@@ -31,7 +31,7 @@ namespace SqlOrganize
 
         public EntityPersist UpdateValueRel(string entityName, string key, object? value, IDictionary<string, object?> source)
         {
-            return Db.Persist(entityName).UpdateValueRel(key, value, source).Exec().RemoveCache();
+            return Db.Persist().UpdateValueRel(entityName, key, value, source).Exec().RemoveCache();
         }
 
         public IDictionary<string, object?> Get(string entityName, object id)
@@ -81,12 +81,12 @@ namespace SqlOrganize
             if (v.Get(Db.config.id).IsNullOrEmptyOrDbNull())
             {
                 v.Default().Reset();
-                Db.Persist(v.entityName).Insert(v).Exec().RemoveCache();
+                Db.Persist().Insert(v).Exec().RemoveCache();
             }
             else
             {
                 v.Reset();
-                Db.Persist(v.entityName).Update(v).Exec().RemoveCache();
+                Db.Persist().Update(v).Exec().RemoveCache();
             }
         }
 

@@ -91,7 +91,7 @@ namespace Utils
             return value == System.DBNull.Value || value.IsNullOrEmpty();
         }
 
-        public static bool IsDbNull(this object value)
+        public static bool IsDbNull(this object? value)
         {
             return (value == System.DBNull.Value);
         }

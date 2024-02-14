@@ -8,8 +8,7 @@ namespace SqlOrganizeMy
 {
     public class EntityPersistMy : EntityPersist
     {
-
-        public EntityPersistMy(Db db, string? entityName) : base(db, entityName)
+        public EntityPersistMy(Db db) : base(db)
         {
         }
 
@@ -46,6 +45,21 @@ UPDATE " + sna + @" SET
             }
             else
                 _Transaction();
+
+            return this;
+        }
+
+        public override EntityPersist TransactionSplit()
+        {
+            if (connection.IsNullOrEmpty())
+            {
+                connection = new MySqlConnection(Db.config.connectionString);
+                connection.Open();
+                _TransactionSplit();
+                connection.Close();
+            }
+            else
+                _TransactionSplit();
 
             return this;
         }

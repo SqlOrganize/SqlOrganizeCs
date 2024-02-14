@@ -8,9 +8,10 @@ namespace Utils
 {
     public static class DateTimeUtils
     {
-        public static int ToSemester(this DateTime date )
+        public static short ToSemester(this DateTime date )
         {
-            return (Int32.Parse(date.ToString("MM")) < 6) ? 1 : 2;
+            int val = (Int32.Parse(date.ToString("MM")) < 6) ? 1 : 2;
+            return (short)val;
         }
 
         public static string ToYearSemester(this DateTime alta)
