@@ -211,5 +211,23 @@ namespace Utils
             return true;
         }
 
+        public static bool similarTo(this string name1, string name2, int len = 4)
+        {
+            string[] n1 = name1.Trim().RemoveMultipleSpaces().ToUpper().Split(" ");
+            string[] n2 = name2.Trim().RemoveMultipleSpaces().ToUpper().Split(" ");
+
+            foreach(string nn1 in n1)
+            {
+                foreach(string nn2 in n2)
+                {
+                    string n = nn1.Substring(0, len);
+                    if(nn2.Contains(n)) 
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
     }
 }
