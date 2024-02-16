@@ -99,7 +99,7 @@ DELETE " + e.alias + " FROM " + e.name + " " + e.alias + @"
 
         public EntityPersist Update(EntityValues values)
         {
-            return Update(values.entityName, values.values);
+            return Update(values.entityName, values.Values());
         }
 
         public EntityPersist Update(string _entityName, IDictionary<string, object?> row)
@@ -228,9 +228,9 @@ WHERE " + id + " = @" + count + @";
 
         public EntityPersist Insert(EntityValues v)
         {
-            if (!v.values.ContainsKey(Db.config.id) || v.values[Db.config.id].IsNullOrEmptyOrDbNull())
+            if (v.GetOrNull(Db.config.id).IsNullOrEmptyOrDbNull())
                 v.SetDefault(Db.config.id);
-            return Insert(v.entityName, v.values!);
+            return Insert(v.entityName, v.Values()!);
         }
 
 
@@ -315,7 +315,7 @@ VALUES (";
         public EntityPersist Persist(EntityValues v)
         {
             v.Reset();
-            EntityQuery q = Db.Query(v.entityName!).Unique(v.values);
+            EntityQuery q = Db.Query(v.entityName!).Unique(v.Values());
             IEnumerable<Dictionary<string, object?>> rows = q.ColOfDict();
 
             if (rows.Count() > 1)
@@ -329,20 +329,20 @@ VALUES (";
 
                 v.Set(Db.config.id, rows.ElementAt(0)[Db.config.id]);
                 if (!v.Check())
-                    throw new Exception("Los campos a actualizar poseen errores: " + v.logging.ToString());
+                    throw new Exception("Los campos a actualizar poseen errores: " + v.Logging.ToString());
 
-                return Update(v.entityName, v.values!);
+                return Update(v.entityName, v.Values()!);
             }
 
-            if (!v.values.ContainsKey(Db.config.id) || v.values[Db.config.id].IsNullOrEmptyOrDbNull())
+            if (!v.Values().ContainsKey(Db.config.id) || v.Values()[Db.config.id].IsNullOrEmptyOrDbNull())
                 v.SetDefault(Db.config.id);
                     
             v.Default().Reset(Db.config.id).Check();
 
-            if (v.logging.HasErrors())
-                throw new Exception("Los campos a insertar poseen errores: " + v.logging.ToString());
+            if (v.Logging.HasErrors())
+                throw new Exception("Los campos a insertar poseen errores: " + v.Logging.ToString());
 
-            return Insert(v.entityName, v.values);
+            return Insert(v.entityName, v.Values());
         }
 
         /// <summary>

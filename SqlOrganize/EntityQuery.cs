@@ -131,7 +131,7 @@ namespace SqlOrganize
 
         public EntityQuery Unique(EntityValues values)
         {
-            return Unique(values.values);
+            return Unique(values.Values());
         }
 
         public EntityQuery Unique(IDictionary<string, object?> row)

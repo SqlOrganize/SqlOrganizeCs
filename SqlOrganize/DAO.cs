@@ -36,7 +36,7 @@ namespace SqlOrganize
 
         public IDictionary<string, object?> Get(string entityName, object id)
         {
-            return Db.Query(entityName).CacheByIds(new List<object>() { id }).ElementAt(0);
+            return Db.Query(entityName).CacheByIds( id ).ElementAt(0);
         }
 
         public IDictionary<string, object?>? RowByFieldValue(string entityName, string fieldName, object value)
@@ -58,7 +58,7 @@ namespace SqlOrganize
 
         public IDictionary<string, object?>? RowByUnique(EntityValues ev)
         {
-            return RowByUnique(ev.entityName, ev.values);
+            return RowByUnique(ev.entityName, ev.Values());
         }
 
         public IDictionary<string, object?>? RowByUnique(string entityName, IDictionary<string, object?> source)
