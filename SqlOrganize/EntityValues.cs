@@ -705,6 +705,7 @@ namespace SqlOrganize
                     return field.defaultValue;
             }
         }
+
         protected object? DefaultFieldInt(Field field)
         {
             if (field.defaultValue.ToString()!.ToLower().Contains("next"))
