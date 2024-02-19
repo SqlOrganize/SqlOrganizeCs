@@ -20,12 +20,19 @@ namespace SqlOrganize
     */
     public class EntityValues : EntityFieldId
     {
-        public Logging logging { get; set; } = new Logging();
+        protected Logging logging = new Logging();
 
-        public IDictionary<string, object?> values = new Dictionary<string, object?>();
+        protected IDictionary<string, object?> values = new Dictionary<string, object?>();
 
         public EntityValues(Db _db, string _entityName, string? _fieldId = null) : base(_db, _entityName, _fieldId)
         {
+        }
+
+        public Logging Logging { get { return logging; } }
+
+        public IDictionary<string, object?> Values()
+        {
+            return values;
         }
 
         public EntityValues Values(IDictionary<string, object?> row)
@@ -39,7 +46,15 @@ namespace SqlOrganize
             values = obj.Dict() ?? new Dictionary<string, object?>();
             return this;
         }
-
+     
+        /// <summary>
+        /// Existe valor de field
+        /// </summary>
+        public bool ContainsValue(string fieldId)
+        {
+            return values.ContainsKey(fieldId);
+        }
+        
         public EntityValues Clear()
         {
             values.Clear();
@@ -505,24 +520,6 @@ namespace SqlOrganize
             return q.Value<ulong>();
         }
 
-        public EntityValues Update(EntityPersist persist)
-        {
-            persist.Update(this);
-            return this;
-        }
-
-        public EntityValues Insert(EntityPersist persist)
-        {
-            persist.Insert(this);
-            return this;
-        }
-
-        public EntityValues Persist(EntityPersist persist)
-        {
-            persist.Persist(this);
-            return this;
-        }
-
         public EntityValues? ValuesTree(string fieldId)
         {
             Entity entity = db.Entity(entityName);
@@ -557,7 +554,6 @@ namespace SqlOrganize
             }
             return null;
         }
-
 
         public override string ToString()
         {
@@ -604,7 +600,6 @@ namespace SqlOrganize
             return fields;
         }
 
-
         public (string? fieldId, string fieldName, string entityName, object? value) ParentVariables(string mainEntityName)
         {
             object? value;
@@ -636,8 +631,6 @@ namespace SqlOrganize
 
             return (newFieldId, fieldName, entityName, value);
         }
-
-
 
         /// <summary>
         /// Valor por defecto de field

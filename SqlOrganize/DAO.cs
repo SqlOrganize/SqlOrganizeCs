@@ -36,7 +36,7 @@ namespace SqlOrganize
 
         public IDictionary<string, object?> Get(string entityName, object id)
         {
-            return Db.Query(entityName).CacheByIds(new List<object>() { id }).ElementAt(0);
+            return Db.Query(entityName).CacheByIds( id ).ElementAt(0);
         }
 
         public IDictionary<string, object?>? RowByFieldValue(string entityName, string fieldName, object value)
@@ -50,7 +50,7 @@ namespace SqlOrganize
             var q = Db.Query(entityName).Unique(source);
 
             if (source.ContainsKey(Db.config.id) && !source[Db.config.id]!.IsNullOrEmptyOrDbNull())
-                q.And("$" + Db.config.id + " != @").Parameters(source[Db.config.id]!);
+                q.And("$" + Db.config.id + " != @"+q.parameters.Count()).Parameters(source[Db.config.id]!);
 
             return q.DictCache();
         }
@@ -58,7 +58,7 @@ namespace SqlOrganize
 
         public IDictionary<string, object?>? RowByUnique(EntityValues ev)
         {
-            return RowByUnique(ev.entityName, ev.values);
+            return RowByUnique(ev.entityName, ev.Values());
         }
 
         public IDictionary<string, object?>? RowByUnique(string entityName, IDictionary<string, object?> source)
@@ -91,13 +91,13 @@ namespace SqlOrganize
         }
 
 
-        public IDictionary<string, object>? RowByUniqueFieldOrValues(string fieldName, EntityValues values)
+        public IDictionary<string, object?>? RowByUniqueFieldOrValues(string fieldName, EntityValues values)
         {
             try { 
                 if (Db.Field(values.entityName, fieldName).IsUnique())
                     return RowByFieldValue(values.entityName, fieldName, values.Get(fieldName));
                 else
-                    return RowByUniqueWithoutIdIfExists(values.entityName, values.Get());
+                    return RowByUniqueWithoutIdIfExists(values.entityName, values.Values());
             } catch (UniqueException ex)
             {
                 return null;

@@ -505,12 +505,12 @@ namespace ModelOrganize
                 sw.WriteLine("            Initialize();");
                 sw.WriteLine("        }");
                 sw.WriteLine("");
-                sw.WriteLine("        public Data_" + entityName + "(DataInitMode mode = DataInitMode.Default)");
+                sw.WriteLine("        public Data_" + entityName + "(DataInitMode mode)");
                 sw.WriteLine("        {");
                 sw.WriteLine("            Initialize(mode);");
                 sw.WriteLine("        }");
                 sw.WriteLine("");
-                sw.WriteLine("        protected virtual void Initialize(DataInitMode mode = DataInitMode.Default)");
+                sw.WriteLine("        protected virtual void Initialize(DataInitMode mode = DataInitMode.Null)");
                 sw.WriteLine("        {");
                 sw.WriteLine("            switch(mode)");
                 sw.WriteLine("            {");
@@ -620,14 +620,14 @@ namespace ModelOrganize
                 sw.WriteLine("            Initialize();");
                 sw.WriteLine("        }");
                 sw.WriteLine("");
-                sw.WriteLine("        public Data_" + entityName + "_r (DataInitMode mode = DataInitMode.Default) : base(mode)");
+                sw.WriteLine("        public Data_" + entityName + "_r (DataInitMode mode) : base(mode)");
                 sw.WriteLine("        {");
                 sw.WriteLine("            Initialize(mode);");
                 sw.WriteLine("        }");
 
                 sw.WriteLine("");
 
-                sw.WriteLine("        protected override void Initialize(DataInitMode mode = DataInitMode.Default)");
+                sw.WriteLine("        protected override void Initialize(DataInitMode mode = DataInitMode.Null)");
                 sw.WriteLine("        {");
                 sw.WriteLine("            base.Initialize(mode);");
                 sw.WriteLine("            switch(mode)");
