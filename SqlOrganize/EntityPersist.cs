@@ -25,7 +25,7 @@ namespace SqlOrganize
         /// <remarks>
         /// Para poder identificar rapidamente todas las entidades que se modificaron de la base de datos
         /// </remarks>
-        public List<(string entityName, object id)> detail = new();
+        public List<(string entityName, object id, string action)> detail = new();
 
 
         public EntityPersist SetConn(DbConnection connection)
@@ -64,7 +64,7 @@ namespace SqlOrganize
                     v.Set(Db.config.id, id);
                     var id_ = v.Sql(Db.config.id);
                     ids_.Add(id_);
-                    detail.Add((entityName!, id));
+                    detail.Add((entityName!, id, "delete"));
 
                 }
                 sql += @"WHERE " + idMap + " IN (" + String.Join(",", ids_) + @");
@@ -78,7 +78,7 @@ namespace SqlOrganize
                 parameters.Add(ids.ToList());
 
                 foreach (var id in ids)
-                    detail.Add((entityName!, id));
+                    detail.Add((entityName!, id, "delete"));
             }
         }
 
@@ -111,7 +111,7 @@ WHERE " + id + " = @" + count + @";
 ";
             count++;
             parameters.Add(row[Db.config.id]!);
-            detail.Add((_entityName!, row[Db.config.id]!));
+            detail.Add((_entityName!, row[Db.config.id]!, "update"));
             return this;
         }
 
@@ -131,10 +131,10 @@ WHERE " + id + " = @" + count + @";
                     v.Set(Db.config.id, id);
                     var id_ = v.Sql(Db.config.id);
                     ids_.Add(id_);
-                    detail.Add((_entityName!, id));
+                    detail.Add((_entityName!, id, "update"));
 
                 }
-                sql += @"WHERE " + idMap + " IN (" + String.Join(",", ids_) + @");
+                sql += @"WHERE " + idMap + " IN (" + String.Join(", ", ids_) + @");
 ";
             } else
             {
@@ -144,7 +144,7 @@ WHERE " + id + " = @" + count + @";
                 parameters.Add(ids);
 
                 foreach (var id in ids)
-                    detail.Add((_entityName!, id));
+                    detail.Add((_entityName!, id, "update"));
             }
             
             return this;
@@ -268,7 +268,7 @@ VALUES (";
             //if (!v.values.ContainsKey(Db.config.id))
             //    v.Set(Db.config.id, null).Reset(Db.config.id);
             //row[Db.config.id] = v.Get(Db.config.id);
-            detail.Add((_entityName!, row[Db.config.id]));
+            detail.Add((_entityName!, row[Db.config.id], "insert"));
 
             return this;
         }
@@ -369,12 +369,11 @@ VALUES (";
         /// <summary>
         /// Metodo especial de ejecucion de transacciones que realiza un split en el sql para ejecutar las transacciones una por una.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>Desventaja: Procesa todos los parametros por cada consulta</remarks>
         abstract public EntityPersist TransactionSplit();
 
-        /// <summary>
-        /// Transaction Split, debe existir una conexion abierta obligatorimientae
-        /// </summary>
+        /// <summary>Transaction Split, debe existir una conexion abierta obligatorimienta</summary>
+        /// <remarks>Desventaja: Procesa todos los parametros por cada consulta</remarks>
         protected void _TransactionSplit()
         {
             using DbTransaction tran = connection!.BeginTransaction();
