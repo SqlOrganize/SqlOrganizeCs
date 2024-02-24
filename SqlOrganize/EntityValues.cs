@@ -67,6 +67,16 @@ namespace SqlOrganize
             return Set(d);
         }
 
+        public EntityValues Sset(IDictionary<string, object?> row)
+        {
+            foreach (var fieldName in db.FieldNames(entityName))
+                if (row.ContainsKey(Pf() + fieldName))
+                    Sset(fieldName, row[Pf() + fieldName]);
+
+            return this;
+        }
+
+
         public EntityValues Set(IDictionary<string, object?> row)
         {
             foreach (var fieldName in db.FieldNames(entityName))
