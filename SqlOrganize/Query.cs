@@ -98,8 +98,11 @@ namespace SqlOrganize
                     }
             }
 
-            for (var i = 0; i < parameters.Count; i++)
+            for (var i = parameters.Count-1; i >= 0; i--) //recorremos la lista al revez para evitar renombrar parametros no deseados con nombre similar
             {
+                if (!sql.Contains("@" + i.ToString())) //control de que el sql posea el parametro
+                    continue;
+
                 var list = parameters[i] as IList;
                 int j = 0;
                 List<Tuple<string, object>> _parameters = new();
@@ -107,7 +110,7 @@ namespace SqlOrganize
                 {
                     foreach (object item in list)
                     {
-                        var t = Tuple.Create($"@{i}_{j}", item);
+                        var t = Tuple.Create($"@_{i}_{j}", item); //se le asigna un "_" adicional al nuevo nombre para evitar ser renombrado nuevamente.
                         _parameters.Add(t);
                         j++;
                     }
@@ -119,7 +122,8 @@ namespace SqlOrganize
                 else
                 {
                     var p = (parameters[i] == null) ? DBNull.Value : parameters[i];
-                    AddWithValue(command, i.ToString(), p);
+                    sql = sql.ReplaceFirst("@" + i.ToString(), "@_" + i.ToString()); //renombro para evitar doble asignacion
+                    AddWithValue(command, "_"+i.ToString(), p);
                 }
             }
 
