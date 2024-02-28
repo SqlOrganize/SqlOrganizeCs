@@ -627,13 +627,19 @@ namespace SqlOrganize
         /// <returns></returns>
         public IDictionary<string, object?>? CacheById(object id)
         {
-            var list = CacheByIds(new List<object>() { id });
+            var list = CacheByIds(id);
             if (list.IsNullOrEmpty())
                 return null;
 
             return list.ElementAt(0);
         }
 
+        /// <summary>
+        /// Metodo de busqueda rapida en cache
+        /// </summary>
+        /// <remarks>Solo analiza el atributo fields (NO devuelve relaciones)</remarks>
+        /// <param name="ids"></param>
+        /// <returns></returns>
         public IDictionary<string, object>? _CacheById(object id)
         {
             var list = _CacheByIds(id);

@@ -82,6 +82,7 @@ namespace SqlOrganize
         {
             command.Connection = connection;
 
+            #region Transformar parametersDict to parameters
             if (parametersDict.Keys.Count > 0)
             {
                 //debe recorrerse de forma ordenada por longitud, si un campo se llama "persona" y otro "persona_adicional"  y no se recorre ordenado descendiente, el resultado es erroneo.
@@ -92,12 +93,14 @@ namespace SqlOrganize
                 foreach (string key in keys)
                     while (sql.Contains("@" + key))
                     {
-                        sql = sql.ReplaceFirst("@" + key, "@" + j.ToString());
+                        sql = sql.Replace("@" + key, "@" + j.ToString());
                         parameters.Add(parametersDict[key]);
                         j++;
                     }
             }
+            #endregion
 
+            #region Procesar parameters
             for (var i = parameters.Count-1; i >= 0; i--) //recorremos la lista al revez para evitar renombrar parametros no deseados con nombre similar
             {
                 if (!sql.Contains("@" + i.ToString())) //control de que el sql posea el parametro
@@ -122,10 +125,11 @@ namespace SqlOrganize
                 else
                 {
                     var p = (parameters[i] == null) ? DBNull.Value : parameters[i];
-                    sql = sql.ReplaceFirst("@" + i.ToString(), "@_" + i.ToString()); //renombro para evitar doble asignacion
+                    sql = sql.Replace("@" + i.ToString(), "@_" + i.ToString()); //renombro para evitar doble asignacion
                     AddWithValue(command, "_"+i.ToString(), p);
                 }
             }
+            #endregion
 
             command.CommandText = sql;
             command.ExecuteNonQuery();
