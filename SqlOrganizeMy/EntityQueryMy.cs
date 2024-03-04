@@ -1,7 +1,4 @@
-﻿using MySql.Data.MySqlClient;
-using SqlOrganize;
-using System.Data.Common;
-using System.Net.NetworkInformation;
+﻿using SqlOrganize;
 using Utils;
 
 namespace SqlOrganizeMy

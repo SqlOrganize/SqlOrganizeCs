@@ -1,8 +1,5 @@
 ﻿using SqlOrganize;
 using Utils;
-using Microsoft.Data.SqlClient;
-using System.Data.Common;
-using System.Collections.Generic;
 
 namespace SqlOrganizeSs
 {

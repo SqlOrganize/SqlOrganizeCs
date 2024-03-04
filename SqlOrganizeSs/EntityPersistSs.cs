@@ -8,13 +8,12 @@ namespace SqlOrganizeSs
     public class EntityPersistSs : EntityPersist
     {
 
-        public EntityPersistSs(Db db, string? entityName) : base(db, entityName)
+        public EntityPersistSs(Db db) : base(db)
         {
         }
 
-        protected override EntityPersist _Update(IDictionary<string, object> row, string? _entityName = null)
+        protected override EntityPersist _Update(string _entityName, IDictionary<string, object?> row)
         {
-            _entityName = _entityName ?? entityName;
             Entity e = Db.Entity(_entityName);
             sql += @"
 UPDATE " + e.alias + @" SET
@@ -31,6 +30,38 @@ UPDATE " + e.alias + @" SET
             sql = sql.RemoveLastChar(',');
             sql += " FROM " + e.schemaNameAlias + @"
 ";
+            return this;
+        }
+
+        public override EntityPersist Transaction()
+        {
+            using SqlCommand command = new();
+
+            if (connection.IsNullOrEmpty())
+            {
+                connection = new SqlConnection(Db.config.connectionString);
+                connection.Open();
+                _Transaction();
+                connection.Close();
+            }
+            else
+                _Transaction();
+
+            return this;
+        }
+
+        public override EntityPersist TransactionSplit()
+        {
+            if (connection.IsNullOrEmpty())
+            {
+                connection = new SqlConnection(Db.config.connectionString);
+                connection.Open();
+                _TransactionSplit();
+                connection.Close();
+            }
+            else
+                _TransactionSplit();
+
             return this;
         }
 

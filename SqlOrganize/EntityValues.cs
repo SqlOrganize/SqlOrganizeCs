@@ -184,7 +184,12 @@ namespace SqlOrganize
             switch (field.type)
             {
                 case "string":
-                    values[fieldName] = (string)value;
+                    try { 
+                        values[fieldName] = (string)value;
+                    } catch (Exception e)
+                    {
+                        values[fieldName] = value.ToString();
+                    }
                     break;
 
                 case "decimal":

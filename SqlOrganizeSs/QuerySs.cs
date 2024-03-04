@@ -21,13 +21,13 @@ namespace SqlOrganizeSs
             {
                 using SqlConnection conn = new(db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.Serialize();
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.Serialize();
             }
@@ -41,13 +41,13 @@ namespace SqlOrganizeSs
             {
                 using SqlConnection conn = new(db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.ColOfObj<T>();
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.ColOfObj<T>();
             }
@@ -60,13 +60,13 @@ namespace SqlOrganizeSs
             {
                 using SqlConnection conn = new(db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.SerializeRow();
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using SqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.SerializeRow();
             }
@@ -79,13 +79,13 @@ namespace SqlOrganizeSs
             {
                 using SqlConnection conn = new SqlConnection(db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.Obj<T>();
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.Obj<T>();
             }
@@ -98,13 +98,13 @@ namespace SqlOrganizeSs
             {
                 using SqlConnection conn = new SqlConnection(db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.ColumnValues<T>(columnName);
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.ColumnValues<T>(columnName);
             }
@@ -117,13 +117,13 @@ namespace SqlOrganizeSs
             {
                 using SqlConnection conn = new(db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.ColumnValues<T>(columnNumber);
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader();
                 return reader.ColumnValues<T>(columnNumber);
             }
@@ -136,13 +136,13 @@ namespace SqlOrganizeSs
             {
                 using SqlConnection conn = new((string)db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.Read() ? (T)reader[columnName] : default(T);
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return reader.Read() ? (T)reader[columnName] : default(T);
             }
@@ -155,13 +155,13 @@ namespace SqlOrganizeSs
             {
                 using SqlConnection conn = new(db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return (reader.Read()) ? (T)reader.GetValue(columnNumber) : default(T);
             }
             else
             {
-                SqlExecute(connection!, command);
+                Exec(connection!, command);
                 using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
                 return (reader.Read()) ? (T)reader.GetValue(columnNumber) : default(T);
             }
@@ -174,26 +174,11 @@ namespace SqlOrganizeSs
             {
                 using SqlConnection conn = new(db.config.connectionString);
                 conn.Open();
-                SqlExecute(conn, command);
+                Exec(conn, command);
                 conn.Close();
             }
             else
-                SqlExecute(connection!, command);
-        }
-
-        public override void Transaction()
-        {
-            using SqlCommand command = new();
-
-            if (connection.IsNullOrEmpty())
-            {
-                using SqlConnection conn = new(db.config.connectionString);
-                conn.Open();
-                TransactionExecute(conn, command);
-                conn.Close();
-            }
-            else
-                TransactionExecute(connection!, command);
+                Exec(connection!, command);
         }
 
         protected override void AddWithValue(DbCommand command, string columnName, object value)

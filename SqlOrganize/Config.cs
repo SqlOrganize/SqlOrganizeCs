@@ -36,6 +36,10 @@
         /// El identificador ficticio se define como "_Id"
         /// </remarks>
         public virtual string id { get; set; } = "_Id";
-    }
 
+        /// <summary>
+        /// Nombre de la base de datos
+        /// </summary>       
+        public virtual string dbName { get; set; }
+    }
 }

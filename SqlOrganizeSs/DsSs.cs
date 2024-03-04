@@ -1,7 +1,9 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.Protocols;
 using Newtonsoft.Json.Linq;
 using SqlOrganize;
+using Utils;
 
 namespace SqlOrganizeSs
 {
@@ -26,6 +28,15 @@ namespace SqlOrganizeSs
         /// </example>
         public DbSs(Config config, Schema schema, MemoryCache? cache = null) : base(config, schema, cache)
         {
+
+            if (config.dbName.IsNullOrEmpty())
+            {
+                string connectionString = config.connectionString;
+
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(connectionString);
+
+                config.dbName = builder.InitialCatalog;
+            }
         }
 
         public override EntityPersist Persist(string entityName)
