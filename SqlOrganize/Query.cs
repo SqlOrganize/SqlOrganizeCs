@@ -10,11 +10,11 @@ namespace SqlOrganize
     /// </summary>    
     public abstract class Query
     {
-        /// <summary>
-        /// conexion opcional, si no existe al ejecutar se crea
-        /// </summary>       
+        /// <summary>conexion opcional, si no existe al ejecutar se crea</summary>       
         public DbConnection? connection;
 
+        /// <summary>transaccion opcional, si no existe y la necesita, la crea
+        public DbTransaction? transaction;
 
         /// Contenedor principal del proyecto
         /// </summary>
@@ -23,7 +23,7 @@ namespace SqlOrganize
         /// <summary>
         /// Parametros de las consultas
         /// </summary>
-        public List<object?> parameters { get; set; }  = new List<object?>();
+        public List<object?> parameters { get; set; } = new List<object?>();
 
         /// <summary>
         /// Parametros de las consultas
@@ -64,7 +64,7 @@ namespace SqlOrganize
         public abstract T Value<T>(string columnName);
 
         public abstract T Value<T>(int columnValue = 0);
-        
+
         /// <summary>
         /// Verifica conexion, si no existe la crea
         /// </summary>
@@ -72,6 +72,16 @@ namespace SqlOrganize
 
         protected abstract void AddWithValue(DbCommand command, string columnName, object value);
 
+        /// <summary>
+        /// Ejecutar command con transaction
+        /// </summary>
+        /// <param name="connection">Conexión abierta</param>
+        /// <param name="command">Comando</param>
+        protected void Exec(DbConnection connection, DbTransaction transaction, DbCommand command)
+        {
+            command.Transaction = transaction;
+            Exec(connection, command);
+        }
 
         /// <summary>
         /// Ejecutar command
@@ -101,7 +111,7 @@ namespace SqlOrganize
             #endregion
 
             #region Procesar parameters
-            for (var i = parameters.Count-1; i >= 0; i--) //recorremos la lista al revez para evitar renombrar parametros no deseados con nombre similar
+            for (var i = parameters.Count - 1; i >= 0; i--) //recorremos la lista al revez para evitar renombrar parametros no deseados con nombre similar
             {
                 if (!sql.Contains("@" + i.ToString())) //control de que el sql posea el parametro
                     continue;
@@ -126,7 +136,7 @@ namespace SqlOrganize
                 {
                     var p = (parameters[i] == null) ? DBNull.Value : parameters[i];
                     sql = sql.Replace("@" + i.ToString(), "@_" + i.ToString()); //renombro para evitar doble asignacion
-                    AddWithValue(command, "_"+i.ToString(), p);
+                    AddWithValue(command, "_" + i.ToString(), p);
                 }
             }
             #endregion
@@ -134,6 +144,8 @@ namespace SqlOrganize
             command.CommandText = sql;
             command.ExecuteNonQuery();
         }
+
+        public abstract List<string> GetTableNames();
     }
 }
  

@@ -52,6 +52,28 @@ namespace ModelOrganize
             f.dataType = c.DATA_TYPE!;
             switch (c.DATA_TYPE)
             {
+
+
+                case "varbinary":
+                case "binary":
+                    if (f.maxLength == 1)
+                        f.type = "byte";
+                    else
+                        f.type = "Byte[]";
+                    break;
+
+                case "image":
+                case "rowversion":
+                    f.type = "Byte[]";
+                    break;
+
+                case "money":
+                case "smallmoney":
+                case "numeric":
+                case "decimal":
+                    f.type = "decimal";
+                    break;
+
                 case "varchar":
                 case "char":
                 case "nchar":
@@ -63,13 +85,19 @@ namespace ModelOrganize
                     f.type = "string";
                     break;
                 case "real":
-                    f.type = "float";
+                    f.type = "Single";
                     break;
+
+                case "float":
+                    f.type = "Double";
+                    break;
+
                 case "bit":
                     f.type = "bool";
                     break;
 
                 case "datetime":
+                case "smalldatetime":
                 case "timestamp":
                 case "date":
                 case "time":
@@ -99,6 +127,13 @@ namespace ModelOrganize
 
                 case "uniqueidentifier":
                     f.type = "Guid";
+                    break;
+
+                case "sql_variant":
+                case "table":
+                case "cursor":
+                case "xml":
+                    f.type = "object";
                     break;
 
                 default:

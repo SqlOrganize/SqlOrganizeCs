@@ -39,9 +39,9 @@ namespace SqlOrganizeSs
             }
         }
 
-        public override EntityPersist Persist(string entityName)
+        public override EntityPersist Persist()
         {
-            return new EntityPersistSs(this, entityName);
+            return new EntityPersistSs(this);
         }
 
         public override EntityQuery Query(string entity_name)

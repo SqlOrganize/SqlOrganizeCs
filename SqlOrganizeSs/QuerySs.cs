@@ -178,12 +178,33 @@ namespace SqlOrganizeSs
                 conn.Close();
             }
             else
-                Exec(connection!, command);
+                if (!transaction.IsNullOrEmpty())
+                    Exec(connection!, transaction!, command);
+                else
+                    Exec(connection!, command);
         }
 
         protected override void AddWithValue(DbCommand command, string columnName, object value)
         {
             (command as SqlCommand)!.Parameters.AddWithValue(columnName, value);
+        }
+
+
+        public override List<string> GetTableNames()
+        {
+            using SqlConnection connection = new SqlConnection(db.config.connectionString);
+            connection.Open();
+            using SqlCommand command = new SqlCommand();
+            command.CommandText = @"
+                SELECT TABLE_NAME
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG=@dbName
+				ORDER BY TABLE_NAME ASC;";
+            command.Connection = connection;
+            command.Parameters.AddWithValue("dbName", db.config.dbName);
+            command.ExecuteNonQuery();
+            using SqlDataReader reader = command.ExecuteReader();
+            return SqlUtils.ColumnValues<string>(reader, "TABLE_NAME");
         }
     }
 

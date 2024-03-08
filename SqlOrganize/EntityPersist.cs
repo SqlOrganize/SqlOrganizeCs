@@ -6,11 +6,12 @@ namespace SqlOrganize
 {
     public abstract class EntityPersist
     {
-        /// <summary>
-        /// conexion opcional
-        /// </summary>
+        /// <summary>conexion opcional</summary>
         protected DbConnection? connection;
         
+        /// <summary>transaccion opcional</summary>
+        protected DbTransaction transaction;
+
         public Db Db { get; }
 
         public List<object?> parameters { get; set; } = new List<object?> { };
@@ -161,7 +162,7 @@ WHERE " + id + " = @" + count + @";
         public EntityPersist UpdateAll(string _entityName, Dictionary<string, object?> row)
         {
             var ids = Db.Query(_entityName).Fields(Db.config.id).Size(0).Column<object>();
-            return (ids.Count() > 0) ? UpdateIds(_entityName, row, ids) : this;
+            return (ids.Count() > 0) ? UpdateIds(_entityName, row, ids.ToArray()) : this;
         }
 
         /// <summary>
@@ -353,6 +354,7 @@ VALUES (";
         {
             var q = Db.Query();
             q.connection = connection;
+            q.transaction = transaction;
             q.sql = sql;
             q.parameters = parameters;
             q.Exec();
@@ -389,6 +391,7 @@ VALUES (";
 
                     var qu = Db.Query();
                     qu.connection = connection;
+                    qu.transaction = tran;
                     qu.sql = s;
                     qu.parameters = parameters;
                     qu.Exec();
@@ -414,6 +417,7 @@ VALUES (";
             using DbTransaction tran = connection.BeginTransaction();
             try
             {
+                transaction = tran;
                 Exec();
                 tran.Commit();
             }

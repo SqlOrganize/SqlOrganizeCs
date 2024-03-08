@@ -755,6 +755,12 @@ namespace SqlOrganize
                 case "ushort":
                     return Convert.ToUInt16(DefaultFieldInt(field));
 
+                case "Guid":
+                    if (field.defaultValue.ToString()!.ToLower().Contains("new"))
+                        return Guid.NewGuid();
+                    else
+                        return field.defaultValue;
+
                 default:
                     return field.defaultValue;
             }

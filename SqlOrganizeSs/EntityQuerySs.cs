@@ -75,5 +75,6 @@ FETCH FIRST " + size + " ROWS ONLY";
             var eq = new EntityQuerySs(Db, entityName);
             return _Clone(eq);
         }
+
     }
 }
