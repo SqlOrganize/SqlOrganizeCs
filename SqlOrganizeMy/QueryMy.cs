@@ -188,6 +188,18 @@ namespace SqlOrganizeMy
         {
             (command as MySqlCommand)!.Parameters.AddWithValue(columnName, value);
         }
+
+        public override List<string> GetTableNames()
+        {
+            using MySqlConnection connection = new MySqlConnection(db.config.connectionString);
+            connection.Open();
+            using MySqlCommand command = new();
+            command.CommandText = @"SHOW TABLES FROM " + db.config.dbName;
+            command.Connection = connection;
+            command.ExecuteNonQuery();
+            using MySqlDataReader reader = command.ExecuteReader();
+            return SqlUtils.ColumnValues<string>(reader, 0);
+        }
     }
 
 }
