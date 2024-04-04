@@ -62,6 +62,8 @@ namespace SqlOrganize
             }
         }
 
+        public string Msg { get; set; } = "";
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected void NotifyPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] String propertyName = "")
