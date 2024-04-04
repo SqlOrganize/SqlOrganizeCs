@@ -344,12 +344,6 @@ namespace Utils
             return response;
         }
 
-
-
-
-
-        
-
         public static IDictionary<string, T> DictOfObjByPropertyNames<T>(this IEnumerable<T> source, params string[] propertyNames)
         {
             Dictionary<string, T> response = new();

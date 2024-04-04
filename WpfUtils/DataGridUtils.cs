@@ -1,63 +1,86 @@
+﻿#nullable enable
 ﻿using SomeWpfApp;
+using CommunityToolkit.WinUI.Notifications;
+using GapApp;
+using GapApp.WpfUtils;
 using SqlOrganize;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using System.Windows.Data;
 using Utils;
 
 namespace WpfUtils
 {
-    public static class DataGridUtils
-    {   
+    //Comportamiento general para DataGrid
+    public class DataGridUtils
+    {
 
-        /// <summary>
-        /// Comportamiento general para persistir una celda
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="e"></param>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        /// <param name="mainEntityName"></param>
-        /// <returns>v1 (2023-11)</returns>
-        public static bool DataGridCellEditEndingEventArgs_CellEditEnding<T>(this DataGridCellEditEndingEventArgs e, string mainEntityName, string key, object? value) where T : class, new()
+        public Db db;
+
+        public DataGridUtils(Db db)
         {
+            this.db = db;
+        }
+
+        /// <summary>Obtener key and value, en el procesamiento de columnas</summary>
+        /// <remarks>No utilizado, se deja como referencia</remarks>
+        public (string key, object? value) GetKeyAndValue(DataGridCellEditEndingEventArgs e)
+        {
+            string key = "";
+            object? value = null;
+
+            var columnCh = e.Column as DataGridCheckBoxColumn; //los campos checkbox se procesan de forma independiente.
+            if (columnCh != null)
+                return (key, value);
+
+            var columnCo = e.Column as DataGridComboBoxColumn;
+            if (columnCo != null)
+            {
+                key = ((Binding)columnCo.SelectedValueBinding).Path.Path; //column's binding
+                value = (e.EditingElement as ComboBox)!.SelectedValue;
+                return (key, value);
+            }
+
+            var column = e.Column as DataGridBoundColumn;
+            if (column != null)
+            {
+                key = ((Binding)column.Binding).Path.Path; //column's binding
+                value = (e.EditingElement as TextBox)!.Text;
+                return (key, value);
+            }
+
+            return (key, value);
+        }
+
+        /// <summary>Comportamiento general para persistir una celda v1</summary>
+        public bool DataGridCellEditEndingEventArgs_CellEditEnding<T>(DataGridCellEditEndingEventArgs e, string mainEntityName, string key, object? value) where T : class, new()
+        {
+            if(e.EditAction != DataGridEditAction.Commit)
+                return false;
+
             string? fieldId = null;
             string entityName = mainEntityName;
             string fieldName = key;
             if (key.Contains("__"))
-                (fieldId, fieldName, entityName) = ContainerApp.db.KeyDeconstruction(entityName, key);
+                (fieldId, fieldName, entityName) = db.KeyDeconstruction(entityName, key);
 
-            return e.Row.DataGridRow_RecursiveEdit<T>(mainEntityName, entityName, fieldName, value, fieldId, false);
+            return DataGridRow_RecursiveEdit<T>(e.Row, mainEntityName, entityName, fieldName, value, fieldId, false);
         }
 
-
-        /// <summary>
-        /// Comportamiento general para persistir una celda (metodo recursivo)
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="e"></param>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        /// <param name="mainEntityName"></param>
+        /// <summary>Comportamiento general para persistir una celda (metodo recursivo) v2</summary>
         /// <param name="exceptionIfMainEntityExists">Dispara una excepcion si se esta modificando la entidad principal y si ya existe su valor con las modificaciones realizadas</param>
-        /// <remarks>v2 (2024-02): Compatible con v1. Se agrego el atributo exceptionIfMainEntityExists</remarks>
-        public static bool DataGridRow_RecursiveEdit<T>(this DataGridRow row, string mainEntityName, string entityName, string fieldName, object? value, string? fieldId = null, bool reload = false, bool exceptionIfMainEntityExists = true) where T : class, new()
+        public bool DataGridRow_RecursiveEdit<T>(DataGridRow row, string mainEntityName, string entityName, string fieldName, object? value, string? fieldId = null, bool reload = false, bool exceptionIfMainEntityExists = true) where T : class, new()
         {
+            var dao = new DAO(db);
+
             IDictionary<string, object?> source = row.DataContext.Dict();
 
-            EntityValues v = ContainerApp.db.Values(entityName, fieldId).Set(source);
-            var val = v.GetOrNull(fieldName);
-            if (val.IsNullOrEmptyOrDbNull())
-            { 
-                if (value.IsNullOrEmptyOrDbNull())
-                    return reload;
-            }
-            else
-                if(val.Equals(value))
-                    return reload;
+            EntityValues v = db.Values(entityName, fieldId).Set(source);
+            if (v.GetOrNull(fieldName).Equals(value))
+                return reload;
 
             v.Sset(fieldName, value);
-            IDictionary<string, object?>? rowDb = ContainerApp.dao.RowByUniqueFieldOrValues(fieldName, v);
+            IDictionary<string, object?>? rowDb = dao.RowByUniqueFieldOrValues(fieldName, v);
             if (!rowDb.IsNullOrEmpty()) //con el nuevo valor ingresados se obtuvo un nuevo campo unico, no se realiza persistencia y se cambian los valores para reflejar el nuevo valor consultado
             {
                 if (fieldId.IsNullOrEmpty() && exceptionIfMainEntityExists)
@@ -75,7 +98,7 @@ namespace WpfUtils
                     return false;
                 }
 
-                ContainerApp.dao.Persist(v);
+                dao.Persist(v);
             }
 
             if (fieldId != null)
@@ -87,16 +110,8 @@ namespace WpfUtils
             return reload;
         }
 
-        /// <summary>
-        /// Comportamiento general para persistir una celda checkbox (DataGridCheckBoxColumn) v2 (2024-02)
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="e"></param>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        /// <param name="mainEntityName"></param>
-        /// <returns></returns>
-        public static bool DataGridCell_CheckBoxClick<T>(this DataGridCell cell, string entityName) where T : class, new()
+        ///<summary>Comportamiento general para persistir una celda checkbox (DataGridCheckBoxColumn) v2 (2024-02)</summary>
+        public bool DataGridCell_CheckBoxClick<T>(DataGridCell cell, string entityName) where T : class, new()
         {
             #region definir key y value
             var column = cell!.Column as DataGridBoundColumn;
@@ -117,11 +132,11 @@ namespace WpfUtils
             string fieldName = key;
 
             if (key.Contains("__"))
-                (fieldId, fieldName, entityName) = ContainerApp.db.KeyDeconstruction(entityName, key);
+                (fieldId, fieldName, entityName) = db.KeyDeconstruction(entityName, key);
 
             IDictionary<string, object?> source = cell.DataContext.Dict();
 
-            EntityValues v = ContainerApp.db.Values(entityName, fieldId).Set(source);
+            EntityValues v = db.Values(entityName, fieldId).Set(source);
 
             v.Sset(fieldName, value);
             DataGridRow row = DataGridRow.GetRowContainingElement(cell);
@@ -129,11 +144,43 @@ namespace WpfUtils
             if (!v.Check())
                 return false;
 
-            ContainerApp.db.Persist().UpdateValueIds(entityName, fieldName, value, v.Get(ContainerApp.db.config.id)).Exec().RemoveCache();
+            db.Persist().UpdateValueIds(entityName, fieldName, value, v.Get(db.config.id)).Exec().RemoveCache();
             if (fieldId != null)
                 return true;
 
             return false;
+        }
+
+        /// <summary>Codigo general para eliminar una fila en un datagrid v2</summary>        
+        public void DeleteRowFromDataGrid<T>(string entityName, ObservableCollection<T> oc, T data, string title = "")
+        {
+            try
+            {
+                if (!data.GetPropertyValue("id").IsNullOrEmpty())
+                    db.Persist().DeleteIds(entityName, data.GetPropertyValue("id")!).Exec().RemoveCache();
+                oc.Remove(data);
+            }
+            catch (Exception ex)
+            {
+                ToastUtils.ShowExceptionMessageWithFileNameAndLineNumber(ex, title);
+            }
+        }
+
+        public void SaveRowFromDataGrid(string entityName, object data, string title = "")
+        {
+            var p = db.Persist();
+            try
+            {
+                p.PersistObj(entityName, data).Exec().RemoveCache();
+                new ToastContentBuilder()
+                 .AddText(title)
+                 .AddText("Registro realizado")
+                 .Show();
+            }
+            catch (Exception ex)
+            {
+                ToastUtils.ShowExceptionMessageWithFileNameAndLineNumber(ex, title);
+            }
         }
 
     }
