@@ -221,6 +221,9 @@ namespace Utils
             {
                 foreach(string nn2 in n2)
                 {
+                    if(len > nn1.Length) 
+                        len = nn1.Length;
+
                     string n = nn1.Substring(0, len);
                     if(nn2.Contains(n)) 
                         return true;
