@@ -53,8 +53,24 @@ namespace ModelOrganize
         /// </summary>
         public bool notNull { get; set; }
 
-        /* valor por defecto */
+        /// <summary> Valor por defecto </summary>
+        /// <remarks> Valores especiales: <br/>
+        /// _Guid: GUID para tipos string o Guid <br/>
+        /// _Random: Random string o Random int dependiendo del tipo <br/>
+        /// _Current_year: Año actual para tipo short <br/>
+        /// _Current_semester: Semestre actual para tipo short <br/>
+        /// _New: nuevo valor para tipo Guid <br/>
+        /// _Max: Valor maximo <br/>
+        /// _Next: Siguiente valor<br/>
+        /// </remarks>
         public object? defaultValue { get; set; } = null;
+
+
+        /// <summary>
+        /// Generar valor por defecto en la clase de datos, si existe
+        /// </summary>
+        /// <remarks>Para ciertos atributos de control puede requerirse que no se inicien en la clase de datos, un ejemplo es el atributo de alta que si no esta definido se puede utilizar para saber si la entidad es nueva y aun no ha sido persistida.</remarks>
+        public bool defaultValueClassData { get; set; } = true;
 
 
         /// <summary>
@@ -84,10 +100,12 @@ namespace ModelOrganize
         ///     Trim:" ",
         ///     Ltrim:" ", //no implementado
         ///     Rtrim:" ", //no implementado
-        ///     RemoveMultipleSpaces:true, //no implementado (se puede definir un mejor nombre?)
+        ///     RemoveMultipleSpaces:object?, 
+        ///     NullIfEmpty:true, //si es vacio se asigna en null
+        ///     DefaultIfNull:true, //si es null se asigna valor por defecto
         /// ]
         /// </example>
-        public Dictionary<string, object> resets = new();
+        public Dictionary<string, object?> resets = new();
 
     }
 }

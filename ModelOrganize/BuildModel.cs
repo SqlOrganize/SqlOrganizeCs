@@ -44,7 +44,7 @@ namespace ModelOrganize
 
         protected void defineField(Column c, Field f)
         {
-            if (!c.CHARACTER_MAXIMUM_LENGTH.IsNullOrEmpty() && !c.CHARACTER_MAXIMUM_LENGTH.IsDbNull())
+            if (!c.CHARACTER_MAXIMUM_LENGTH.IsNullOrEmpty() && !c.CHARACTER_MAXIMUM_LENGTH.IsDbNull() && Convert.ToInt64(c.CHARACTER_MAXIMUM_LENGTH) > 0)
                 f.maxLength = Convert.ToUInt64(c.CHARACTER_MAXIMUM_LENGTH)!;
             else if (!c.MAX_LENGTH.IsNullOrEmpty() && !c.MAX_LENGTH.IsDbNull())
                 f.maxLength = Convert.ToUInt64(c.MAX_LENGTH)!;
@@ -554,7 +554,7 @@ namespace ModelOrganize
 
                 foreach (var (fieldName, field) in fields[entityName])
                 {
-                    if (field.defaultValue != null)
+                    if (field.defaultValue != null && field.defaultValueClassData)
                     {
                         string df = "(" + field.type + "?)ContainerApp.db.Values(\"" + entityName + "\").Default(\"" + fieldName + "\").Get(\"" + fieldName + "\")";
                         sw.WriteLine("                    _" + fieldName + " = " + df + ";");
@@ -642,6 +642,7 @@ namespace ModelOrganize
                 sw.WriteLine("#nullable enable");
                 sw.WriteLine("using SqlOrganize;");
                 sw.WriteLine("using System;");
+                sw.WriteLine("using Newtonsoft.Json;");
                 sw.WriteLine("");
                 sw.WriteLine("namespace " + Config.dataClassesNamespace);
                 sw.WriteLine("{");
@@ -672,7 +673,7 @@ namespace ModelOrganize
                 foreach (var (fieldId, relation) in entities[entityName].relations)
                 {
                     foreach (var (fieldName, field) in fields[relation.refEntityName])
-                        if (field.defaultValue != null)
+                        if (field.defaultValue != null && field.defaultValueClassData)
                         {
                             string df = "(" + field.type + "?)ContainerApp.db.Values(\"" + relation.refEntityName + "\").Default(\"" + fieldName + "\").Get(\"" + fieldName + "\")";
                             sw.WriteLine("                    " + fieldId + "__" + fieldName + " = " + df + ";");
@@ -700,6 +701,8 @@ namespace ModelOrganize
                     foreach (var (fieldName, field) in fields[relation.refEntityName])
                     {
                         sw.WriteLine("        protected " + field.type + "? _" + fieldId + "__" + fieldName + " = null;");
+                        sw.WriteLine("");
+                        sw.WriteLine("        [JsonProperty(\"" + fieldId + "-" + fieldName + "\")]");
                         sw.WriteLine("        public " + field.type + "? " + fieldId + "__" + fieldName);
                         sw.WriteLine("        {");
                         sw.WriteLine("            get { return _" + fieldId + "__" + fieldName + "; }");
