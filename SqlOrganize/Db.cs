@@ -27,9 +27,9 @@ namespace SqlOrganize
 
         public Dictionary<string, Dictionary<string, Field>> fields { get; set; }
 
-        public MemoryCache? Cache { get; set; } = null;
+        public IMemoryCache? Cache { get; set; } = null;
 
-        public Db(Config _config, Schema schema, MemoryCache? Cache = null)
+        public Db(Config _config, Schema schema, IMemoryCache? Cache = null)
         {
             config = _config;
             this.Cache = Cache;
@@ -142,7 +142,8 @@ namespace SqlOrganize
             return (fieldId, fieldName, refEntityName);
         }
 
-        
+        public abstract long GetMaxValue(string entityName, string fieldName);
+
     }
 
 }

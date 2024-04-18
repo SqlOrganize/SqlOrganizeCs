@@ -1,23 +1,25 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.Metrics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Utils;
 
 namespace SqlOrganize
 {
-    /*
-    Values of entity
-
-    Define metodos basicos para administrar valores:
-    
-    -sset: Seteo con cast y formateo
-    -set: Seteo directo
-    -check: Validar valor
-    -default: Asignar valor por defecto
-    -get: Retorno directo
-    -json: Transformar a json
-    -sql: Transformar a sql
-    */
+    /// <summary>
+    /// Valores de la entidad. Se definen los siguientes métodos básicos de administración<br/>
+    /// -sset: Seteo con cast y formateo<br/>
+    /// -set: Seteo directo<br/>
+    /// -check: Validar valor<br/>
+    /// -default: Asignar valor por defecto<br/>
+    /// -get: Retorno directo<br/>
+    /// -json: Transformar a json<br/>
+    /// -sql: Transformar a sql<br/>
+    /// </summary>
+    /// <remarks>
+    /// Los valores son almacenados en una colección. La ventaja es que se puede utilizar el estado "NO DEFINIDO" (no existe en la colección).
+    /// </remarks>
     public class EntityValues : EntityFieldId
     {
         protected Logging logging = new Logging();
@@ -271,19 +273,27 @@ namespace SqlOrganize
 
             foreach (var (resetKey, resetValue) in field.resets)
             {
-                switch (resetKey)
+                var rk = resetKey.ToLower();
+                switch (rk)
                 {
                     case "trim":
-                        if (!values[fieldName].IsNullOrEmpty() && !values[fieldName].IsDbNull())
-                            values[fieldName] = ((string)values[fieldName]).Trim(((string)resetValue).ToChar());
+                        if (!values[fieldName].IsNullOrEmptyOrDbNull())
+                            values[fieldName] = values[fieldName]!.ToString()!.Trim(((string)resetValue).ToChar());
                         break;
-                    case "removeMultipleSpaces":
-                        if (!values[fieldName].IsNullOrEmpty() && !values[fieldName].IsDbNull())
-                            values[fieldName] = Regex.Replace((string)values[fieldName], @"\s+", " ");
+
+                    case "removemultiplespaces":
+                        if (!values[fieldName].IsNullOrEmptyOrDbNull())
+                            values[fieldName] = Regex.Replace(values[fieldName]!.ToString()!, @"\s+", " ");
                         break;
-                    case "nullIfEmpty":
-                        if (values[fieldName].IsNullOrEmpty())
+
+                    case "nullifempty":
+                        if (values[fieldName].IsNullOrEmptyOrDbNull())
                             values[fieldName] = null;
+                        break;
+
+                    case "defaultifnull":
+                        if (values[fieldName].IsNullOrEmptyOrDbNull())
+                            values[fieldName] = DefaultField(fieldName);
                         break;
                 }
             }
@@ -775,7 +785,7 @@ namespace SqlOrganize
             }
             else if (field.defaultValue.ToString()!.ToLower().Contains("max"))
             {
-                long max = db.Query(field.entityName).GetMaxValue(field.name);
+                long max = db.GetMaxValue(field.entityName, field.name);
                 return max + 1;
             }
             else

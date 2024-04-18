@@ -238,30 +238,11 @@ namespace Utils
             return results;
         }
 
-        public static void SetData(this object someObject, IDictionary<string, object?> source)
-        {
-            var someObjectType = someObject.GetType();
-
-            foreach (var item in source)
-            {
-                string fieldName = item.Key.Replace("-", "__");
-                if (someObjectType.GetProperty(fieldName) != null)
-                    if (!item.Value.IsNullOrEmptyOrDbNull())
-                        someObjectType
-                            .GetProperty(fieldName)!
-                            .SetValue(someObject, item.Value, null);
-                    else
-                        someObjectType
-                            .GetProperty(fieldName)!
-                            .SetValue(someObject, null, null);
-            }
-        }
-
+       
         public static T Obj<T>(this IDictionary<string, object?> source) where T : class, new()
         {
-            var someObject = new T();
-            someObject.SetData(source);
-            return someObject;
+            var serialized = JsonConvert.SerializeObject(source);
+            return JsonConvert.DeserializeObject<T>(serialized);
         }
 
         /// <summary>

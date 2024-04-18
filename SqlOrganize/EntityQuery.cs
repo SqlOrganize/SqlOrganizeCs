@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SqlOrganize.Exceptions;
 using System.Data.Common;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using Utils;
 
@@ -658,11 +657,11 @@ namespace SqlOrganize
         /// <param name="ids"></param>
         /// <remarks>IMPORTANTE! No devuelve relaciones!!!</remarks>
         /// <returns></returns>
-        public List<Dictionary<string, object?>> _CacheByIds(params object[] ids)
+        public List<IDictionary<string, object?>> _CacheByIds(params object[] ids)
         {
             ids.Distinct();
 
-            List<Dictionary<string, object>> response = new(ids.Count()); //respuesta que sera devuelta
+            List<IDictionary<string, object?>> response = new(ids.Count()); //respuesta que sera devuelta
 
             List<object> searchIds = new(); //ids que no se encuentran en cache y deben ser buscados
 
@@ -671,7 +670,10 @@ namespace SqlOrganize
                 object? data;
                 if (Db.Cache!.TryGetValue(entityName + ids.ElementAt(i), out data))
                 {
-                    response.Insert(i, (Dictionary<string, object>)data!);
+                    if(data is JObject)
+                        data = (data as JObject).ToObject<IDictionary<string, object?>>();
+                    
+                    response.Insert(i, (IDictionary<string, object>)data!);
                 }
                 else
                 {
@@ -703,12 +705,34 @@ namespace SqlOrganize
         public IEnumerable<Dictionary<string, object?>> ColOfDictCacheQuery()
         {
             List<string> queries;
-            if (!Db.Cache.TryGetValue("queries", out queries))
+            object _queries;
+
+            bool res = Db.Cache.TryGetValue("queries", out _queries);
+            if (res) { 
+                if (_queries is JArray)
+                    queries = (_queries as JArray).ToObject<List<string>>();
+                else 
+                    queries = (List<string>)_queries;
+            } 
+            else
+            {
                 queries = new();
+            }
+
+                
 
             IEnumerable<Dictionary<string, object>> result;
+            object _result;
             string queryKey = this!.ToString();
-            if (!Db.Cache.TryGetValue(queryKey, out result))
+            res = Db.Cache.TryGetValue(queryKey, out _result);
+
+            if (res) { 
+                if (_result is JArray)
+                    result = (_result as JArray).ToObject<IEnumerable<Dictionary<string, object>>>();
+                else
+                    result = (IEnumerable<Dictionary<string, object>>)_result;
+            }
+            else
             {
                 result = this.ColOfDict();
                 Db.Cache.Set(queryKey, result);
@@ -804,7 +828,7 @@ namespace SqlOrganize
         {
             FieldsOrganize fo = new(Db, entityName, fields);
 
-            List<Dictionary<string, object?>> data = _CacheByIds(ids);
+            List<IDictionary<string, object?>> data = _CacheByIds(ids);
 
             List<Dictionary<string, object?>> response = new();
 
@@ -838,7 +862,7 @@ namespace SqlOrganize
 
                 List<object> ids = response.ColOfVal<object>(fkName).Distinct().ToList();
                 ids.RemoveAll(item => item == null || item == System.DBNull.Value);
-                IEnumerable<Dictionary<string, object>> data;
+                IEnumerable<IDictionary<string, object>> data;
                 if (ids.Count() == 1 && ids.ElementAt(0) == System.DBNull.Value)
                     return Enumerable.Empty<Dictionary<string, object?>>();
                 else
@@ -857,12 +881,12 @@ namespace SqlOrganize
 
                 for (var i = 0; i < response.Count(); i++)
                 {
-                    if (response.ElementAt(i)[fkName].IsNullOrEmpty())
+                    if (response.ElementAt(i)[fkName].IsNullOrEmptyOrDbNull())
                         continue;
 
                     for (var j = 0; j < data.Count(); j++)
                     {
-                        if (response.ElementAt(i)[fkName].Equals(data.ElementAt(j)[refFieldName]))
+                        if (response.ElementAt(i)[fkName].ToString().Equals(data.ElementAt(j)[refFieldName].ToString()))
                         {
                             for (var k = 0; k < fo.FieldsRel[fieldId].Count; k++)
                             {

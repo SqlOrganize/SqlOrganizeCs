@@ -26,7 +26,7 @@ namespace SqlOrganizeSs
         /// <example>
         ///   connectionString = "server=127.0.0.1;uid=root;pwd=12345;database=test"
         /// </example>
-        public DbSs(Config config, Schema schema, MemoryCache? cache = null) : base(config, schema, cache)
+        public DbSs(Config config, Schema schema, IMemoryCache? cache = null) : base(config, schema, cache)
         {
 
             if (config.dbName.IsNullOrEmpty())
@@ -54,5 +54,10 @@ namespace SqlOrganizeSs
             return new QuerySs(this);
         }
 
+
+        public override long GetMaxValue(string entityName, string fieldName)
+        {
+            return Query(entityName).Select("CAST ( ISNULL( MAX($" + fieldName + "), 0) AS bigint)").Value<long>();
+        }
     }
 }

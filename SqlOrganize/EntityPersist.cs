@@ -1,4 +1,5 @@
-﻿using System.Data.Common;
+﻿using Newtonsoft.Json.Linq;
+using System.Data.Common;
 using System.Transactions;
 using Utils;
 
@@ -221,12 +222,16 @@ WHERE " + id + " = @" + count + @";
             return UpdateValueIds(_entityName, key, value, ids);
         }
 
+        /// <summary>Insercion de objeto</summary>
+        /// <remarks>Transforma el objeto en un diccionario y ejecuta insercion basica</remarks>
         public EntityPersist InsertObj(string _entityName, object obj)
         {
             IDictionary<string, object?> dict = obj.Dict();
             return Insert(_entityName, dict);
         }
 
+        /// <summary>Insercion de EntityValues</summary>
+        /// <remarks>Define id si no existe</remarks>
         public EntityPersist Insert(EntityValues v)
         {
             if (v.GetOrNull(Db.config.id).IsNullOrEmptyOrDbNull())
@@ -235,12 +240,7 @@ WHERE " + id + " = @" + count + @";
         }
 
 
-        /// <summary>
-        /// Insertar
-        /// </summary>
-        /// <param name="row"></param>
-        /// <param name="_entityName"></param>
-        /// <returns></returns>
+        /// <summary>Comportamiento basico de insercion</summary>
         /// <remarks>Debe estar definido el id</remarks>
         public EntityPersist Insert(string _entityName, IDictionary<string, object?> row)
         {
@@ -248,7 +248,7 @@ WHERE " + id + " = @" + count + @";
             Dictionary<string, object> row_ = new();
             foreach (string key in row.Keys)
                 if (fieldNames.Contains(key))
-                    row_.Add(key, row[key]);
+                    row_.Add(key, row[key]!);
 
             string sn = Db.Entity(_entityName!).schemaName;
             sql += "INSERT INTO " + sn + @" (" + String.Join(", ", row_.Keys) + @") 
@@ -265,11 +265,7 @@ VALUES (";
             sql = sql.RemoveLastChar(',');
             sql += @");
 ";
-            //EntityValues v = Db.Values(_entityName).Set(row_);
-            //if (!v.values.ContainsKey(Db.config.id))
-            //    v.Set(Db.config.id, null).Reset(Db.config.id);
-            //row[Db.config.id] = v.Get(Db.config.id);
-            detail.Add((_entityName!, row[Db.config.id], "insert"));
+            detail.Add((_entityName!, row[Db.config.id]!, "insert"));
 
             return this;
         }
@@ -304,15 +300,9 @@ VALUES (";
             return Persist(v);
         }
         
-
-
-        /// <summary>
-        /// Persistencia de una instancia de EntityValues
-        /// </summary>
-        /// <remarks>Se define el comportamiento básico de persistencia</remarks>
-        /// <param name="v"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
+        
+        /// <summary>Comportamiento general de persistencia</summary>
+        /// <remarks>Dependiendo del contexto se puede evitar el codigo adicional generado por el comportamiento general</remarks>
         public EntityPersist Persist(EntityValues v)
         {
             v.Reset();
@@ -433,17 +423,23 @@ VALUES (";
 
         public EntityPersist RemoveCacheQueries()
         {
-            object queries;
 
-            if (Db.Cache.TryGetValue("queries", out queries))
+            List<string> queries;
+            object _queries;
+
+            bool res = Db.Cache.TryGetValue("queries", out _queries);
+            if (res)
             {
+                if (_queries is JArray)
+                    queries = (_queries as JArray).ToObject<List<string>>();
+                else
+                    queries = (List<string>)_queries;
+
                 foreach (string q in (queries as List<string>)!)
                     Db.Cache.Remove(q);
-
-                Db.Cache.Remove("queries");
             }
-            return this;
 
+            return this;
         }
 
         /// <summary>

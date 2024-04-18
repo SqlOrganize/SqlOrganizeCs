@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using Utils;
 
-namespace GapApp.WpfUtils.Windows
+namespace WpfUtils.Windows
 {
     /// <summary>
     /// Lógica de interacción para ProgressBar.xaml v1

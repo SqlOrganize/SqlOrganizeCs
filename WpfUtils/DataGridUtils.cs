@@ -1,8 +1,5 @@
 ﻿#nullable enable
-﻿using SomeWpfApp;
 using CommunityToolkit.WinUI.Notifications;
-using GapApp;
-using GapApp.WpfUtils;
 using SqlOrganize;
 using System.Collections.ObjectModel;
 using System.Windows.Controls;

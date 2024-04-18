@@ -399,3 +399,5 @@ FodyWeavers.xsd
 
 # Config files
 *.config
+/gap/gap.csproj.user
+/.utilities/
