@@ -57,6 +57,7 @@ UPDATE " + sna + @" SET
                 connection.Open();
                 _TransactionSplit();
                 connection.Close();
+                connection = null;
             }
             else
                 _TransactionSplit();

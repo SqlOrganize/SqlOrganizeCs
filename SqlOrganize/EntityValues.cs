@@ -1,6 +1,4 @@
-﻿
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Metrics;
+
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Utils;
@@ -22,12 +20,16 @@ namespace SqlOrganize
     /// </remarks>
     public class EntityValues : EntityFieldId
     {
+
+        protected List<string> fieldNames;
+
         protected Logging logging = new Logging();
 
         protected IDictionary<string, object?> values = new Dictionary<string, object?>();
 
         public EntityValues(Db _db, string _entityName, string? _fieldId = null) : base(_db, _entityName, _fieldId)
         {
+            fieldNames = new List<string>(db.FieldNames(entityName));
         }
 
         public Logging Logging { get { return logging; } }
@@ -71,7 +73,7 @@ namespace SqlOrganize
 
         public EntityValues Sset(IDictionary<string, object?> row)
         {
-            foreach (var fieldName in db.FieldNames(entityName))
+            foreach (var fieldName in fieldNames)
                 if (row.ContainsKey(Pf() + fieldName))
                     Sset(fieldName, row[Pf() + fieldName]);
 
@@ -81,7 +83,7 @@ namespace SqlOrganize
 
         public EntityValues Set(IDictionary<string, object?> row)
         {
-            foreach (var fieldName in db.FieldNames(entityName))
+            foreach (var fieldName in fieldNames)
                 if (row.ContainsKey(Pf() + fieldName))
                     Set(fieldName, row[Pf() + fieldName]);
 
@@ -120,7 +122,7 @@ namespace SqlOrganize
         public IDictionary<string, object?> Get()
         {
             Dictionary<string, object?> response = new();
-            foreach (var fieldName in db.FieldNames(entityName))
+            foreach (var fieldName in fieldNames)
                 if (values.ContainsKey(fieldName))
                     response[Pf() + fieldName] = values[fieldName]!;
 
@@ -172,9 +174,12 @@ namespace SqlOrganize
         {
             var method = "Sset_" + fieldName;
             Type thisType = this.GetType();
-            MethodInfo m = thisType.GetMethod(method);
+            MethodInfo? m = thisType.GetMethod(method);
             if (!m.IsNullOrEmpty())
-                m!.Invoke(this, new object[] { value });
+            {
+                m!.Invoke(this, new object?[] { value });
+                return this;
+            }
 
             Field field = db.Field(entityName, fieldName);
             if (value == null)
@@ -240,7 +245,7 @@ namespace SqlOrganize
         /// <returns></returns>
         public EntityValues Reset()
         {
-            List<string> fieldNames = new List<string>(db.FieldNames(entityName));
+            List<string> fieldNames = new List<string>(this.fieldNames);
             fieldNames.Remove(db.config.id); //id debe dejarse para el final porque puede depender de otros valores
 
             foreach (var fieldName in fieldNames)
@@ -307,7 +312,7 @@ namespace SqlOrganize
         /// <returns></returns>
         public EntityValues Default()
         {
-            foreach (var fieldName in db.FieldNames(entityName))
+            foreach (var fieldName in fieldNames)
                 if (!values.ContainsKey(fieldName))
                     Default(fieldName);
 
@@ -388,7 +393,7 @@ namespace SqlOrganize
         public bool Check()
         {
             logging.Clear();
-            foreach (var fieldName in db.FieldNames(entityName))
+            foreach (var fieldName in fieldNames)
                 if (values.ContainsKey(fieldName))
                     Check(fieldName);
 
@@ -435,7 +440,7 @@ namespace SqlOrganize
 
         public EntityValues SetNotNull(IDictionary<string, object?> row)
         {
-            foreach (var fieldName in db.FieldNames(entityName))
+            foreach (var fieldName in fieldNames)
                 if (row.ContainsKey(Pf() + fieldName))
                     if (row[Pf() + fieldName] != null && !row[Pf() + fieldName].IsDbNull())
                         Set(fieldName, row[Pf() + fieldName]);
@@ -488,11 +493,15 @@ namespace SqlOrganize
                     dict2_.Remove(key);
                 }
 
-            foreach (var fieldName in db.FieldNames(entityName)) {
+            foreach (var fieldName in fieldNames) {
                 if (ignoreNonExistent && !dict1_.ContainsKey(fieldName))
                     continue;
 
-                if (dict2_.ContainsKey(fieldName) && (ignoreNull && !dict2_[fieldName]!.IsDbNull()))
+                if (dict2_.ContainsKey(fieldName) && (ignoreNull && !dict2_[fieldName]!.IsNullOrEmptyOrDbNull()))
+                {
+                    if (dict1_[fieldName].IsNullOrEmptyOrDbNull() && dict2_[fieldName].IsNullOrEmptyOrDbNull())
+                        continue;
+
                     if (
                         !dict1_.ContainsKey(fieldName)
                         || (dict1_[fieldName].IsNullOrEmptyOrDbNull() && !dict2_[fieldName].IsNullOrEmptyOrDbNull())
@@ -500,6 +509,7 @@ namespace SqlOrganize
                         || !dict1_[fieldName]!.ToString()!.Equals(dict2_[fieldName]!.ToString()!)
                     )
                         response[fieldName] = dict2_[fieldName];
+                }
             }
             return response;
         }
@@ -514,7 +524,7 @@ namespace SqlOrganize
             Dictionary<string, object?> dict2_ = new(val);
             Dictionary<string, object?> response = new();
 
-            foreach (var fieldName in db.FieldNames(entityName))
+            foreach (var fieldName in fieldNames)
             {
                 if (!fieldsToCompare.Contains(fieldName))
                     continue;
@@ -601,8 +611,6 @@ namespace SqlOrganize
 
         public string ToStringExcept(params string[] fields)
         {
-            List<string> fieldNames = db.FieldNames(entityName);
-
             foreach (string field in fields)
                 fieldNames.Remove(field);
 

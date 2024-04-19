@@ -55,8 +55,6 @@ namespace SqlOrganize
 
         public abstract IDictionary<string, object?>? Dict();
 
-        /// <summary>Value</summary>
-        /// <remarks>La consulta debe retornar 1 o mas valores</remarks>
         public abstract T? Obj<T>() where T : class, new();
 
         public abstract IEnumerable<T> Column<T>(string columnName);

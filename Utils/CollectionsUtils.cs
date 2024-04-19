@@ -237,7 +237,6 @@ namespace Utils
 
             return results;
         }
-
        
         public static T Obj<T>(this IDictionary<string, object?> source) where T : class, new()
         {
