@@ -103,6 +103,7 @@ namespace ModelOrganize
         ///     RemoveMultipleSpaces:object?, 
         ///     NullIfEmpty:true, //si es vacio se asigna en null
         ///     DefaultIfNull:true, //si es null se asigna valor por defecto
+        ///     SetDefault:true, //siempre setea valor por defecto, por mas que el valor ya exista
         /// ]
         /// </example>
         public Dictionary<string, object?> resets = new();

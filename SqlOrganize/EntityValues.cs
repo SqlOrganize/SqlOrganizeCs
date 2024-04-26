@@ -300,6 +300,10 @@ namespace SqlOrganize
                         if (values[fieldName].IsNullOrEmptyOrDbNull())
                             values[fieldName] = DefaultField(fieldName);
                         break;
+
+                    case "setdefault":
+                        values[fieldName] = DefaultField(fieldName);
+                    break;
                 }
             }
 
