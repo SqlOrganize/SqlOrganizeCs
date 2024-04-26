@@ -17,12 +17,12 @@ namespace SqlOrganize
 
         public IEnumerable<Dictionary<string, object?>> SearchObj(string entityName, object param)
         {
-            return Db.Query(entityName).SearchObj(param).Size(0).ColOfDictCache();
+            return Db.Sql(entityName).SearchObj(param).Size(0).ColOfDictCache();
         }
 
         public IEnumerable<Dictionary<string, object?>> SearchKeyValue(string entityName, string key, object value)
         {
-            return Db.Query(entityName).
+            return Db.Sql(entityName).
                 Where(key + " = @0").
                 Parameters(value).
                 Size(0).
@@ -36,18 +36,18 @@ namespace SqlOrganize
 
         public IDictionary<string, object?> Get(string entityName, object id)
         {
-            return Db.Query(entityName).CacheByIds( id ).ElementAt(0);
+            return Db.Sql(entityName).CacheByIds( id ).ElementAt(0);
         }
 
         public IDictionary<string, object?>? RowByFieldValue(string entityName, string fieldName, object value)
         {
-            return Db.Query(entityName).Where("$" + fieldName + " = @0").Parameters(value).DictCache();
+            return Db.Sql(entityName).Where("$" + fieldName + " = @0").Parameters(value).DictCache();
         }
 
         public IDictionary<string, object?>? RowByUniqueWithoutIdIfExists(string entityName, IDictionary<string, object?> source)
         {
 
-            var q = Db.Query(entityName).Unique(source);
+            var q = Db.Sql(entityName).Unique(source);
 
             if (source.ContainsKey(Db.config.id) && !source[Db.config.id]!.IsNullOrEmptyOrDbNull())
                 q.And("$" + Db.config.id + " != @"+q.parameters.Count()).Parameters(source[Db.config.id]!);
@@ -63,7 +63,7 @@ namespace SqlOrganize
 
         public IDictionary<string, object?>? RowByUnique(string entityName, IDictionary<string, object?> source)
         {
-            EntityQuery q = Db.Query(entityName).Unique(source);
+            EntitySql q = Db.Sql(entityName).Unique(source);
             IEnumerable<Dictionary<string, object?>> rows = q.ColOfDict();
 
             if (rows.Count() > 1)

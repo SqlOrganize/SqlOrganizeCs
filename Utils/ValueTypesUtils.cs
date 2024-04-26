@@ -258,5 +258,47 @@ namespace Utils
             return result;
         }
 
+        public static string ToOrdinalSpanish(this string numberString)
+        {
+            int number;
+            if (!int.TryParse(numberString, out number))
+            {
+                // Handle invalid input
+                return "Inválido";
+            }
+
+            if (number <= 0)
+            {
+                // Handle non-positive numbers
+                return numberString;
+            }
+
+            switch (number)
+            {
+                case 1:
+                    return "primero";
+                case 2:
+                    return "segundo";
+                case 3:
+                    return "tercero";
+                case 4:
+                    return "cuarto";
+                case 5:
+                    return "quinto";
+                case 6:
+                    return "sexto";
+                case 7:
+                    return "séptimo";
+                case 8:
+                    return "octavo";
+                case 9:
+                    return "noveno";
+                case 10:
+                    return "decimo";
+                default:
+                    return numberString; // For numbers above 10, just return the input string
+            }
+        }
+
     }
 }

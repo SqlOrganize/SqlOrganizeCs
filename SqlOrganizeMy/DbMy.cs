@@ -40,9 +40,9 @@ namespace SqlOrganizeMy
             return new EntityPersistMy(this);
         }
 
-        public override EntityQuery Query(string entity_name)
+        public override EntitySql Sql(string entity_name)
         {
-            return new EntityQueryMy(this, entity_name);
+            return new EntitySqlMy(this, entity_name);
         }
 
         public override QueryMy Query()
@@ -50,9 +50,21 @@ namespace SqlOrganizeMy
             return new QueryMy(this);
         }
 
+        public override QueryMy Query(EntitySql sql)
+        {
+            return new QueryMy(this, sql);
+        }
+
+        public override QueryMy Query(EntityPersist persist)
+        {
+            return new QueryMy(this, persist);
+        }
+
+
         public override long GetMaxValue(string entityName, string fieldName)
         {
-            return Query(entityName).Select("CAST ( ISNULL( MAX($" + fieldName + "), 0) AS bigint)").Value<long>();
+            EntitySql sql = Sql(entityName).Select("CAST ( ISNULL( MAX($" + fieldName + "), 0) AS bigint)");
+            return Query(sql).Value<long>();
         }
     }
 }

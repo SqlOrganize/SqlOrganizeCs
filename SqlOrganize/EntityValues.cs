@@ -568,7 +568,7 @@ namespace SqlOrganize
             object? val = GetOrNull(tree.fieldName);
             if (!val.IsNullOrEmpty())
             {
-                var data = db.Query(tree.refEntityName)._CacheById(val);
+                var data = db.Sql(tree.refEntityName)._CacheById(val);
                 return (!data.IsNullOrEmptyOrDbNull()) ? db.Values(tree.refEntityName).Set(data) : null;
             }
             return null;
@@ -583,7 +583,7 @@ namespace SqlOrganize
                 object? val = GetOrNull(rel.fieldName);
                 if (!val.IsNullOrEmpty())
                 {
-                    var data = db.Query(rel.refEntityName)._CacheById(val!);
+                    var data = db.Sql(rel.refEntityName)._CacheById(val!);
                     return db.Values(rel.refEntityName).Set(data!);
                 }
             } 
@@ -788,7 +788,7 @@ namespace SqlOrganize
         {
             if (field.defaultValue.ToString()!.ToLower().Contains("next"))
             {
-                ulong next = db.Query(field.entityName).GetNextValue();
+                ulong next = db.Query().GetNextValue(field.entityName);
                 return next;
             }
             else if (field.defaultValue.ToString()!.ToLower().Contains("max"))

@@ -5,6 +5,10 @@ using Utils;
 
 namespace SqlOrganize
 {
+
+    /// <summary>
+    /// Persistencia de datos
+    /// </summary>
     public abstract class EntityPersist
     {
         /// <summary>conexion opcional</summary>
@@ -19,6 +23,9 @@ namespace SqlOrganize
 
         public int count = 0;
 
+        /// <summary>
+        /// El SQL se genera a medida que se invocan los distintos metodos de generacion.
+        /// </summary>
         public string sql { get; set; } = "";
 
         /// <summary>
@@ -162,7 +169,7 @@ WHERE " + id + " = @" + count + @";
         /// <returns></returns>
         public EntityPersist UpdateAll(string _entityName, Dictionary<string, object?> row)
         {
-            var ids = Db.Query(_entityName).Fields(Db.config.id).Size(0).Column<object>();
+            var ids = Db.Sql(_entityName).Fields(Db.config.id).Size(0).Column<object>();
             return (ids.Count() > 0) ? UpdateIds(_entityName, row, ids.ToArray()) : this;
         }
 
@@ -306,7 +313,7 @@ VALUES (";
         public EntityPersist Persist(EntityValues v)
         {
             v.Reset();
-            EntityQuery q = Db.Query(v.entityName!).Unique(v.Values());
+            EntitySql q = Db.Sql(v.entityName!).Unique(v.Values());
             IEnumerable<Dictionary<string, object?>> rows = q.ColOfDict();
 
             if (rows.Count() > 1)
@@ -427,7 +434,7 @@ VALUES (";
             List<string> queries;
             object _queries;
 
-            bool res = Db.Cache.TryGetValue("queries", out _queries);
+            bool res = Db.cache!.TryGetValue("queries", out _queries);
             if (res)
             {
                 if (_queries is JArray)
@@ -436,7 +443,7 @@ VALUES (";
                     queries = (List<string>)_queries;
 
                 foreach (string q in (queries as List<string>)!)
-                    Db.Cache.Remove(q);
+                    Db.cache.Remove(q);
             }
 
             return this;
@@ -448,22 +455,29 @@ VALUES (";
         public EntityPersist RemoveCache()
         {
             RemoveCacheQueries();
+            return RemoveCacheDetail();
+        }
+
+        public EntityPersist RemoveCacheDetail()
+        {
             foreach (var d in detail)
-                Db.Cache!.Remove(d.entityName + d.id);
+                Db.cache!.Remove(d.entityName + d.id);
             return this;
         }
+
+
 
         public EntityPersist RemoveCache(string entityName, object id)
         {
             RemoveCacheQueries();
-            Db.Cache!.Remove(entityName + id);
+            Db.cache!.Remove(entityName + id);
             return this;
         }
 
         public EntityPersist RemoveCache(EntityValues values)
         {
             RemoveCacheQueries();
-            Db.Cache!.Remove(values.entityName + values.Get(Db.config.id));
+            Db.cache!.Remove(values.entityName + values.Get(Db.config.id));
             return this;
         }
     }

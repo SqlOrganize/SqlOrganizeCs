@@ -3,10 +3,10 @@ using Utils;
 
 namespace SqlOrganizeMy
 {
-    public class EntityQueryMy : EntityQuery
+    public class EntitySqlMy : EntitySql
     {
 
-        public EntityQueryMy(Db db, string entityName) : base(db, entityName)
+        public EntitySqlMy(Db db, string entityName) : base(db, entityName)
         {
         }
 
@@ -31,9 +31,9 @@ namespace SqlOrganizeMy
         }
         
 
-        public override EntityQuery Clone()
+        public override EntitySql Clone()
         {
-            var eq = new EntityQueryMy(Db, entityName);
+            var eq = new EntitySqlMy(Db, entityName);
             return _Clone(eq);
         }
     }

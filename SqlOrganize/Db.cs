@@ -27,12 +27,12 @@ namespace SqlOrganize
 
         public Dictionary<string, Dictionary<string, Field>> fields { get; set; }
 
-        public IMemoryCache? Cache { get; set; } = null;
+        public IMemoryCache? cache { get; set; } = null;
 
-        public Db(Config _config, Schema schema, IMemoryCache? Cache = null)
+        public Db(Config _config, Schema schema, IMemoryCache? cache = null)
         {
             config = _config;
-            this.Cache = Cache;
+            this.cache = cache;
             entities = schema.Entities();
             foreach (Entity e in entities.Values)
                 e.db = this;
@@ -112,7 +112,15 @@ namespace SqlOrganize
         /// <returns>Instancia de Query</returns>
         public abstract Query Query();
 
-        public abstract EntityQuery Query(string entity_name);
+        public abstract Query Query(EntitySql select);
+
+        public abstract Query Query(EntityPersist persist);
+
+        public abstract EntitySql Sql(string entity_name);
+
+        public EntityCache Cache(EntitySql sql){
+            return new EntityCache(this, sql);
+        }
 
         public abstract EntityPersist Persist();
 
@@ -142,6 +150,9 @@ namespace SqlOrganize
             return (fieldId, fieldName, refEntityName);
         }
 
+        /// <summary>
+        /// No deberia estar en Query???
+        /// </summary>
         public abstract long GetMaxValue(string entityName, string fieldName);
 
     }
