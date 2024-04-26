@@ -111,11 +111,15 @@ namespace SqlOrganize
             if (searchIds.Count == 0)
                 return response;
 
-            var sql = Db.Sql(Sql.entityName).Size(0).Where("$" + Db.config.id + " IN (@0)").Parameters(searchIds);
-            IEnumerable<Dictionary<string, object?>> rows = Db.Query(sql).ColOfDict();
+            IEnumerable<Dictionary<string, object?>> rows = Db.Sql(Sql.entityName).
+                Size(0).
+                Where("$" + Db.config.id + " IN (@0)").
+                Parameters(searchIds).
+                ColOfDict();
 
             if (rows.IsNullOrEmpty())
                 throw new Exception("La consulta a traves de ids existentes no arrojo ningun resultado. Se estan usando ids correspondientes a otra entidad? Existe el id utilizado en la base de datos?");
+            
             foreach (Dictionary<string, object?> row in rows)
             {
                 int index = Array.IndexOf(ids.ToArray(), row[Db.config.id]);
@@ -190,10 +194,10 @@ namespace SqlOrganize
             if (Sql.fields.IsNullOrEmpty())
                 Sql.Fields();
 
-            EntitySql sqlAux = Sql.Clone();
-            sqlAux.fields = Db.config.id;
+            EntitySql esqlAux = Sql.Clone();
+            esqlAux.fields = Db.config.id;
 
-            string id = Db.Query(sqlAux).Value<string>();
+            string id = esqlAux.Value<string>();
 
             if (id.IsNullOrEmpty())
                 return null;
@@ -247,7 +251,7 @@ namespace SqlOrganize
 
                 List<object> ids = response.ColOfVal<object>(fkName).Distinct().ToList();
                 ids.RemoveAll(item => item == null || item == System.DBNull.Value);
-                IEnumerable<IDictionary<string, object>> data;
+                IEnumerable<IDictionary<string, object?>> data;
                 if (ids.Count() == 1 && ids.ElementAt(0) == System.DBNull.Value)
                     return Enumerable.Empty<Dictionary<string, object?>>();
                 else
@@ -255,14 +259,12 @@ namespace SqlOrganize
                     //Si las fk estan asociadas a una unica pk, debe indicarse para mayor eficiencia
                     if (Db.config.fkId)
                     {
-                        var sql = Db.Sql(refEntityName);
-                        data = Db.Cache(sql)._CacheByIds(ids.ToArray());
+                        data = Db.Sql(refEntityName)._CacheByIds(ids.ToArray());
                     }
                     else
                     {
                         //data = Db.Query(refEntityName).Where("$"+Db.config.id+" IN (@0)").Parameters(ids).ColOfDictCacheQuery();
-                        var sql = Db.Sql(refEntityName);
-                        data = Db.Cache(sql).CacheByIds(ids.ToArray());
+                        data = Db.Sql(refEntityName).CacheByIds(ids.ToArray());
                     }
                 }
 
@@ -349,7 +351,7 @@ namespace SqlOrganize
 
 
 
-            IEnumerable<Dictionary<string, object>> result;
+            IEnumerable<Dictionary<string, object?>> result;
             object _result;
             string queryKey = Sql!.ToString();
             res = Db.cache!.TryGetValue(queryKey, out _result);
@@ -363,13 +365,14 @@ namespace SqlOrganize
             }
             else
             {
-                result = Db.Query(Sql).ColOfDict();
+                result = Sql.ColOfDict();
                 Db.cache!.Set(queryKey, result);
                 queries!.Add(queryKey);
                 Db.cache!.Set("queries", queries);
             }
             return result!;
         }
+        
     }
 
 

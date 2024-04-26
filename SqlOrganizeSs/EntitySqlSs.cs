@@ -3,10 +3,10 @@ using Utils;
 
 namespace SqlOrganizeSs
 {
-    public class EntityQuerySs : EntityQuery
+    public class EntitySqlSs : EntitySql
     {
 
-        public EntityQuerySs(Db db, string entity_name) : base(db, entity_name)
+        public EntitySqlSs(Db db, string entityName) : base(db, entityName)
         {
         }
 
@@ -70,11 +70,11 @@ FETCH FIRST " + size + " ROWS ONLY";
 ";
         }
 
-        public override EntityQuery Clone()
+        public override EntitySql Clone()
         {
-            var eq = new EntityQuerySs(Db, entityName);
+            var eq = new EntitySqlSs(Db, entityName);
             return _Clone(eq);
         }
-
     }
+
 }

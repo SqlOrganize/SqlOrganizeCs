@@ -105,7 +105,7 @@ DELETE " + e.alias + " FROM " + e.name + " " + e.alias + @"
         }
 
         abstract protected EntityPersist _Update(string _entityName, IDictionary<string, object?> row);
-
+        
         public EntityPersist Update(EntityValues values)
         {
             return Update(values.entityName, values.Values());
@@ -123,7 +123,6 @@ WHERE " + id + " = @" + count + @";
             detail.Add((_entityName!, row[Db.config.id]!, "update"));
             return this;
         }
-
 
         public EntityPersist UpdateIds(string _entityName, Dictionary<string, object?> row, params object[] ids)
         {
@@ -158,7 +157,6 @@ WHERE " + id + " = @" + count + @";
             
             return this;
         }
-
 
         /// <summary>
         /// Actualizar valores de todas las entradas de una tabla
@@ -203,7 +201,6 @@ WHERE " + id + " = @" + count + @";
             Dictionary<string, object> row = new Dictionary<string, object>() { { key, value } };
             return UpdateAll(_entityName, row);
         }
-
 
         /// <summary>
         /// Actualiza valor local o de relacion
@@ -343,143 +340,6 @@ VALUES (";
             return Insert(v.entityName, v.Values());
         }
 
-        /// <summary>
-        /// Ejecuta verificando conexion, si no existe la crea
-        /// </summary>
-        /// <returns></returns>
-        public EntityPersist Exec()
-        {
-            var q = Db.Query();
-            q.connection = connection;
-            q.transaction = transaction;
-            q.sql = sql;
-            q.parameters = parameters;
-            q.Exec();
-            return this;
-        }
-
-        /// <summary>
-        /// Ejecuta, abriendo una transaccion, realiza commit al finalizar o rollback si falla
-        /// Si no existe conexion la crea
-        /// </summary>
-        /// <returns></returns>
-        abstract public EntityPersist Transaction();
-
-        /// <summary>
-        /// Metodo especial de ejecucion de transacciones que realiza un split en el sql para ejecutar las transacciones una por una.
-        /// </summary>
-        /// <remarks>Desventaja: Procesa todos los parametros por cada consulta</remarks>
-        abstract public EntityPersist TransactionSplit();
-
-        /// <summary>Transaction Split, debe existir una conexion abierta obligatorimienta</summary>
-        /// <remarks>Desventaja: Procesa todos los parametros por cada consulta</remarks>
-        protected void _TransactionSplit()
-        {
-            using DbTransaction tran = connection!.BeginTransaction();
-
-            try
-            {
-                string[] sqls = sql.Split(";");
-
-                foreach (string s in sqls)
-                {
-                    if (s.Trim().IsNullOrEmpty())
-                        continue;
-
-                    var qu = Db.Query();
-                    qu.connection = connection;
-                    qu.transaction = tran;
-                    qu.sql = s;
-                    qu.parameters = parameters;
-                    qu.Exec();
-                }
-
-                tran.Commit();
-            }
-
-            catch (Exception)
-            {
-                tran.Rollback();
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Ejecuta, abriendo una transaccion, realiza commit al finalizar o rollback si falla
-        /// Debe existir una conexion abierta
-        /// </summary>
-        /// <returns></returns>
-        protected void _Transaction()
-        {
-            using DbTransaction tran = connection.BeginTransaction();
-            try
-            {
-                transaction = tran;
-                Exec();
-                tran.Commit();
-            }
-            catch (Exception)
-            {
-                tran.Rollback();
-                throw;
-            }
-        }
-
-
-
-
-        public EntityPersist RemoveCacheQueries()
-        {
-
-            List<string> queries;
-            object _queries;
-
-            bool res = Db.cache!.TryGetValue("queries", out _queries);
-            if (res)
-            {
-                if (_queries is JArray)
-                    queries = (_queries as JArray).ToObject<List<string>>();
-                else
-                    queries = (List<string>)_queries;
-
-                foreach (string q in (queries as List<string>)!)
-                    Db.cache.Remove(q);
-            }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Remover de la cache todas las consultas y las entidades indicadas en el parametro
-        /// </summary>
-        public EntityPersist RemoveCache()
-        {
-            RemoveCacheQueries();
-            return RemoveCacheDetail();
-        }
-
-        public EntityPersist RemoveCacheDetail()
-        {
-            foreach (var d in detail)
-                Db.cache!.Remove(d.entityName + d.id);
-            return this;
-        }
-
-
-
-        public EntityPersist RemoveCache(string entityName, object id)
-        {
-            RemoveCacheQueries();
-            Db.cache!.Remove(entityName + id);
-            return this;
-        }
-
-        public EntityPersist RemoveCache(EntityValues values)
-        {
-            RemoveCacheQueries();
-            Db.cache!.Remove(values.entityName + values.Get(Db.config.id));
-            return this;
-        }
     }
 
 }

@@ -33,38 +33,6 @@ UPDATE " + e.alias + @" SET
             return this;
         }
 
-        public override EntityPersist Transaction()
-        {
-            using SqlCommand command = new();
-
-            if (connection.IsNullOrEmpty())
-            {
-                connection = new SqlConnection(Db.config.connectionString);
-                connection.Open();
-                _Transaction();
-                connection.Close();
-            }
-            else
-                _Transaction();
-
-            return this;
-        }
-
-        public override EntityPersist TransactionSplit()
-        {
-            if (connection.IsNullOrEmpty())
-            {
-                connection = new SqlConnection(Db.config.connectionString);
-                connection.Open();
-                _TransactionSplit();
-                connection.Close();
-            }
-            else
-                _TransactionSplit();
-
-            return this;
-        }
-
     }
 
 }

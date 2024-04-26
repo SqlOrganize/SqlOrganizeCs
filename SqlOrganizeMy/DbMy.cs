@@ -1,5 +1,4 @@
-﻿
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using MySql.Data.MySqlClient;
 using SqlOrganize;
 
@@ -45,26 +44,24 @@ namespace SqlOrganizeMy
             return new EntitySqlMy(this, entity_name);
         }
 
-        public override QueryMy Query()
+        public override Query Query()
         {
             return new QueryMy(this);
         }
 
-        public override QueryMy Query(EntitySql sql)
+        public override Query Query(EntitySql sql)
         {
             return new QueryMy(this, sql);
         }
 
-        public override QueryMy Query(EntityPersist persist)
+        public override Query Query(EntityPersist persist)
         {
             return new QueryMy(this, persist);
         }
 
-
         public override long GetMaxValue(string entityName, string fieldName)
         {
-            EntitySql sql = Sql(entityName).Select("CAST ( ISNULL( MAX($" + fieldName + "), 0) AS bigint)");
-            return Query(sql).Value<long>();
+            return Sql(entityName).Select("CAST ( ISNULL( MAX($" + fieldName + "), 0) AS bigint)").Value<long>();
         }
     }
 }

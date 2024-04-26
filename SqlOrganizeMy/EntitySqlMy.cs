@@ -29,7 +29,6 @@ namespace SqlOrganizeMy
             return (order.IsNullOrEmpty()) ? "" : "ORDER BY " + Traduce(order!) + @"
 ";
         }
-        
 
         public override EntitySql Clone()
         {

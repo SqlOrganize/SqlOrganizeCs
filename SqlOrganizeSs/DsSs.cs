@@ -1,9 +1,6 @@
-﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.IdentityModel.Protocols;
-using Newtonsoft.Json.Linq;
+﻿using Microsoft.Data.SqlClient;
 using SqlOrganize;
-using Utils;
 
 namespace SqlOrganizeSs
 {
@@ -44,9 +41,9 @@ namespace SqlOrganizeSs
             return new EntityPersistSs(this);
         }
 
-        public override EntityQuery Query(string entity_name)
+        public override EntitySql Sql(string entity_name)
         {
-            return new EntityQuerySs(this, entity_name);
+            return new EntitySqlSs(this, entity_name);
         }
 
         public override Query Query()
@@ -54,10 +51,19 @@ namespace SqlOrganizeSs
             return new QuerySs(this);
         }
 
+        public override Query Query(EntitySql sql)
+        {
+            return new QuerySs(this, sql);
+        }
+
+        public override Query Query(EntityPersist persist)
+        {
+            return new QuerySs(this, persist);
+        }
 
         public override long GetMaxValue(string entityName, string fieldName)
         {
-            return Query(entityName).Select("CAST ( ISNULL( MAX($" + fieldName + "), 0) AS bigint)").Value<long>();
+            return Sql(entityName).Select("CAST ( ISNULL( MAX($" + fieldName + "), 0) AS bigint)").Value<long>();
         }
     }
 }

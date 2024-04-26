@@ -24,17 +24,16 @@ namespace SqlOrganizeMy
         }
 
         public override DbCommand NewCommand()
-            {
-                return new MySqlCommand();
-            }
-
-        public override DbConnection NewConnection()
         {
-            return new MySqlConnection(db.config.connectionString);
+            return new MySqlCommand();
         }
-            
-            
-       
+
+        public override DbConnection OpenConnection()
+        {
+            connection = new MySqlConnection(db.config.connectionString);
+            connection.Open();
+            return connection;
+        }
 
         protected override void AddWithValue(DbCommand command, string columnName, object value)
         {
@@ -43,8 +42,7 @@ namespace SqlOrganizeMy
 
         public override List<string> GetTableNames()
         {
-            using DbConnection connection = NewConnection();
-            connection.Open();
+            using DbConnection connection = OpenConnection();
             using DbCommand command = NewCommand();
             command.CommandText = @"SHOW TABLES FROM " + db.config.dbName;
             command.Connection = connection;

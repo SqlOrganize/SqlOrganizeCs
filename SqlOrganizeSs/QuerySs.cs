@@ -14,174 +14,24 @@ namespace SqlOrganizeSs
         {
         }
 
-        public override IEnumerable<Dictionary<string, object?>> ColOfDict()
+	public QuerySs(Db db, EntitySql sql) : base(db, sql)
         {
-            using SqlCommand command = new();
-            if (connection.IsNullOrEmpty())
-            {
-                using SqlConnection conn = new(db.config.connectionString);
-                conn.Open();
-                Exec(conn, command);
-                using DbDataReader reader = command.ExecuteReader();
-                return reader.Serialize();
-            }
-            else
-            {
-                Exec(connection!, command);
-                using DbDataReader reader = command.ExecuteReader();
-                return reader.Serialize();
-            }
-
         }
 
-        public override IEnumerable<T> ColOfObj<T>()
+        public QuerySs(Db db, EntityPersist persist) : base(db, persist)
         {
-            using SqlCommand command = new();
-            if (connection.IsNullOrEmpty())
-            {
-                using SqlConnection conn = new(db.config.connectionString);
-                conn.Open();
-                Exec(conn, command);
-                using DbDataReader reader = command.ExecuteReader();
-                return reader.ColOfObj<T>();
-            }
-            else
-            {
-                Exec(connection!, command);
-                using DbDataReader reader = command.ExecuteReader();
-                return reader.ColOfObj<T>();
-            }
         }
 
-        public override Dictionary<string, object?>? Dict()
+        public override DbCommand NewCommand()
         {
-            using SqlCommand command = new();
-            if (connection.IsNullOrEmpty())
-            {
-                using SqlConnection conn = new(db.config.connectionString);
-                conn.Open();
-                Exec(conn, command);
-                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
-                return reader.SerializeRow();
-            }
-            else
-            {
-                Exec(connection!, command);
-                using SqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
-                return reader.SerializeRow();
-            }
+            return new SqlCommand();
         }
 
-        public override T? Obj<T>() where T : class
+        public override DbConnection OpenConnection()
         {
-            using SqlCommand command = new SqlCommand();
-            if (connection.IsNullOrEmpty())
-            {
-                using SqlConnection conn = new SqlConnection(db.config.connectionString);
-                conn.Open();
-                Exec(conn, command);
-                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
-                return reader.Obj<T>();
-            }
-            else
-            {
-                Exec(connection!, command);
-                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
-                return reader.Obj<T>();
-            }
-        }
-
-        public override IEnumerable<T> Column<T>(string columnName)
-        {
-            using SqlCommand command = new SqlCommand();
-            if (connection.IsNullOrEmpty())
-            {
-                using SqlConnection conn = new SqlConnection(db.config.connectionString);
-                conn.Open();
-                Exec(conn, command);
-                using DbDataReader reader = command.ExecuteReader();
-                return reader.ColumnValues<T>(columnName);
-            }
-            else
-            {
-                Exec(connection!, command);
-                using DbDataReader reader = command.ExecuteReader();
-                return reader.ColumnValues<T>(columnName);
-            }
-        }
-
-        public override IEnumerable<T> Column<T>(int columnNumber = 0)
-        {
-            using SqlCommand command = new();
-            if (connection.IsNullOrEmpty())
-            {
-                using SqlConnection conn = new(db.config.connectionString);
-                conn.Open();
-                Exec(conn, command);
-                using DbDataReader reader = command.ExecuteReader();
-                return reader.ColumnValues<T>(columnNumber);
-            }
-            else
-            {
-                Exec(connection!, command);
-                using DbDataReader reader = command.ExecuteReader();
-                return reader.ColumnValues<T>(columnNumber);
-            }
-        }
-
-        public override T Value<T>(string columnName)
-        {
-            using SqlCommand command = new();
-            if (connection.IsNullOrEmpty())
-            {
-                using SqlConnection conn = new((string)db.config.connectionString);
-                conn.Open();
-                Exec(conn, command);
-                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
-                return reader.Read() ? (T)reader[columnName] : default(T);
-            }
-            else
-            {
-                Exec(connection!, command);
-                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
-                return reader.Read() ? (T)reader[columnName] : default(T);
-            }
-        }
-
-        public override T Value<T>(int columnNumber = 0)
-        {
-            using SqlCommand command = new();
-            if (connection.IsNullOrEmpty())
-            {
-                using SqlConnection conn = new(db.config.connectionString);
-                conn.Open();
-                Exec(conn, command);
-                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
-                return (reader.Read()) ? (T)reader.GetValue(columnNumber) : default(T);
-            }
-            else
-            {
-                Exec(connection!, command);
-                using DbDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult);
-                return (reader.Read()) ? (T)reader.GetValue(columnNumber) : default(T);
-            }
-        }
-
-        public override void Exec()
-        {
-            using SqlCommand command = new();
-            if (connection.IsNullOrEmpty())
-            {
-                using SqlConnection conn = new(db.config.connectionString);
-                conn.Open();
-                Exec(conn, command);
-                conn.Close();
-            }
-            else
-                if (!transaction.IsNullOrEmpty())
-                    Exec(connection!, transaction!, command);
-                else
-                    Exec(connection!, command);
+            connection = new SqlConnection(db.config.connectionString);
+            connection.Open();
+            return connection;
         }
 
         protected override void AddWithValue(DbCommand command, string columnName, object value)
@@ -189,12 +39,10 @@ namespace SqlOrganizeSs
             (command as SqlCommand)!.Parameters.AddWithValue(columnName, value);
         }
 
-
         public override List<string> GetTableNames()
         {
-            using SqlConnection connection = new SqlConnection(db.config.connectionString);
-            connection.Open();
-            using SqlCommand command = new SqlCommand();
+            using DbConnection connection = OpenConnection();
+            using DbCommand command = NewCommand();
             command.CommandText = @"
                 SELECT TABLE_NAME
                 FROM INFORMATION_SCHEMA.TABLES
@@ -203,7 +51,7 @@ namespace SqlOrganizeSs
             command.Connection = connection;
             command.Parameters.AddWithValue("dbName", db.config.dbName);
             command.ExecuteNonQuery();
-            using SqlDataReader reader = command.ExecuteReader();
+            using DbDataReader reader = command.ExecuteReader();
             return SqlUtils.ColumnValues<string>(reader, "TABLE_NAME");
         }
     }
