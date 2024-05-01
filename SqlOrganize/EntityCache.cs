@@ -197,7 +197,7 @@ namespace SqlOrganize
             EntitySql esqlAux = Sql.Clone();
             esqlAux.fields = Db.config.id;
 
-            string id = esqlAux.Value<string>();
+            object id = esqlAux.Value<object>();
 
             if (id.IsNullOrEmpty())
                 return null;
@@ -275,7 +275,7 @@ namespace SqlOrganize
 
                     for (var j = 0; j < data.Count(); j++)
                     {
-                        if (response.ElementAt(i)[fkName].ToString().Equals(data.ElementAt(j)[refFieldName].ToString()))
+                        if (response.ElementAt(i)[fkName]!.ToString()!.Equals(data.ElementAt(j)[refFieldName]!.ToString()))
                         {
                             for (var k = 0; k < fo.FieldsRel[fieldId].Count; k++)
                             {

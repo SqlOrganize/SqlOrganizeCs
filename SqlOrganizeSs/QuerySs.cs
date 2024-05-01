@@ -42,14 +42,14 @@ namespace SqlOrganizeSs
         public override List<string> GetTableNames()
         {
             using DbConnection connection = OpenConnection();
-            using DbCommand command = NewCommand();
+            using DbCommand command = (SqlCommand)NewCommand();
             command.CommandText = @"
                 SELECT TABLE_NAME
                 FROM INFORMATION_SCHEMA.TABLES
                 WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG=@dbName
 				ORDER BY TABLE_NAME ASC;";
             command.Connection = connection;
-            command.Parameters.AddWithValue("dbName", db.config.dbName);
+            ((SqlCommand)command).Parameters.AddWithValue("dbName", db.config.dbName);
             command.ExecuteNonQuery();
             using DbDataReader reader = command.ExecuteReader();
             return SqlUtils.ColumnValues<string>(reader, "TABLE_NAME");

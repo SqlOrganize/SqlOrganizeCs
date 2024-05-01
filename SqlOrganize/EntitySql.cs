@@ -20,9 +20,6 @@ namespace SqlOrganize
         /// <summary>
         /// coneccion opcional
         /// </summary>
-        protected DbConnection? connection;
-
-
         public Db Db { get; }
 
 
@@ -57,12 +54,6 @@ namespace SqlOrganize
         {
             Db = db;
             this.entityName = entityName;
-        }
-
-        public EntitySql SetConn(DbConnection connection)
-        {
-            this.connection = connection;
-            return this;
         }
 
         public EntitySql And(string w)
@@ -170,8 +161,6 @@ namespace SqlOrganize
 
             return this;
         }
-
-       
 
         protected string UniqueMultiple(List<string> fields, IDictionary<string, object?> param)
         {
@@ -338,11 +327,8 @@ namespace SqlOrganize
             return ff;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="_size"></param>
-        /// <returns></returns>
+        /// <summary>Cantidad de filas del resultado</summary>
+        /// <remarks>100 por defecto, 0 devolver todas</remarks>
         public EntitySql Size(int _size)
         {
             size = _size;
@@ -350,17 +336,14 @@ namespace SqlOrganize
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="_page"></param>
-        /// <returns></returns>
+        /// <summary>Numero de pagina</summary>
+        /// <remarks>Si size es 0, se ignora</remarks>
         public EntitySql Page(int _page)
         {
             page = _page;
             return this;
         }
-
+       
         public EntitySql Order(string _order)
         {
             order = _order;
@@ -486,7 +469,6 @@ namespace SqlOrganize
 
         protected EntitySql _Clone(EntitySql eq)
         {
-            eq.connection = connection;
             eq.entityName = entityName;
             eq.size = size;
             eq.where = where;
@@ -500,7 +482,6 @@ namespace SqlOrganize
             eq.order = order;
             return eq;
         }
-
 
 
         
