@@ -230,12 +230,11 @@ namespace SqlOrganize
                 if (!sql.Contains("@" + i.ToString())) //control de que el sql posea el parametro
                     continue;
 
-                var list = parameters[i] as IList;
                 int j = 0;
                 List<Tuple<string, object>> _parameters = new();
-                if (list != null)
+                if (parameters[i] is IEnumerable<object>)
                 {
-                    foreach (object item in list)
+                    foreach (object item in parameters[i] as IEnumerable<object>)
                     {
                         var t = Tuple.Create($"@_{i}_{j}", item); //se le asigna un "_" adicional al nuevo nombre para evitar ser renombrado nuevamente.
                         _parameters.Add(t);

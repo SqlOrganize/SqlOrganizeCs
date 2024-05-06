@@ -1,12 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
+using SqlOrganize.Exceptions;
 using System.Data.Common;
-using System.Linq;
-using System.Runtime.Intrinsics.X86;
-using System.Text;
-using System.Threading.Tasks;
-using System.Transactions;
 using Utils;
 
 namespace SqlOrganize
@@ -138,7 +132,8 @@ namespace SqlOrganize
                 }
 
                 query.CommitTransaction();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 query.RollbackTransaction();
                 throw ex;
@@ -216,6 +211,121 @@ namespace SqlOrganize
             return persist;
         }
 
+        public static EntityValues Insert(this EntityValues values, EntityPersist persist)
+        {
+            persist.Insert(values);
+            return values;
+        }
 
+        public static IEnumerable<Dictionary<string, object?>> SearchKeyValue(this EntitySql entitySql, string key, object value)
+        {
+            return entitySql.
+                Where(key + " = @0").
+                Parameters(value).
+                Size(0).
+                ColOfDictCache();
+        }
+
+
+        public static IDictionary<string, object?> Get(this EntitySql entitySql, object id)
+        {
+            return entitySql.CacheByIds(id).ElementAt(0);
+        }
+
+        public static IDictionary<string, object?>? RowByFieldValue(this EntityValues entityValues, string fieldName)
+        {
+            return entityValues.db.Sql(entityValues.entityName).RowByFieldValue(fieldName, entityValues.Get(fieldName));
+        }
+
+        public static IDictionary<string, object?>? RowByFieldValue(this EntitySql entitySql, string fieldName, object value)
+        {
+            return entitySql.Where("$" + fieldName + " = @0").Parameters(value).DictCache();
+        }
+
+        public static IDictionary<string, object?>? RowByUniqueFieldOrValues(this EntityValues values, string fieldName)
+        {
+            try
+            {
+                if (values.db.Field(values.entityName, fieldName).IsUnique())
+                    return values.RowByFieldValue(fieldName);
+                else
+                    return values.RowByUniqueWithoutIdIfExists();
+            }
+            catch (UniqueException ex)
+            {
+                return null;
+            }
+        }
+
+        public static IDictionary<string, object?>? RowByUniqueWithoutIdIfExists(this EntityValues values)
+        {
+            return values.db.Sql(values.entityName).RowByUniqueWithoutIdIfExists(values.Values());
+        }
+
+        public static IDictionary<string, object?>? RowByUniqueWithoutIdIfExists(this EntitySql entitySql, IDictionary<string, object?> source)
+        {
+            entitySql.Unique(source);
+
+            if (source.ContainsKey(entitySql.Db.config.id) && !source[entitySql.Db.config.id]!.IsNullOrEmptyOrDbNull())
+                entitySql.And("$" + entitySql.Db.config.id + " != @" + entitySql.parameters.Count()).Parameters(source[entitySql.Db.config.id]!);
+
+            return entitySql.DictCache();
+        }
+
+        public static IDictionary<string, object?>? RowByUnique(this EntityValues ev)
+        {
+            return ev.db.Sql(ev.entityName).RowByUnique(ev.Values());
+        }
+
+        public static IDictionary<string, object?>? RowByUnique(this EntitySql entitySql, IDictionary<string, object?> source)
+        {
+            IEnumerable<Dictionary<string, object?>> rows = entitySql.Unique(source).ColOfDict();
+
+            if (rows.Count() > 1)
+                throw new Exception("La consulta por campos unicos retorno mas de un resultado");
+
+            if (rows.Count() == 1)
+                return rows.ElementAt(0);
+
+            else
+                return null;
+        }
+
+        public static EntityPersist PersistId(this EntityValues v)
+        {
+            EntityPersist p;
+            if (v.Get(v.db.config.id).IsNullOrEmptyOrDbNull())
+            {
+                v.Default().Reset();
+                p = v.db.Persist().Insert(v).Exec().RemoveCache();
+            }
+            else
+            {
+                v.Reset();
+                p = v.db.Persist().Update(v).Exec().RemoveCache();
+            }
+
+            return p;
+        }
+
+        public static EntityPersist Persist(this EntityValues v)
+        {
+            var row = v.RowByUnique();
+
+            EntityPersist p;
+
+            if (row.IsNullOrEmptyOrDbNull())
+            {
+                v.Default().Reset();
+                p = v.db.Persist().Insert(v).Exec().RemoveCache();
+            }
+            else
+            {
+                v.Reset();
+                p = v.db.Persist().Update(v).Exec().RemoveCache();
+            }
+
+            return p;
+        }
     }
 }
