@@ -588,7 +588,7 @@ namespace ModelOrganize
                     sw.WriteLine("        public " + field.type + "? " + fieldName);
                     sw.WriteLine("        {");
                     sw.WriteLine("            get { return _" + fieldName + "; }");
-                    sw.WriteLine("            set { _" + fieldName + " = value; NotifyPropertyChanged(); }");
+                    sw.WriteLine("            set { _" + fieldName + " = value; NotifyPropertyChanged(nameof(" + fieldName + ")); }");
                     sw.WriteLine("        }");
                 }
 
@@ -611,7 +611,7 @@ namespace ModelOrganize
                     if (entity.unique.Contains(field.name))
                     {
                         sw.WriteLine("                    if (!_" + fieldName + ".IsNullOrEmptyOrDbNull()) {");
-                        sw.WriteLine("                        var row = ContainerApp.db.Query(\"" + entityName + "\").Where(\"$" + fieldName + " = @0\").Parameters(_" + fieldName + ").DictCache();");
+                        sw.WriteLine("                        var row = ContainerApp.db.Sql(\"" + entityName + "\").Where(\"$" + fieldName + " = @0\").Parameters(_" + fieldName + ").DictCache();");
                         sw.WriteLine("                        if (!row.IsNullOrEmpty() && !_" + Config.id + ".ToString().Equals(row![\"" + Config.id + "\"]!.ToString()))");
                         sw.WriteLine("                            return \"Valor existente.\";");
                         sw.WriteLine("                    }");
@@ -707,9 +707,9 @@ namespace ModelOrganize
                         sw.WriteLine("        {");
                         sw.WriteLine("            get { return _" + fieldId + "__" + fieldName + "; }");
                         if(fieldName != relation.refFieldName)
-                            sw.WriteLine("            set { _" + fieldId + "__" + fieldName + " = value; NotifyPropertyChanged(); }");
+                            sw.WriteLine("            set { _" + fieldId + "__" + fieldName + " = value; NotifyPropertyChanged(nameof(" + fieldId + "__" + fieldName + ")); }");
                         else
-                            sw.WriteLine("            set { _" + fieldId + "__" + fieldName + " = value; _" + fs + " = value; NotifyPropertyChanged(); }");
+                            sw.WriteLine("            set { _" + fieldId + "__" + fieldName + " = value; " + fs + " = value; NotifyPropertyChanged(nameof(" + fieldId + "__" + fieldName + ")); }");
 
                         sw.WriteLine("        }");
                     }

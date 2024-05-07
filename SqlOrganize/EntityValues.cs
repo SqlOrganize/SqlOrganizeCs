@@ -201,11 +201,11 @@ namespace SqlOrganize
 
                 case "decimal":
                     if (value is decimal)
-                        values[fieldName] = (Decimal)value;
+                        values[fieldName] = value;
                     else
                     {
-                        var v = value.ToString()!;
-                        values[fieldName] =  (v == "") ? null : Decimal.Parse(v);
+                        var v = value.ToString().Replace('.',',')!;
+                        values[fieldName] =  (v == "") ? null : decimal.Parse(v);
                     }
 
                     break;

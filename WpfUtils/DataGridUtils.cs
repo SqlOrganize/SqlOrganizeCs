@@ -1,7 +1,10 @@
 ﻿#nullable enable
 using CommunityToolkit.WinUI.Notifications;
 using SqlOrganize;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using Utils;
@@ -9,19 +12,12 @@ using Utils;
 namespace WpfUtils
 {
     //Comportamiento general para DataGrid
-    public class DataGridUtils
+    public static class DataGridUtils
     {
-
-        public Db db;
-
-        public DataGridUtils(Db db)
-        {
-            this.db = db;
-        }
 
         /// <summary>Obtener key and value, en el procesamiento de columnas</summary>
         /// <remarks>No utilizado, se deja como referencia</remarks>
-        public (string key, object? value) GetKeyAndValue(DataGridCellEditEndingEventArgs e)
+        public static (string key, object? value) GetKeyAndValue(this DataGridCellEditEndingEventArgs e)
         {
             string key = "";
             object? value = null;
@@ -41,7 +37,7 @@ namespace WpfUtils
             var column = e.Column as DataGridBoundColumn;
             if (column != null)
             {
-                key = ((Binding)column.Binding).Path.Path; //column's binding
+                key = ((Binding)column.Binding).Path.Path; //column's binding (using System.Windows.Data)
                 value = (e.EditingElement as TextBox)!.Text;
                 return (key, value);
             }
@@ -50,7 +46,7 @@ namespace WpfUtils
         }
 
         /// <summary>Comportamiento general para persistir una celda v1</summary>
-        public bool DataGridCellEditEndingEventArgs_CellEditEnding<T>(DataGridCellEditEndingEventArgs e, string mainEntityName, string key, object? value) where T : class, new()
+        public static bool DataGridCellEditEndingEventArgs_CellEditEnding<T>(this Db db, DataGridCellEditEndingEventArgs e, string mainEntityName, string key, object? value) where T : class, new()
         {
             if(e.EditAction != DataGridEditAction.Commit)
                 return false;
@@ -61,27 +57,33 @@ namespace WpfUtils
             if (key.Contains("__"))
                 (fieldId, fieldName, entityName) = db.KeyDeconstruction(entityName, key);
 
-            return DataGridRow_RecursiveEdit<T>(e.Row, mainEntityName, entityName, fieldName, value, fieldId, false);
+            return db.DataGridRow_RecursiveEdit<T>(e.Row, mainEntityName, entityName, fieldName, value, fieldId, false);
         }
 
         /// <summary>Comportamiento general para persistir una celda (metodo recursivo) v2</summary>
         /// <param name="exceptionIfMainEntityExists">Dispara una excepcion si se esta modificando la entidad principal y si ya existe su valor con las modificaciones realizadas</param>
-        public bool DataGridRow_RecursiveEdit<T>(DataGridRow row, string mainEntityName, string entityName, string fieldName, object? value, string? fieldId = null, bool reload = false, bool exceptionIfMainEntityExists = true) where T : class, new()
+        public static bool DataGridRow_RecursiveEdit<T>(this Db db, DataGridRow row, string mainEntityName, string entityName, string fieldName, object? value, string? fieldId = null, bool reload = false, bool exceptionIfMainEntityExists = true) where T : class, new()
         {
-            var dao = new DAO(db);
-
             IDictionary<string, object?> source = row.DataContext.Dict();
 
             EntityValues v = db.Values(entityName, fieldId).Set(source);
-            if (v.GetOrNull(fieldName).Equals(value))
-                return reload;
+            var fieldValue = v.GetOrNull(fieldName);
+            if(fieldValue.IsNullOrEmptyOrDbNull()) {
+                if (value.IsNullOrEmptyOrDbNull())
+                    return (reload) ? v.Check() : false;
+            }
+            else
+            {
+                if (fieldValue!.Equals(value))
+                    return (reload) ? v.Check() : false;
+            }
 
             v.Sset(fieldName, value);
-            IDictionary<string, object?>? rowDb = dao.RowByUniqueFieldOrValues(fieldName, v);
+            IDictionary<string, object?>? rowDb = v.RowByUniqueFieldOrValues(fieldName);
             if (!rowDb.IsNullOrEmpty()) //con el nuevo valor ingresados se obtuvo un nuevo campo unico, no se realiza persistencia y se cambian los valores para reflejar el nuevo valor consultado
             {
                 if (fieldId.IsNullOrEmpty() && exceptionIfMainEntityExists)
-                    throw new System.Exception("Los datos ingresados en la edición de la celda ya pertenecen a otra fila. No se cumple la restricción de unicidad");
+                    throw new Exception("Los datos ingresados en la edición de la celda ya pertenecen a otra fila. No se cumple la restricción de unicidad");
 
                 v.Values(rowDb!);
                 T data = v.Get().Obj<T>();
@@ -91,24 +93,30 @@ namespace WpfUtils
             {
                 if (!v.Check())
                 {
+                    new ToastContentBuilder()
+                    .AddText("ERROR: " + v.Logging.ToString())
+                    .Show();
                     row.Item.SetPropertyValue(fieldName, value);
                     return false;
                 }
 
-                dao.Persist(v);
+                v.Persist();
+                new ToastContentBuilder()
+                    .AddText("Registro realizado de " + entityName)
+                    .Show();
             }
 
             if (fieldId != null)
             {
                 (fieldId, fieldName, entityName, value) = v.ParentVariables(mainEntityName);
-                return DataGridRow_RecursiveEdit<T>(row, mainEntityName, entityName, fieldName, value, fieldId, true);
+                return db.DataGridRow_RecursiveEdit<T>(row, mainEntityName, entityName, fieldName, value, fieldId, true);
             }
 
             return reload;
         }
 
         ///<summary>Comportamiento general para persistir una celda checkbox (DataGridCheckBoxColumn) v2 (2024-02)</summary>
-        public bool DataGridCell_CheckBoxClick<T>(DataGridCell cell, string entityName) where T : class, new()
+        public static bool DataGridCell_CheckBoxClick<T>(this Db db, DataGridCell cell, string entityName) where T : class, new()
         {
             #region definir key y value
             var column = cell!.Column as DataGridBoundColumn;
@@ -149,7 +157,7 @@ namespace WpfUtils
         }
 
         /// <summary>Codigo general para eliminar una fila en un datagrid v2</summary>        
-        public void DeleteRowFromDataGrid<T>(string entityName, ObservableCollection<T> oc, T data, string title = "")
+        public static void DeleteRowFromDataGrid<T>(this Db db, string entityName, ObservableCollection<T> oc, T data, string title = "")
         {
             try
             {
@@ -163,7 +171,7 @@ namespace WpfUtils
             }
         }
 
-        public void SaveRowFromDataGrid(string entityName, object data, string title = "")
+        public static void SaveRowFromDataGrid(this Db db, string entityName, object data, string title = "")
         {
             var p = db.Persist();
             try
@@ -179,6 +187,8 @@ namespace WpfUtils
                 ToastUtils.ShowExceptionMessageWithFileNameAndLineNumber(ex, title);
             }
         }
+
+      
 
     }
 }

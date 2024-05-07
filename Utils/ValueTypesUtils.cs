@@ -175,6 +175,27 @@ namespace Utils
             }
         }
 
+        /// <summary>
+        /// Quita los caracteres no numericos de un string
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        /// <remarks>https://stackoverflow.com/questions/19167669/keep-only-numeric-value-from-a-string</remarks>
+        public static string? CleanStringOfDigits(this string? s)
+        {
+            if (string.IsNullOrEmpty(s)) return null;
+            StringBuilder sb = new StringBuilder(s);
+            int j = 0, i = 0;
+            while (i < sb.Length)
+            {
+                if (!char.IsDigit(sb[i]))
+                    sb[j++] = sb[i++];
+                else
+                    ++i;
+            }
+            sb.Length = j;
+            return sb.ToString();
+        }
 
         /// <summary>
         /// Quita los caracteres no numericos de un string
@@ -197,6 +218,30 @@ namespace Utils
             sb.Length = j;
             return sb.ToString();
         }
+
+        /// <summary>
+        /// Quita los caracteres no numericos de un string
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        /// <remarks>https://stackoverflow.com/questions/19167669/keep-only-numeric-value-from-a-string</remarks>
+        public static (string, string)? DivideStringNonDigitsDigits(this string? s)
+        {
+            if (string.IsNullOrEmpty(s)) return null;
+            StringBuilder sb = new StringBuilder(s);
+            string nondig = "";
+            string dig = "";
+            for(int i = 0; i < sb.Length; i++)
+            {
+                if (char.IsDigit(sb[i]))
+                    dig += sb[i];
+                else
+                    nondig += sb[i];
+            }
+
+            return (nondig, dig);
+        }
+
 
         /// <summary>
         /// Recibe un string y verifica si tiene caracteres que no sean numeros
