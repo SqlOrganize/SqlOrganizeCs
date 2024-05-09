@@ -7,8 +7,10 @@ namespace SqlOrganize
     /// <summary>
     /// Unificar metodos para ejecutar consultas a la base de datos
     /// </summary>    
-    public abstract class Query
+    public abstract class Query : IDisposable
     {
+        private bool disposed = false;
+
         /// <summary>conexion opcional, si no existe al ejecutar se crea</summary>       
         public DbConnection? connection;
 
@@ -51,6 +53,21 @@ namespace SqlOrganize
         {
             db = _db;
             SetEntityPersist(persist);
+        }
+
+        ~Query()
+        {
+            Dispose();
+        }
+
+       
+
+        // Implement IDisposable interface
+        public void Dispose()
+        {
+            connection.Close();
+            connection.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         public void SetEntityPersist(EntityPersist persist)
