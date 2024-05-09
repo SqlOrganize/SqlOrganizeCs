@@ -1,0 +1,7 @@
+CHANGELOG
+
+0.0 
+	* Estructura inicial con EntityQuery (Definir y ejecutar Sql)
+0.1 
+	* Reemplazo EntityQuery por EntitySql (Definir Sql), la ejecución de Sql se realiza a través de extension methods y clase Query.
+	
