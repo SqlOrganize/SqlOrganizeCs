@@ -527,7 +527,6 @@ namespace ModelOrganize
                 sw.WriteLine("using System;");
                 sw.WriteLine("using System.ComponentModel;");
                 sw.WriteLine("using System.Collections.Generic;");
-                sw.WriteLine("using System.Reflection;");
                 sw.WriteLine("using Utils;");
                 sw.WriteLine("");
                 sw.WriteLine("namespace " + Config.dataClassesNamespace);
@@ -540,8 +539,9 @@ namespace ModelOrganize
                 sw.WriteLine("            Initialize();");
                 sw.WriteLine("        }");
                 sw.WriteLine("");
-                sw.WriteLine("        public Data_" + entityName + "(DataInitMode mode)");
+                sw.WriteLine("        public Data_" + entityName + "(Db db, DataInitMode mode)");
                 sw.WriteLine("        {");
+                sw.WriteLine("            this.db = db;");
                 sw.WriteLine("            Initialize(mode);");
                 sw.WriteLine("        }");
                 sw.WriteLine("");
@@ -556,7 +556,7 @@ namespace ModelOrganize
                 {
                     if (field.defaultValue != null && field.defaultValueClassData)
                     {
-                        string df = "(" + field.type + "?)ContainerApp.db.Values(\"" + entityName + "\").Default(\"" + fieldName + "\").Get(\"" + fieldName + "\")";
+                        string df = "(" + field.type + "?)db!.Values(\"" + entityName + "\").GetDefault(\"" + fieldName + "\")";
                         sw.WriteLine("                    _" + fieldName + " = " + df + ";");
                     }
                 }
@@ -611,7 +611,7 @@ namespace ModelOrganize
                     if (entity.unique.Contains(field.name))
                     {
                         sw.WriteLine("                    if (!_" + fieldName + ".IsNullOrEmptyOrDbNull()) {");
-                        sw.WriteLine("                        var row = ContainerApp.db.Sql(\"" + entityName + "\").Where(\"$" + fieldName + " = @0\").Parameters(_" + fieldName + ").DictCache();");
+                        sw.WriteLine("                        var row = db.Sql(\"" + entityName + "\").Where(\"$" + fieldName + " = @0\").Parameters(_" + fieldName + ").DictCache();");
                         sw.WriteLine("                        if (!row.IsNullOrEmpty() && !_" + Config.id + ".ToString().Equals(row![\"" + Config.id + "\"]!.ToString()))");
                         sw.WriteLine("                            return \"Valor existente.\";");
                         sw.WriteLine("                    }");
@@ -653,12 +653,12 @@ namespace ModelOrganize
 
                 sw.WriteLine("        public Data_" + entityName + "_r () : base()");
                 sw.WriteLine("        {");
-                sw.WriteLine("            Initialize();");
+                //sw.WriteLine("            Initialize();");
                 sw.WriteLine("        }");
                 sw.WriteLine("");
-                sw.WriteLine("        public Data_" + entityName + "_r (DataInitMode mode) : base(mode)");
+                sw.WriteLine("        public Data_" + entityName + "_r (Db db, DataInitMode mode) : base(db, mode)");
                 sw.WriteLine("        {");
-                sw.WriteLine("            Initialize(mode);");
+                //sw.WriteLine("            Initialize(mode);");
                 sw.WriteLine("        }");
 
                 sw.WriteLine("");
@@ -675,7 +675,7 @@ namespace ModelOrganize
                     foreach (var (fieldName, field) in fields[relation.refEntityName])
                         if (field.defaultValue != null && field.defaultValueClassData)
                         {
-                            string df = "(" + field.type + "?)ContainerApp.db.Values(\"" + relation.refEntityName + "\").Default(\"" + fieldName + "\").Get(\"" + fieldName + "\")";
+                            string df = "(" + field.type + "?)db!.Values(\"" + relation.refEntityName + "\").GetDefault(\"" + fieldName + "\")";
                             sw.WriteLine("                    " + fieldId + "__" + fieldName + " = " + df + ";");
                         }
 

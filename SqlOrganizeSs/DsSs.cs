@@ -62,6 +62,7 @@ namespace SqlOrganizeSs
             return new QuerySs(this, persist);
         }
 
+        //TODO reemplazar por Sql(entityName).MaxValueAsBigint(fieldName).Value<long>();
         public override long GetMaxValue(string entityName, string fieldName)
         {
             return Sql(entityName).Select("CAST ( ISNULL( MAX($" + fieldName + "), 0) AS bigint)").Value<long>();

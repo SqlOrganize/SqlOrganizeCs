@@ -13,6 +13,11 @@ namespace SqlOrganize
         /// </summary>
         public bool Validate = false;
 
+        /// <summary>
+        /// Si se construye una instancia de data con valores por defecto, puede ser necesario acceder a la base de datos para definirlos.
+        /// </summary>
+        public Db? db;
+
         public string this[string columnName]
         {
             get

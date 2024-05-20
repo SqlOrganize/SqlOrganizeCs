@@ -1,8 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
 using SqlOrganize.Exceptions;
-using System.Data.Common;
 using System.Text.RegularExpressions;
 using Utils;
 
@@ -359,6 +356,13 @@ namespace SqlOrganize
         public EntitySql Group(string g)
         {
             group += g;
+            return this;
+        }
+
+        //valido solo para sql server
+        public EntitySql MaxValueAsBigint(string fieldName) 
+        {
+            select += "CAST ( ISNULL( MAX($" + fieldName + "), 0) AS bigint)";
             return this;
         }
 
