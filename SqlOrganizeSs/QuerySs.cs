@@ -20,29 +20,12 @@ namespace SqlOrganizeSs
             return new SqlCommand();
         }
 
-        public override DbConnection OpenConnection()
+        public override DbConnection NewConnection()
         {
-            if (connection == null)
-            {
-                connection = new SqlConnection(db.config.connectionString);
-            }
-
-            if (connection.State == ConnectionState.Closed)
-            {
-                connection.Open();
-            }
-
+            connection = new SqlConnection(db.config.connectionString);
             return connection;
         }
 
-        // Method to close the connection
-        public override void CloseConnection()
-        {
-            if (connection.State == ConnectionState.Open)
-                connection.Close();
-        }
-
-            
 
         protected override void AddWithValue(DbCommand command, string columnName, object value)
         {

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
 
@@ -137,7 +138,51 @@ namespace Utils
             } );
         }
 
-        public static bool IsNullOrEmpty(this IList? List)
+        public static bool IsNullOrEmpty(this object value)
+        {
+            if (value == null)
+            {
+                return true;
+            }
+
+            Type type = value.GetType();
+
+
+            if (type == typeof(string))
+                return string.IsNullOrEmpty(value as string);
+
+            // Special case for numeric types to check for default value (0)
+            if (IsNumericType(type))
+            {
+                return value!.ToString()!.Equals("0");
+            }
+
+            // Special case for collections to check for empty collection
+            if (value is ICollection collection)
+            {
+                return collection.Count == 0;
+            }
+
+            // Handle value types and their default values
+            return false;
+        }
+
+        private static bool IsNumericType(Type type)
+        {
+            return type == typeof(byte) ||
+                   type == typeof(sbyte) ||
+                   type == typeof(short) ||
+                   type == typeof(ushort) ||
+                   type == typeof(int) ||
+                   type == typeof(uint) ||
+                   type == typeof(long) ||
+                   type == typeof(ulong) ||
+                   type == typeof(float) ||
+                   type == typeof(double) ||
+                   type == typeof(decimal);
+        }
+
+        /*public static bool IsNullOrEmpty(this IList? List)
         {
             return List == null || List.Count < 1;
         }
@@ -164,7 +209,7 @@ namespace Utils
                 return String.IsNullOrEmpty((string)o);
             }
             return false;
-        }
+        }*/
 
         public static bool IsList(this object o)
         {

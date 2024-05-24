@@ -802,7 +802,7 @@ namespace SqlOrganize
             }
             else if (field.defaultValue.ToString()!.ToLower().Contains("max"))
             {
-                long max = db.GetMaxValue(field.entityName, field.name);
+                long max = db.Sql(field.entityName).SelectMaxValueCast(field.name, "long").Value<long>();
                 return max + 1;
             }
             else

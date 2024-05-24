@@ -1,4 +1,5 @@
 ﻿ using System.Collections;
+using System.Data;
 using System.Data.Common;
 using Utils;
 
@@ -150,10 +151,25 @@ namespace SqlOrganize
             Exec(connection!, transaction!, command);
         }
 
-        public abstract DbConnection OpenConnection();
+        public abstract DbConnection NewConnection();
 
-        public abstract void CloseConnection();
+        public DbConnection OpenConnection()
+        {
+            if (connection == null)
+                connection = NewConnection();
 
+            if (connection.State == ConnectionState.Closed)
+                connection.Open();
+
+            return connection;
+        }
+
+        // Method to close the connection
+        public void CloseConnection()
+        {
+            if (connection.State == ConnectionState.Open)
+                connection.Close();
+        }
 
         public void BeginTransaction()
         {

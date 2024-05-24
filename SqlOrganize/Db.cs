@@ -146,10 +146,6 @@ namespace SqlOrganize
             return (fieldId, fieldName, refEntityName);
         }
 
-        /// <summary>
-        /// No deberia estar en Query???
-        /// </summary>
-        public abstract long GetMaxValue(string entityName, string fieldName);
 
     }
 
