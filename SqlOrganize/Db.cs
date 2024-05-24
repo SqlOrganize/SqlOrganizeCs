@@ -112,10 +112,6 @@ namespace SqlOrganize
         /// <returns>Instancia de Query</returns>
         public abstract Query Query();
 
-        public abstract Query Query(EntitySql select);
-
-        public abstract Query Query(EntityPersist persist);
-
         public abstract EntitySql Sql(string entity_name);
 
         public EntityCache Cache(EntitySql sql){
