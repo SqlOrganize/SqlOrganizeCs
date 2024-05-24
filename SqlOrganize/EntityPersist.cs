@@ -13,7 +13,7 @@ namespace SqlOrganize
     {
         /// <summary>conexion opcional</summary>
         protected DbConnection? connection;
-        
+
         /// <summary>transaccion opcional</summary>
         protected DbTransaction transaction;
 
@@ -94,7 +94,7 @@ namespace SqlOrganize
         public EntityPersist DeleteIds(string _entityName, params object[] ids)
         {
             Entity e = Db.Entity(_entityName);
-  
+
             sql += @"
 DELETE " + e.alias + " FROM " + e.name + " " + e.alias + @"
 ";
@@ -105,7 +105,7 @@ DELETE " + e.alias + " FROM " + e.name + " " + e.alias + @"
         }
 
         abstract protected EntityPersist _Update(string _entityName, IDictionary<string, object?> row);
-        
+
         public EntityPersist Update(EntityValues values)
         {
             return Update(values.entityName, values.Values());
@@ -154,7 +154,7 @@ WHERE " + id + " = @" + count + @";
                 foreach (var id in ids)
                     detail.Add((_entityName!, id, "update"));
             }
-            
+
             return this;
         }
 
@@ -278,7 +278,7 @@ VALUES (";
         {
             return sql;
         }
-        
+
 
         public EntityPersist PersistObj(string entityName, object obj)
         {
@@ -303,15 +303,15 @@ VALUES (";
             EntityValues v = Db.Values(_entityName!).Set(row);
             return Persist(v);
         }
-        
-        
+
+
         /// <summary>Comportamiento general de persistencia</summary>
         /// <remarks>Dependiendo del contexto se puede evitar el codigo adicional generado por el comportamiento general</remarks>
         public EntityPersist Persist(EntityValues v)
         {
             v.Reset();
-            EntitySql q = Db.Sql(v.entityName!).Unique(v.Values());
-            IEnumerable<Dictionary<string, object?>> rows = q.ColOfDict();
+            var esql = Db.Sql(v.entityName!).Unique(v.Values());
+            IEnumerable<Dictionary<string, object?>> rows = esql.ColOfDict();
 
             if (rows.Count() > 1)
                 throw new Exception("La consulta por campos unicos retorno mas de un resultado");
@@ -331,13 +331,44 @@ VALUES (";
 
             if (!v.Values().ContainsKey(Db.config.id) || v.Values()[Db.config.id].IsNullOrEmptyOrDbNull())
                 v.SetDefault(Db.config.id);
-                    
+
             v.Default().Reset(Db.config.id).Check();
 
             if (v.Logging.HasErrors())
                 throw new Exception("Los campos a insertar poseen errores: " + v.Logging.ToString());
 
             return Insert(v.entityName, v.Values());
+        }
+
+        public EntityPersist PersistCondition(EntityValues v, object? condition)
+        {
+            if (condition.IsNullOrEmptyOrDbNull())
+            {
+                v.Default().Reset();
+                if (!v.Check())
+                    throw new Exception("INSERT ERROR - " + v.Logging.ToString());
+
+                return Insert(v);
+            }
+
+            v.Reset();
+
+            if (!v.Check())
+                throw new Exception("UPDATE ERROR - " + v.Logging.ToString());
+
+            return Update(v);
+        } 
+
+        public Query Query(Query q)
+        {
+            q.sql = Sql();
+            q.parameters = parameters;
+            return q;
+        }
+
+        public Query Query()
+        {
+            return Query(Db.Query());
         }
 
     }
