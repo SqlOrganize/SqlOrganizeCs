@@ -782,7 +782,11 @@ namespace SqlOrganize
                     if (field.defaultValue.ToString()!.ToLower().Contains("new"))
                         return Guid.NewGuid();
                     else
-                        return field.defaultValue;
+                    {
+                        var guidString = Regex.Replace(field.defaultValue.ToString()!, @"[^a-zA-Z0-9-]", string.Empty);
+                        return Guid.Parse(guidString);
+                    }
+                        
 
                 default:
                     return field.defaultValue;
