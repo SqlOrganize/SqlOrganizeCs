@@ -52,20 +52,6 @@ namespace SqlOrganizeSs
             return new QuerySs(this);
         }
 
-        public override Query Query(EntitySql sql)
-        {
-            return new QuerySs(this, sql);
-        }
 
-        public override Query Query(EntityPersist persist)
-        {
-            return new QuerySs(this, persist);
-        }
-
-        //TODO reemplazar por Sql(entityName).MaxValueAsBigint(fieldName).Value<long>();
-        public override long GetMaxValue(string entityName, string fieldName)
-        {
-            return Sql(entityName).Select("CAST ( ISNULL( MAX($" + fieldName + "), 0) AS bigint)").Value<long>();
-        }
     }
 }
