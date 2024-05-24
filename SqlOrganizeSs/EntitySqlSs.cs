@@ -37,19 +37,10 @@ FETCH FIRST " + size + " ROWS ONLY";
         /// <returns></returns>
         protected override string SqlFields()
         {
-            if (this.fields.IsNullOrEmpty() && this.select.IsNullOrEmpty() && this.group.IsNullOrEmpty())
-                this.Fields();
 
-            string f = TraduceFields(this.fields);
+            string f = _SqlFieldsInit();
 
-            f += Concat(Traduce(this.select), @",
-", "", !f.IsNullOrEmpty());
-
-            f += Concat(Traduce(this.group, true), @",
-", "", !f.IsNullOrEmpty());
-
-
-            string o = order.Replace("ASC", "").Replace("asc", "").Replace("DESC", "").Replace("desc", "").Trim();
+            string o = order.Replace(" ASC", "").Replace(" asc", "").Replace(" DESC", "").Replace(" desc", "").Trim();
             f += Concat(Traduce(o, true), @",
 ", "", !f.IsNullOrEmpty());
             var f_aux = f.Split(',').ToList();
@@ -74,6 +65,12 @@ FETCH FIRST " + size + " ROWS ONLY";
         {
             var eq = new EntitySqlSs(Db, entityName);
             return _Clone(eq);
+        }
+
+        public override EntitySql SelectMaxValueCast(string fieldName, string sqlType)
+        {
+            select += "CAST ( ISNULL( MAX($" + fieldName + "), 0) AS " + sqlType + ")";
+            return this;
         }
     }
 

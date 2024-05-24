@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using SqlOrganize;
+using System.Data;
 using System.Data.Common;
 using Utils;
 
@@ -14,14 +15,6 @@ namespace SqlOrganizeSs
         {
         }
 
-	public QuerySs(Db db, EntitySql sql) : base(db, sql)
-        {
-        }
-
-        public QuerySs(Db db, EntityPersist persist) : base(db, persist)
-        {
-        }
-
         public override DbCommand NewCommand()
         {
             return new SqlCommand();
@@ -29,10 +22,27 @@ namespace SqlOrganizeSs
 
         public override DbConnection OpenConnection()
         {
-            connection = new SqlConnection(db.config.connectionString);
-            connection.Open();
+            if (connection == null)
+            {
+                connection = new SqlConnection(db.config.connectionString);
+            }
+
+            if (connection.State == ConnectionState.Closed)
+            {
+                connection.Open();
+            }
+
             return connection;
         }
+
+        // Method to close the connection
+        public override void CloseConnection()
+        {
+            if (connection.State == ConnectionState.Open)
+                connection.Close();
+        }
+
+            
 
         protected override void AddWithValue(DbCommand command, string columnName, object value)
         {
