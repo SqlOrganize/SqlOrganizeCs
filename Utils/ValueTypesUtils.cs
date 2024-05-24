@@ -345,5 +345,17 @@ namespace Utils
             }
         }
 
+
+        public static string ConvertTextToHtml(this string text)
+        {
+            // Reemplaza caracteres especiales de HTML
+            string html = System.Net.WebUtility.HtmlEncode(text);
+
+            // Reemplaza saltos de línea con etiquetas <br>
+            html = html.Replace("\r\n", "<br>");
+
+            return html;
+        }
+
     }
 }

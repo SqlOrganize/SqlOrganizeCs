@@ -499,21 +499,43 @@ namespace SqlOrganize
                 }
 
             foreach (var fieldName in fieldNames) {
-                if (ignoreNonExistent && !dict1_.ContainsKey(fieldName))
+                if (ignoreNonExistent && (!dict1_.ContainsKey(fieldName) || !dict2_.ContainsKey(fieldName)))
                     continue;
 
-                if (dict2_.ContainsKey(fieldName) && (ignoreNull && !dict2_[fieldName]!.IsNullOrEmptyOrDbNull()))
-                {
-                    if (dict1_[fieldName].IsNullOrEmptyOrDbNull() && dict2_[fieldName].IsNullOrEmptyOrDbNull())
-                        continue;
+                if (ignoreNull && (!dict2_.ContainsKey(fieldName) || dict2_[fieldName].IsNullOrEmptyOrDbNull()))
+                    continue;
 
-                    if (
-                        !dict1_.ContainsKey(fieldName)
-                        || (dict1_[fieldName].IsNullOrEmptyOrDbNull() && !dict2_[fieldName].IsNullOrEmptyOrDbNull())
-                        || (!dict1_[fieldName].IsNullOrEmptyOrDbNull() && dict2_[fieldName].IsNullOrEmptyOrDbNull())
-                        || !dict1_[fieldName]!.ToString()!.Equals(dict2_[fieldName]!.ToString()!)
-                    )
-                        response[fieldName] = dict2_[fieldName];
+                if(!dict1_.ContainsKey(fieldName) && dict2_.ContainsKey(fieldName))
+                {
+                    response[fieldName] = dict2_[fieldName];
+                    continue;
+                }
+
+                if (dict1_.ContainsKey(fieldName) && !dict2_.ContainsKey(fieldName))
+                {
+                    response[fieldName] = "UNDEFINED";
+                    continue;
+                }
+
+                if (dict1_[fieldName].IsNullOrEmptyOrDbNull() && dict2_[fieldName].IsNullOrEmptyOrDbNull())
+                    continue;
+
+                if (dict1_[fieldName].IsNullOrEmptyOrDbNull() && !dict2_[fieldName].IsNullOrEmptyOrDbNull())
+                {
+                    response[fieldName] = dict2_[fieldName];
+                    continue;
+                }
+
+                if (!dict1_[fieldName].IsNullOrEmptyOrDbNull() && dict2_[fieldName].IsNullOrEmptyOrDbNull())
+                {
+                    response[fieldName] = dict2_[fieldName];
+                    continue;
+                }
+
+                if (!dict1_[fieldName]!.ToString()!.Equals(dict2_[fieldName]!.ToString()!))
+                {
+                    response[fieldName] = dict2_[fieldName];
+                    continue;
                 }
             }
             return response;
@@ -810,6 +832,13 @@ namespace SqlOrganize
                 return field.defaultValue;
             }
         }
+
+
+        public bool IsNullOrEmpty(string fieldName)
+        {
+            return GetOrNull(fieldName).IsNullOrEmptyOrDbNull();
+        }
+
     }
 
 

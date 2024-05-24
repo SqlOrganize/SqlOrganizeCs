@@ -27,7 +27,6 @@ namespace SqlOrganizeMy
             return connection;
         }
 
-
         protected override void AddWithValue(DbCommand command, string columnName, object value)
         {
             (command as MySqlCommand)!.Parameters.AddWithValue(columnName, value);
