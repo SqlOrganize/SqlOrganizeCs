@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SqlOrganize.Exceptions;
 using System.Text.RegularExpressions;
 using Utils;
@@ -127,9 +128,13 @@ namespace SqlOrganize
                 {
                     if ((key == fieldName) && (!value.IsNullOrEmptyOrDbNull()))
                     {
-                        var v = (value == null) ? DBNull.Value : value;
+                        if(value == null)
+                        {
+                            whereUniqueList.Add("$" + key + " IS NULL");
+                            break;
+                        }
                         whereUniqueList.Add("$" + key + " = @" + parameters.Count);
-                        parameters.Add(v);
+                        parameters.Add(value);
                         break;
                     }
                 }
@@ -176,10 +181,14 @@ namespace SqlOrganize
                 foreach(var (key, value) in param)
                     if (key == field)
                     {
-                        var v = (value == null) ? DBNull.Value : value;
                         existsUniqueMultiple = true;
+                        if (value == null)
+                        {
+                            whereMultipleList.Add("$" + key + " IS NULL");
+                            break;
+                        }
                         whereMultipleList.Add("$" + key + " = @" + parameters.Count);
-                        parameters.Add(v);
+                        parameters.Add(value);
                         break;
                     }
                 
@@ -359,12 +368,8 @@ namespace SqlOrganize
             return this;
         }
 
-        //valido solo para sql server
-        public EntitySql MaxValueAsBigint(string fieldName) 
-        {
-            select += "CAST ( ISNULL( MAX($" + fieldName + "), 0) AS bigint)";
-            return this;
-        }
+
+        public abstract EntitySql SelectMaxValueCast(string fieldName, string sqlType = "int");
 
         protected string SqlJoin()
         {
@@ -426,9 +431,9 @@ namespace SqlOrganize
 
         protected abstract string SqlOrder();
 
-        protected virtual string SqlFields()
+        protected string _SqlFieldsInit()
         {
-            if(this.fields.IsNullOrEmpty() && this.select.IsNullOrEmpty() && this.group.IsNullOrEmpty())
+            if (this.fields.IsNullOrEmpty() && this.select.IsNullOrEmpty() && this.group.IsNullOrEmpty())
                 this.Fields();
 
             string f = TraduceFields(this.fields);
@@ -442,6 +447,8 @@ namespace SqlOrganize
             return f + @"
 ";
         }
+
+        protected abstract string SqlFields();
 
         protected string SqlFrom()
         {
@@ -487,15 +494,44 @@ namespace SqlOrganize
             return eq;
         }
 
+        /// <summary>Asignar parametros a una instancia de Query</summary>
+        public Query Query(Query q)
+        {
+            string sql = Sql();
+            var parameters = this.parameters.ToList();
 
-        
+            #region Transformar parametersDict to parameters
+            if (parametersDict.Keys.Count > 0)
+            {
+                //debe recorrerse de forma ordenada por longitud, si un campo se llama "persona" y otro "persona_adicional"  y no se recorre ordenado descendiente, el resultado es erroneo.
+                var keys = parametersDict.Keys.SortByLength("DESC");
 
- 
+                var j = parameters.Count;
 
+                foreach (string key in keys)
+                    while (sql.Contains("@" + key))
+                    {
+                        sql = sql.Replace("@" + key, "@" + j.ToString());
+                        parameters.Add(parametersDict[key]);
+                        j++;
+                    }
+            }
 
+            q.sql = sql;
+            q.parameters = parameters;
+            return q;
+            #endregion
+        }
 
+        /// <summary>Crear y asignar parametros a una instancia de Query</summary>
+        public Query Query()
+        {
+            return Query(Db.Query());
+        }
+
+        public EntityCache Cache()
+        {
+            return Db.Cache(this);
+        }
     }
-
-
-   
 }
