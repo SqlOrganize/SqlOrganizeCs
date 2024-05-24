@@ -35,6 +35,14 @@ namespace SqlOrganizeMy
             var eq = new EntitySqlMy(Db, entityName);
             return _Clone(eq);
         }
+		
+		protected override SqlFields()
+		{
+
+            var f = _SqlFieldsInit();
+            return f + @"
+";
+        }
     }
 
 }

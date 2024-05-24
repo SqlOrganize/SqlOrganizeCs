@@ -3,9 +3,13 @@ CHANGELOG
 0.2
 	* Modelo: Nueva estructura de clases de datos, independiente de ContainerApp, debe recibir en el constructor opcionalmente una instancia de Db.
 	* Clase Mapping: Incorporar interpretación de funciones "especiales" en los campos, ej ".str" (utiliza CastString).
-	* EntitySql: Incorporar MasValueAsBigint.
-	* EntityValues: Renombrar DefaultField por GetDefault.
-
+	* EntitySql: Incorporar métodos MasValueAsBigint, Query, Cache.
+	* EntityPersist: Incorporar métodos Query, PersistCondition.
+	* EntityValues: Renombrar DefaultField por GetDefault. Corregir definicion de valor por defecto GUID. Incorporar extension methods Persist y PersistCondition para EntityValues
+	* EntityQuery: Eliminar uso de atributo parametersDict. Cuando el contructor se llame con EntitySql, parametersDict será asignado a parameters en el constructor.
+	* Data: Incorporar propiedad de uso opcional IsUpdated.
+	* Query: Eliminar constructores con atributos EntitySql y EntityPersist. Agregar método CloseConnection. Modificar OpenConnection.	
+	
 0.1 
 	* Reemplazo EntityQuery por EntitySql (Definir Sql), la ejecución de Sql se realiza a través de extension methods y clase Query.
 	* Eliminar clase DAO, reemplazar por ExtensionMethods.
@@ -13,5 +17,6 @@ CHANGELOG
 	* Cambio en EntityPersist, solo define SQL, la ejecución de consultas de persistencia directamente como ExtensionMethods.
 	* Implementar IDisposable en clase Query.
 	* Transformar metodos de DataGridUtils como extension methods.
+	
 0.0 
 	* Estructura inicial.
