@@ -46,7 +46,7 @@ namespace SqlOrganize
             return this;
         }
 
-        public EntityValues ValuesObj(object obj)
+        public EntityValues Values(Data obj)
         {
             values = obj.Dict() ?? new Dictionary<string, object?>();
             return this;
@@ -66,7 +66,7 @@ namespace SqlOrganize
             return this;
         }
 
-        public EntityValues SetObj(object o)
+        public EntityValues Set(Data o)
         {
             var d = o.Dict();
             return Set(d);

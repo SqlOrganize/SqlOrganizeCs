@@ -23,7 +23,7 @@ namespace SqlOrganizeMy
 
         public override DbConnection NewConnection()
         {
-            connection = new MySqlCommand(db.config.connectionString);
+            connection = new MySqlConnection(db.config.connectionString);
             return connection;
         }
 

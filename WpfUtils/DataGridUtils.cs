@@ -171,12 +171,12 @@ namespace WpfUtils
             }
         }
 
-        public static void SaveRowFromDataGrid(this Db db, string entityName, object data, string title = "")
+        public static void SaveRowFromDataGrid(this Db db, string entityName, Data data, string title = "")
         {
             var p = db.Persist();
             try
             {
-                p.PersistObj(entityName, data).Exec().RemoveCache();
+                p.Persist(entityName, data).Exec().RemoveCache();
                 new ToastContentBuilder()
                  .AddText(title)
                  .AddText("Registro realizado")

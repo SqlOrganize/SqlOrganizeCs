@@ -78,9 +78,9 @@ namespace SqlOrganize
             return this;
         }
 
-        public EntitySql SearchObj(object param)
+        public EntitySql Search(Data data)
         {
-            var d = param.Dict();
+            var d = data.Dict();
             return Search(d);
         }
 
@@ -105,7 +105,7 @@ namespace SqlOrganize
             return this;
         }
 
-        public EntitySql UniqueObj(object obj)
+        public EntitySql Unique(Data obj)
         {
             var d = obj.Dict();
             return Unique(d);

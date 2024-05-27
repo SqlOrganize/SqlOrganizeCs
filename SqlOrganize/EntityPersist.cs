@@ -228,7 +228,7 @@ WHERE " + id + " = @" + count + @";
 
         /// <summary>Insercion de objeto</summary>
         /// <remarks>Transforma el objeto en un diccionario y ejecuta insercion basica</remarks>
-        public EntityPersist InsertObj(string _entityName, object obj)
+        public EntityPersist Insert(string _entityName, Data obj)
         {
             IDictionary<string, object?> dict = obj.Dict();
             return Insert(_entityName, dict);
@@ -280,7 +280,7 @@ VALUES (";
         }
 
 
-        public EntityPersist PersistObj(string entityName, object obj)
+        public EntityPersist Persist(string entityName, Data obj)
         {
             IDictionary<string, object?> row = obj.Dict();
             return Persist(entityName, row);
