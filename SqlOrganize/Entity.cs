@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Utils;
 
 namespace SqlOrganize
 {
@@ -29,6 +30,11 @@ namespace SqlOrganize
         public List<string> fields { get; set; } = new();
         public List<string> fk { get; set; } = new();
 
+        protected List<Field> _ref; //ref
+
+        protected List<Field> _oor; //one to one (fk in ref)
+
+        protected List<Field> _om; //one to many
 
         /* 
         array dinamico para identificar univocamente a una entidad en un momento determinado
@@ -109,6 +115,58 @@ namespace SqlOrganize
         fields many to one
         */
         public List<Field> FieldsFk() => _Fields(fk);
+
+        public List<Field> FieldsRef()
+        {
+
+            if (_ref != null)
+                return _ref;
+
+            _ref = new();
+            _oor = new();
+            _om = new();
+
+            foreach (var (entityName, entity) in db.entities)
+            {
+                foreach(var fieldName in entity.fk)
+                {
+                    Field field = db.Field(entityName, fieldName);
+                    if (field.refEntityName!.Equals(name))
+                    {
+                        _ref.Add(field);
+                        if (entity.unique.Contains(field.name))
+                            _oor.Add(field);
+                        else
+                            _om.Add(field);
+                    }
+                }
+            }
+
+            return _ref;
+        }
+
+        public List<Field> FieldsOor()
+        {
+
+            if (_oor != null)
+                return _oor;
+
+            FieldsRef();
+
+            return _oor!;
+        }
+
+        public List<Field> FieldsOm()
+        {
+
+            if (_om != null)
+                return _om;
+
+            FieldsRef();
+
+            return _om!;
+        }
+
 
     }
 }

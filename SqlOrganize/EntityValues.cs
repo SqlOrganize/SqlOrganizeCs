@@ -222,6 +222,36 @@ namespace SqlOrganize
                     }
                     break;
 
+                case "short":
+                    if (value is short)
+                        values[fieldName] = value;
+                    else
+                    {
+                        var v = value.ToString()!;
+                        values[fieldName] = (v == "") ? null : short.Parse(v);
+                    }
+                    break;
+
+                case "ushort":
+                    if (value is ushort)
+                        values[fieldName] = value;
+                    else
+                    {
+                        var v = value.ToString()!;
+                        values[fieldName] = (v == "") ? null : ushort.Parse(v);
+                    }
+                    break;
+
+                case "byte":
+                    if (value is byte)
+                        values[fieldName] = value;
+                    else
+                    {
+                        var v = value.ToString()!;
+                        values[fieldName] = (v == "") ? null : byte.Parse(v);
+                    }
+                    break;
+
                 case "bool":
                     if (value is bool)
                         values[fieldName] = (bool)value;
@@ -234,6 +264,10 @@ namespace SqlOrganize
                         values[fieldName] = (DateTime)value;
                     else
                         values[fieldName] = DateTime.Parse(value.ToString()!);
+                    break;
+
+                default:
+                    Set(fieldName, value);
                     break;
             }
 

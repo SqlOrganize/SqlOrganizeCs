@@ -73,7 +73,7 @@ namespace SqlOrganize
 
         public bool IsRequired()
         {
-            var entity = this.db.Entity(entityName);
+            var entity = db.Entity(entityName);
             return (entity.notNull.Contains(this.name));
         }
 

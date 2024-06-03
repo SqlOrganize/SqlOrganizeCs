@@ -231,7 +231,7 @@ namespace SqlOrganize
                 {
                     var p = (parameters[i] == null) ? DBNull.Value : parameters[i];
                     sql = sql.Replace("@" + i.ToString(), "@_" + i.ToString()); //renombro para evitar doble asignacion
-                    AddWithValue(command, "_" + i.ToString(), p);
+                    AddWithValue(command, "@_" + i.ToString(), p);
                 }
             }
             #endregion  
