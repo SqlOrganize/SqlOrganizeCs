@@ -10,15 +10,13 @@
         /// </summary>
         public virtual string docPath { get; set; } = "./Doc/";
 
-        /// <summary>
-        /// Alias reservados que no deben ser incluidos en el modelo
-        /// </summary>
+        /// <summary>Alias reservados que no deben ser incluidos en el modelo</summary>
         public virtual List<string> reservedAlias { get; set; } = new List<string>();
 
-        /// <summary>
-        /// Entidades reservadas que no seran incluidas en el modelo
-        /// </summary>
-        public virtual List<string> reservedEntities { get; set; } = new List<string>();
+        /// <summary>Entidades reservadas que no seran incluidas en el modelo</summary>
+        /// <remarks>Asignamos nombre habitual de tabla de auditorias</remarks>
+
+        public virtual List<string> reservedEntities { get; set; } = new List<string>() { "AuditLog" };
 
 
         /// <summary>
