@@ -44,7 +44,7 @@ namespace SqlOrganize
         {
             return esql.Cache()._CacheByIds(ids);
         }
-        public static IDictionary<string, object?>? RowByFieldValue(this EntitySql entitySql, string fieldName, object value)
+        public static IDictionary<string, object?>? GetByFieldValue(this EntitySql entitySql, string fieldName, object value)
         {
             return entitySql.Where("$" + fieldName + " = @0").Parameters(value).DictCache();
         }
@@ -183,7 +183,7 @@ namespace SqlOrganize
         
         public static EntityPersist TransferOm(this EntityPersist persist, string entityName, object origenId, object destinoId)
         {
-            List<Field> fieldsOmPersona = persist.Db.Entity(entityName).FieldOm();
+            List<Field> fieldsOmPersona = persist.Db.Entity(entityName).FieldsOm();
             foreach (var field in fieldsOmPersona)
             {
                 IEnumerable<object> ids = persist.Db.Sql(field.entityName).Where(field.name + " = @0").Parameters(origenId).Column<object>("id");
@@ -219,7 +219,7 @@ namespace SqlOrganize
 
         public static IDictionary<string, object?>? RowByFieldValue(this EntityValues entityValues, string fieldName)
         {
-            return entityValues.db.Sql(entityValues.entityName).RowByFieldValue(fieldName, entityValues.Get(fieldName));
+            return entityValues.db.Sql(entityValues.entityName).GetByFieldValue(fieldName, entityValues.Get(fieldName));
         }
 
         public static EntityPersist PersistId(this EntityValues v)

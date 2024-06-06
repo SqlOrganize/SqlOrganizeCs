@@ -42,7 +42,8 @@ namespace ModelOrganize
 
             if (alias != null)
             {
-                name = name + separator + alias;
+                string al = (alias.Length >= 3) ? alias.Substring(0, 3) : alias;
+                name = name + separator + al;
                 return GetFieldId(name);
             }
 

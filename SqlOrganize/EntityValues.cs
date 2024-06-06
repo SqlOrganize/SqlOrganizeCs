@@ -557,7 +557,7 @@ namespace SqlOrganize
                     continue;
                 }
 
-                if (!dict1_[fieldName]!.ToString()!.Equals(dict2_[fieldName]!.ToString()!))
+                if (!dict1_[fieldName]!.ToString()!.ToLower().Trim()!.Equals(dict2_[fieldName]!.ToString()!.ToLower().Trim()!))
                 {
                     response[fieldName] = dict2_[fieldName];
                     continue;
@@ -854,7 +854,8 @@ namespace SqlOrganize
             }
             else if (field.defaultValue.ToString()!.ToLower().Contains("max"))
             {
-                long max = db.Sql(field.entityName).SelectMaxValueCast(field.name, "bigint").Value<long>();
+                object max_ = db.Sql(field.entityName).SelectMaxValueCast(field.name).Value<object>();
+                long max = Convert.ToInt64(max_);
                 return max + 1;
             }
             else
