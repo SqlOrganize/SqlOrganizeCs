@@ -12,6 +12,9 @@ namespace SqlOrganize
         /// <summary>Propiedad opcional para indicar que se esta actualizando</summary>
         public bool _isUpdated = false;
 
+        /// <summary>Campos a ignorar para marcar isUpdated</summary>
+        public List<string> _isUpdatedIgnore = new() { nameof(IsUpdated), nameof(Msg), nameof(Error) };
+
         /// <summary>Flag opcional para indicar que debe ejecutarse la validacion</summary>
         public bool _Validate = false;
 
@@ -64,6 +67,8 @@ namespace SqlOrganize
 
         public string Msg { get; set; } = "";
 
+        
+        /// <summary>Cargar en false al finalizar la inicializacion</summary>
         public bool IsUpdated
         {
             get { return _isUpdated; }
@@ -72,7 +77,7 @@ namespace SqlOrganize
                 if(_isUpdated != value)
                 {
                     _isUpdated = value;
-                    NotifyPropertyChanged("IsUpdated");
+                    NotifyPropertyChanged(nameof(IsUpdated));
                 }
             }
         }
@@ -81,7 +86,7 @@ namespace SqlOrganize
 
         protected void NotifyPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] String propertyName = "")
         {
-            if(!propertyName.Equals(nameof(IsUpdated)))
+            if(!_isUpdatedIgnore.Contains(propertyName))
                 IsUpdated = true;
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

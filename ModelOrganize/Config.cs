@@ -45,7 +45,7 @@
         /// <summary>
         /// Referencia para definir los alias e identificadores de fields 
         /// </summary>
-        public virtual string idSource { get; set; } = "entity_name"; //field_name or entity_name
+        public virtual string idSource { get; set; } = "field_name"; //field_name or entity_name
 
         /// <summary>
         /// Nombre del identificador único de las tablas       
