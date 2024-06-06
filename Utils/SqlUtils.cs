@@ -83,7 +83,7 @@ namespace Utils
             var result = new List<T>();
             while (reader.Read())
                 result.Add((T)reader.GetValue(columnNumber));
-            return result;
+            return result.ToArray();
         }
 
         public static bool IsNullOrEmptyOrDbNull(this object? value)

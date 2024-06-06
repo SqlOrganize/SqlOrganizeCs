@@ -67,9 +67,9 @@ FETCH FIRST " + size + " ROWS ONLY";
             return _Clone(eq);
         }
 
-        public override EntitySql SelectMaxValueCast(string fieldName, string sqlType)
+        public override EntitySql SelectMaxValueCast(string fieldName)
         {
-            select += "CAST ( ISNULL( MAX($" + fieldName + "), 0) AS " + sqlType + ")";
+            select += "ISNULL( MAX($" + fieldName + "), 0)";
             return this;
         }
     }
