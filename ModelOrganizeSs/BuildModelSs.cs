@@ -12,7 +12,7 @@ namespace ModelOrganizeSs
         {
         }
 
-        protected override List<string> GetTableNames()
+        protected override string[] GetTableNames()
         {
             using SqlConnection connection = new SqlConnection(Config.connectionString);
             connection.Open();

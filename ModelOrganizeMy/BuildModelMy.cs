@@ -14,7 +14,7 @@ namespace ModelOrganizeMy
         {
         }
 
-        protected override List<string> GetTableNames()
+        protected override string[] GetTableNames()
         {
             using MySqlConnection connection = new MySqlConnection(Config.connectionString);
             connection.Open();

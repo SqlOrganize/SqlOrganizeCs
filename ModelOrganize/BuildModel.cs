@@ -422,7 +422,7 @@ namespace ModelOrganize
             return aliasAux;
         }
 
-        protected abstract List<string> GetTableNames();
+        protected abstract string[] GetTableNames();
 
         protected abstract IEnumerable<Column> GetColumns(string tableName);
 
