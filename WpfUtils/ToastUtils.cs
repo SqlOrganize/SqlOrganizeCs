@@ -25,5 +25,23 @@ namespace WpfUtils
             .Show();
             #endregion
         }
+
+        /// <summary>Toast exception with fileName and lineNumber v1</summary>
+        /// <remarks>https://github.com/Pericial/GAP/issues/92#issuecomment-1988339359</remarks>
+        public static void ShowError(string message, string title = "")
+        {
+            new ToastContentBuilder()
+                .AddText(title)
+                .AddText("ERROR: " + message)
+            .Show();
+        }
+
+        public static void Show(string message, string title = "")
+        {
+            new ToastContentBuilder()
+                .AddText(title)
+                .AddText(message)
+            .Show();
+        }
     }
 }

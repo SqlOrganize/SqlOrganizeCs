@@ -100,21 +100,20 @@ namespace Utils
         public static string SubstringBetween(this string value, string a, string b)
         {
             int posA = value.IndexOf(a);
-            int posB = value.LastIndexOf(b);
+            
             if (posA == -1)
             {
                 return "";
             }
+
+            string _value = value.Substring(posA + a.Length);
+            int posB = _value.IndexOf(b);
             if (posB == -1)
             {
                 return "";
             }
-            int adjustedPosA = posA + a.Length;
-            if (adjustedPosA >= posB)
-            {
-                return "";
-            }
-            return value.Substring(adjustedPosA, posB - adjustedPosA);
+            
+            return _value.Substring(0, posB);
         }
 
         /// <summary>

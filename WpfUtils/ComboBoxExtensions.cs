@@ -4,56 +4,30 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using Utils;
 
-///OBSOLETO!!!!
 namespace WpfUtils
 {
-    //Comportamiento general para DataGrid
-    public static class AutocompleteUtils
+    //<summary>Extensiones para ComboBox</summary>
+    public static class ComboBoxExtensions
     {
-        ///<summary>Método General Autocomplete v2.2 - GotFocus</summary>
-        public static void GotFocus(object sender, RoutedEventArgs e)
+        public static void InitBooleanSiNo(ComboBox comboBox)
         {
-            (sender as ComboBox).IsDropDownOpen = true;
+            #region pendienteComboBox
+            comboBox.SelectedValuePath = "Key";
+            comboBox.DisplayMemberPath = "Value";
+            comboBox.Items.Add(new KeyValuePair<bool, string>(true, "Sí"));
+            comboBox.Items.Add(new KeyValuePair<bool, string>(false, "No"));
+            #endregion
         }
 
-        ///<summary>Método General Autocomplete v2.2 - TextChangedCompare</summary>
-        public static bool TextChangedCompare(ComboBox cb, string? label)
+        public static void InitBooleanNullSiNo(ComboBox comboBox)
         {
-            if (cb.Text.IsNullOrEmpty())
-                cb.IsDropDownOpen = true;
-            if (cb.SelectedIndex > -1)
-            {
-                if (cb.Text.Equals(label))
-                    return false;
-                cb.Text = "";
-                return true;
-            }
-
-            return true;
-        }
-
-        ///<summary>Método General Autocomplete v2.2 - SelectionChanged</summary>
-        public static void SelectionChanged(object sender, RoutedEventArgs e)
-        {
-            var cb = (ComboBox)sender;
-
-            if (cb.SelectedIndex < 0)
-                cb.IsDropDownOpen = true;
-        }
-
-        ///<summary>Método General Para Timers v2 - TextChangedTimer</summary>
-        public static void TextChangedTimer(string text, DispatcherTimer? timer, EventHandler e)
-        {
-            if (timer == null)
-            {
-                timer = new DispatcherTimer();
-                timer.Interval = TimeSpan.FromMilliseconds(300);
-                timer.Tick += e;
-            }
-
-            timer.Stop(); // Resets the timer
-            timer.Tag = text; // This should be done with EventArgs
-            timer.Start();
+            #region pendienteComboBox
+            comboBox.SelectedValuePath = "Key";
+            comboBox.DisplayMemberPath = "Value";
+            comboBox.Items.Add(new KeyValuePair<bool?, string>(null, "(Todos)"));
+            comboBox.Items.Add(new KeyValuePair<bool, string>(true, "Sí"));
+            comboBox.Items.Add(new KeyValuePair<bool, string>(false, "No"));
+            #endregion
         }
 
     }
