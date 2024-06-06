@@ -240,7 +240,7 @@ namespace SqlOrganize
             command.ExecuteNonQuery();
         }
 
-        public abstract List<string> GetTableNames();
+        public abstract string[] GetTableNames();
      
 
         #region metodos especiales que generan sql y devuelven directamente el valor
