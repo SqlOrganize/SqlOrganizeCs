@@ -108,7 +108,7 @@ namespace SqlOrganize
             return reader.ColumnValues<T>(columnName);
         }
 
-        public IEnumerable<T> Column<T>(int columnNumber = 0)
+        public T[] Column<T>(int columnNumber = 0)
         {
             using DbCommand command = NewCommand();
             Exec(connection!, command);
