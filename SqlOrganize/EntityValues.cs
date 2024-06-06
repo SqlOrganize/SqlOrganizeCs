@@ -352,8 +352,7 @@ namespace SqlOrganize
         public EntityValues Default()
         {
             foreach (var fieldName in fieldNames)
-                if (!values.ContainsKey(fieldName))
-                    Default(fieldName);
+                Default(fieldName); //Default chequea la existencia del campo fieldName en Values
 
             return this;
         }
@@ -758,6 +757,9 @@ namespace SqlOrganize
         }
 
         /// <summary>Devolver valor por defecto de field</summary>
+        /// <remarks>El valor especial "?" indica que se define valor por defecto fuera del modelo<br/>
+        /// El valor especial "max" indica que se define valor maximo posible<br/>
+        /// El valor especial "next" indica que se define valor siguiente de la secuencia</remarks>
         public object? GetDefault(string fieldName)
         {
             #region verificar existencia de metodo local
@@ -770,7 +772,7 @@ namespace SqlOrganize
 
             var field = db.Field(entityName, fieldName);
 
-            if (field.defaultValue is null)
+            if (field.defaultValue is null || field.defaultValue.ToString()!.StartsWith("?"))
                 return null;
 
             switch (field.type)
@@ -852,7 +854,7 @@ namespace SqlOrganize
             }
             else if (field.defaultValue.ToString()!.ToLower().Contains("max"))
             {
-                long max = db.Sql(field.entityName).SelectMaxValueCast(field.name, "long").Value<long>();
+                long max = db.Sql(field.entityName).SelectMaxValueCast(field.name, "bigint").Value<long>();
                 return max + 1;
             }
             else
