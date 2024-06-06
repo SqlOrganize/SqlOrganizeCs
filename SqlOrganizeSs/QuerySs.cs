@@ -32,7 +32,7 @@ namespace SqlOrganizeSs
             (command as SqlCommand)!.Parameters.AddWithValue(columnName, value);
         }
 
-        public override List<string> GetTableNames()
+        public override string[] GetTableNames()
         {
             using DbConnection connection = OpenConnection();
             using DbCommand command = (SqlCommand)NewCommand();
