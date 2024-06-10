@@ -19,7 +19,7 @@ namespace SqlOrganize
         public Validation Required()
         {
             if (value.IsNullOrEmptyOrDbNull()) {
-                errors.Add(("Value is null or empty", "required"));
+                errors.Add(("Valor nulo o vacío", "required"));
             }
             return this;
         }
@@ -30,13 +30,13 @@ namespace SqlOrganize
             {
                 case "string":
                     if(!value.IsNullOrEmptyOrDbNull() && value is not String)
-                        errors.Add(("Value is not string", "type"));
+                        errors.Add(("Valor no texto", "type"));
                 break;
 
                 case "integer":
                 case "int":
                     if (!value.IsNullOrEmptyOrDbNull() && value is not int)
-                        errors.Add(("Value is not int", "type"));
+                        errors.Add(("Valor no entero", "type"));
 
                 break;
             }

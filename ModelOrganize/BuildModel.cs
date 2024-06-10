@@ -606,7 +606,7 @@ namespace ModelOrganize
                     }
                     if (entity.unique.Contains(field.name))
                     {
-                        sw.WriteLine("                    if (!_" + fieldName + ".IsNullOrEmptyOrDbNull()) {");
+                        sw.WriteLine("                    if (!db.IsNullOrEmpty() && !_" + fieldName + ".IsNullOrEmptyOrDbNull()) {");
                         sw.WriteLine("                        var row = db.Sql(\"" + entityName + "\").Where(\"$" + fieldName + " = @0\").Parameters(_" + fieldName + ").DictCache();");
                         sw.WriteLine("                        if (!row.IsNullOrEmpty() && !_" + Config.id + ".ToString().Equals(row![\"" + Config.id + "\"]!.ToString()))");
                         sw.WriteLine("                            return \"Valor existente.\";");

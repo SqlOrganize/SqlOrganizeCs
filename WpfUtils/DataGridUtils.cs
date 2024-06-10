@@ -100,7 +100,7 @@ namespace WpfUtils
                     return false;
                 }
 
-                v.Persist();
+                v.Persist().Exec().RemoveCache();
                 new ToastContentBuilder()
                     .AddText("Registro realizado de " + entityName)
                     .Show();

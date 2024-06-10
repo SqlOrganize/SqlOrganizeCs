@@ -264,9 +264,9 @@ namespace SqlOrganize
         /// Cada motor debe tener su propia forma de definir Max Value!!! Derivar metodo a subclase
         /// </summary>
         /// <returns></returns>
-        public long GetMaxValue(string entityName, string fieldName)
+        public object GetMaxValue(string entityName, string fieldName)
         {
-            return db.Sql(entityName).Select("MAX($" + fieldName + ")").Value<long>();
+            return db.Sql(entityName).SelectMaxValue(fieldName).Value<object>();
         }
         #endregion
     }

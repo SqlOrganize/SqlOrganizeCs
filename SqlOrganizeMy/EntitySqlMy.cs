@@ -44,7 +44,7 @@ namespace SqlOrganizeMy
 ";
         }
 
-        public override EntitySql SelectMaxValueCast(string fieldName)
+        public override EntitySql SelectMaxValue(string fieldName)
         {
             select += "IFNULL( MAX($" + fieldName + "), 0)";
             return this;

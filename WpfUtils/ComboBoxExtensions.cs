@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using System.Windows.Input;
 using Utils;
 
 namespace WpfUtils
@@ -28,6 +29,16 @@ namespace WpfUtils
             comboBox.Items.Add(new KeyValuePair<bool, string>(true, "Sí"));
             comboBox.Items.Add(new KeyValuePair<bool, string>(false, "No"));
             #endregion
+        }
+
+        public static void SetKeyUp(KeyEventArgs e, DispatcherTimer timer)
+        {
+            if (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Enter || e.Key == Key.LeftShift || e.Key == Key.RightShift || e.Key == Key.Home || e.Key == Key.End)
+                return; // Skip navigation keys
+
+
+            timer.Stop();
+            timer.Start();
         }
 
     }

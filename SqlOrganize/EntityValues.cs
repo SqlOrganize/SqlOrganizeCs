@@ -21,8 +21,8 @@ namespace SqlOrganize
     /// </remarks>
     public class EntityValues : EntityFieldId
     {
-
-        protected List<string> fieldNames;
+        /// <summary>Se mantiene una lista independiente de fieldNames por si se necesitan definir fieldNames adicionales a los de la db para procesamiento o comparacion</summary>
+        protected List<string> fieldNames; 
 
         protected Logging logging = new Logging();
 
@@ -52,10 +52,8 @@ namespace SqlOrganize
             return this;
         }
      
-        /// <summary>
-        /// Existe valor de field
-        /// </summary>
-        public bool ContainsValue(string fieldId)
+        /// <summary>Existe valor de field</summary>
+        public bool ContainsKey(string fieldId)
         {
             return values.ContainsKey(fieldId);
         }
@@ -113,13 +111,11 @@ namespace SqlOrganize
 
         public object? GetOrNull(string fieldName)
         {
-            return (values.ContainsKey(fieldName) && !values[fieldName]!.IsNullOrEmptyOrDbNull()) ?
-                 values[fieldName] : null;
+            return values.ContainsKey(fieldName) ? values[fieldName] : null;
 
         }
 
-
-
+        /// <summary>Todos los valores de fieldName definidos con prefijo (si existe)</summary>
         public IDictionary<string, object?> Get()
         {
             Dictionary<string, object?> response = new();
@@ -130,11 +126,7 @@ namespace SqlOrganize
             return response;
         }
 
-        /// <summary>
-        /// Retornar formato SQL
-        /// </summary>
-        /// <param name="fieldName">n</param>
-        /// <returns>Formato SQL para el fieldName</returns>
+        /// <summary>Formato SQL</summary>
         /// <remarks>La conversion de formato es realizada directamente por la libreria SQL, pero para ciertos casos puede ser necesario <br/></remarks>
         public object Sql(string fieldName)
         {
@@ -164,15 +156,13 @@ namespace SqlOrganize
         }
 
 
-        /// <summary>
-        /// Seteo "lento", con verificacion y convercion de tipo de datos.
-        /// </summary>
-        /// <param name="fieldName"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        /// <remarks>Este metodo se encuentra en construccion!!! A medida que se van procesando los datos se agregan</remarks>
-        public EntityValues Sset(string fieldName, object? value)
+        /// <summary>Seteo "lento", con verificacion y convercion de tipo de datos</summary>
+        public EntityValues Sset(string _fieldName, object? value)
         {
+            string fieldName = _fieldName;
+            if (!Pf().IsNullOrEmpty() && _fieldName.Contains(Pf()))
+                fieldName = _fieldName.Replace(Pf(), "");
+
             var method = "Sset_" + fieldName;
             Type thisType = this.GetType();
             MethodInfo? m = thisType.GetMethod(method);
@@ -267,16 +257,14 @@ namespace SqlOrganize
                     break;
 
                 default:
-                    Set(fieldName, value);
+                    values[fieldName] = value;
                     break;
             }
 
             return this;
         }
 
-        /// <summary>
-        /// Resetear valores definidos
-        /// </summary>
+        /// <summary>Resetear valores definidos</summary>
         /// <returns></returns>
         public EntityValues Reset()
         {
@@ -293,12 +281,8 @@ namespace SqlOrganize
             return this;
         }
 
-        /// <summary>
-        /// Reasigna fieldName
-        /// </summary>
-        /// <param name="fieldName"></param>
+        /// <summary>Reasigna fieldName</summary>
         /// <remarks>fieldName debe estar definido obligatoriamente</remarks>
-        /// <returns></returns>
         public EntityValues Reset(string fieldName)
         {
             var method = "Reset_" + fieldName;
@@ -339,15 +323,27 @@ namespace SqlOrganize
                     case "setdefault":
                         values[fieldName] = GetDefault(fieldName);
                     break;
+
+                    case "cleandigits":
+                        if (!values[fieldName].IsNullOrEmptyOrDbNull())
+                        {
+                            values[fieldName] = values[fieldName]!.ToString().CleanStringOfDigits();
+                        }
+                        break;
+
+                    case "cleannondigits":
+                        if (!values[fieldName].IsNullOrEmptyOrDbNull())
+                        {
+                            values[fieldName] = values[fieldName]!.ToString().CleanStringOfNonDigits();
+                        }
+                        break;
                 }
             }
 
             return this;
         }
 
-        /// <summary>
-        /// Asignar valor por defecto para aquellos valores no definidos
-        /// </summary>
+        /// <summary>Asignar valor por defecto para aquellos valores no definidos</summary>
         /// <returns></returns>
         public EntityValues Default()
         {
@@ -400,12 +396,7 @@ namespace SqlOrganize
 
 
 
-        /// <summary>
-        /// Definir valor por defecto
-        /// </summary>
-        /// <param name="fieldName">Nombre del field al cual se va a definir valor por defecto</param>
-        /// <remarks>Solo se define valor por defecto si el field no se encuentra en atributo values</remarks>
-        /// <returns>Mismo objeto</returns>
+        /// <summary>Definir valor por defecto del field si no esta definido</summary>
         public EntityValues Default(string fieldName)
         {
             if (values.ContainsKey(fieldName))
@@ -415,9 +406,7 @@ namespace SqlOrganize
             return this;
         }
 
-        /// <summary>
-        /// Verificar campos
-        /// </summary>
+        /// <summary>Verificar campos definidos</summary>
         /// <returns>true si la verificacion es correcta, false caso contrario</returns>
         /// <remarks>Para obtener los errores utilizar logging.ToString()</remarks>
         public bool Check()
@@ -430,11 +419,10 @@ namespace SqlOrganize
             return !logging.HasErrors();
         }
 
-        /// <summary>
-        /// Validar valor del field
-        /// </summary>
+        /// <summary>Validar valor del field</summary>
         /// <param name="fieldName">Nombre del field a validar</param>
         /// <returns>Resultado de la validacion</returns>
+        /// <remarks>El field debe estar definido obligatoriamente</remarks>
         public bool Check(string fieldName)
         {
             logging.ClearByKey(fieldName);
@@ -478,145 +466,9 @@ namespace SqlOrganize
             return this;
         }
 
-
-        /// <summary>
-        /// Comparacion de EntityValues
-        /// </summary>
-        /// <param name="val"></param>
-        /// <param name="ignoreFields"></param>
-        /// <param name="ignoreNull"></param>
-        /// <param name="ignoreNonExistent"></param>
-        /// <returns></returns>
-        public IDictionary<string, object> Compare(EntityValues val, IEnumerable<string>? ignoreFields = null, bool ignoreNull = true, bool ignoreNonExistent = true)
-        {
-            return Compare(val.values!, ignoreFields, ignoreNull, ignoreNonExistent);
-        }
-
-
-        public IDictionary<string, object?> CompareFields(EntityValues val, IEnumerable<string> fieldsToCompare, bool ignoreNull = true, bool ignoreNonExistent = true)
-        {
-            return CompareFields(val.values!, fieldsToCompare, ignoreNull, ignoreNonExistent);
-        }
-
-
-        /// <summary>
-        /// Comparar valores con los indicados en parametro
-        /// </summary>
-        /// <param name="val">Valores externos a persistir<</param>
-        /// <param name="ignoreFields">Campos que seran ignorados en la comparacion<</param>
-        /// <param name="ignoreNull">Si el campo del parametro es nulo, sera ignorado en la comparacion<</param>
-        /// <param name="ignoreNonExistent">Si el campo no esta definido localmente, sera ignorado en la comparacion</param>
-
-        /// <returns>Valores del parametro que son diferentes o que no estan definidos localmente</returns>
-        /// <remarks>Solo compara fieldNames</remarks>
-        public virtual IDictionary<string, object?> Compare(IDictionary<string, object?> val, IEnumerable<string>? ignoreFields = null, bool ignoreNull = true, bool ignoreNonExistent = true)
-        {
-            Dictionary<string, object?> dict1_ = new(values);
-            Dictionary<string, object?> dict2_ = new(val);
-            Dictionary<string, object?> response = new();
-
-
-            if (!ignoreFields.IsNullOrEmpty())
-                foreach (var key in ignoreFields!)
-                {
-                    dict1_.Remove(key);
-                    dict2_.Remove(key);
-                }
-
-            foreach (var fieldName in fieldNames) {
-                if (ignoreNonExistent && (!dict1_.ContainsKey(fieldName) || !dict2_.ContainsKey(fieldName)))
-                    continue;
-
-                if (ignoreNull && (!dict2_.ContainsKey(fieldName) || dict2_[fieldName].IsNullOrEmptyOrDbNull()))
-                    continue;
-
-                if(!dict1_.ContainsKey(fieldName) && dict2_.ContainsKey(fieldName))
-                {
-                    response[fieldName] = dict2_[fieldName];
-                    continue;
-                }
-
-                if (dict1_.ContainsKey(fieldName) && !dict2_.ContainsKey(fieldName))
-                {
-                    response[fieldName] = "UNDEFINED";
-                    continue;
-                }
-
-                if (dict1_[fieldName].IsNullOrEmptyOrDbNull() && dict2_[fieldName].IsNullOrEmptyOrDbNull())
-                    continue;
-
-                if (dict1_[fieldName].IsNullOrEmptyOrDbNull() && !dict2_[fieldName].IsNullOrEmptyOrDbNull())
-                {
-                    response[fieldName] = dict2_[fieldName];
-                    continue;
-                }
-
-                if (!dict1_[fieldName].IsNullOrEmptyOrDbNull() && dict2_[fieldName].IsNullOrEmptyOrDbNull())
-                {
-                    response[fieldName] = dict2_[fieldName];
-                    continue;
-                }
-
-                if (!dict1_[fieldName]!.ToString()!.ToLower().Trim()!.Equals(dict2_[fieldName]!.ToString()!.ToLower().Trim()!))
-                {
-                    response[fieldName] = dict2_[fieldName];
-                    continue;
-                }
-            }
-            return response;
-        }
-
-        /// <summary>
-        /// Comparar valores con los indicados en parametro
-        /// </summary>
-        /// <remarks>Es similar a compare, pero se debe indicar obligatoriamente los campos que se desea comparar</remarks>
-        public virtual IDictionary<string, object?> CompareFields(IDictionary<string, object?> val, IEnumerable<string> fieldsToCompare, bool ignoreNull = true, bool ignoreNonExistent = true)
-        {
-            Dictionary<string, object?> dict1_ = new(values);
-            Dictionary<string, object?> dict2_ = new(val);
-            Dictionary<string, object?> response = new();
-
-            foreach (var fieldName in fieldNames)
-            {
-                if (!fieldsToCompare.Contains(fieldName))
-                    continue;
-
-                if (ignoreNonExistent && !dict1_.ContainsKey(fieldName))
-                    continue;
-
-                if (dict2_.ContainsKey(fieldName) && (ignoreNull && dict2_[fieldName] != null && !dict2_[fieldName].IsDbNull()))
-                    if (
-                        !dict1_.ContainsKey(fieldName)
-                        || !dict1_[fieldName].ToString().Equals(dict2_[fieldName].ToString())
-                    )
-                        response[fieldName] = dict2_[fieldName];
-            }
-            return response;
-        }
-
-
-        /// <summary>
-        /// Obtener siguiente valor de la secuencia para mysql
-        /// </summary>
-        /// <remarks>Esta implementación funciona en mysql, llevar a subclase</br>
-        /// Siempre devuelve el siguiente valor de la secuencia sin incrementar, si se utiliza en multiples transacciones de inserción consultar una sola vez e incrementar valor</remarks>
-        /// <param name="field"></param>
-        /// <returns></returns>
-        public ulong GetNextValue(Field field)
-        {
-            var q = db.Query();
-            q.sql = @"
-                            SELECT auto_increment 
-                            FROM INFORMATION_SCHEMA.TABLES 
-                            WHERE TABLE_NAME = @0";
-            q.parameters.Add(field.entityName);
-            return q.Value<ulong>();
-        }
-
         public EntityValues? ValuesTree(string fieldId)
         {
-            Entity entity = db.Entity(entityName);
-            EntityTree tree = entity.tree[fieldId];
+            EntityTree tree = db.Entity(entityName).tree[fieldId];
             object? val = GetOrNull(tree.fieldName);
             if (!val.IsNullOrEmpty())
             {
@@ -628,8 +480,7 @@ namespace SqlOrganize
 
         public EntityValues? ValuesRel(string fieldId)
         {
-            Entity entity = db.Entity(entityName);
-            EntityRelation rel = entity.relations[fieldId];
+            EntityRelation rel = db.Entity(entityName).relations[fieldId];
             if(rel.parentId == null)
             {
                 object? val = GetOrNull(rel.fieldName);
@@ -677,7 +528,7 @@ namespace SqlOrganize
 
         public override string ToString()
         {
-            List<string> fieldNames = ToStringWhat();
+            List<string> fieldNames = ToStringKeys();
 
             var label = "";
             foreach (string fieldName in fieldNames)
@@ -690,7 +541,7 @@ namespace SqlOrganize
         }
 
         /// <summary>Retorna una lista de los fields de la entidad más adecuados para ser utilizados como Label</summary>
-        protected List<string> ToStringWhat()
+        protected List<string> ToStringKeys()
         {
             var entity = db.Entity(entityName);
             List<string> fields = new();
@@ -854,7 +705,7 @@ namespace SqlOrganize
             }
             else if (field.defaultValue.ToString()!.ToLower().Contains("max"))
             {
-                object max_ = db.Sql(field.entityName).SelectMaxValueCast(field.name).Value<object>();
+                object max_ = db.Query().GetMaxValue(field.entityName, field.name);
                 long max = Convert.ToInt64(max_);
                 return max + 1;
             }
@@ -864,13 +715,100 @@ namespace SqlOrganize
             }
         }
 
-
         public bool IsNullOrEmpty(string fieldName)
         {
             return GetOrNull(fieldName).IsNullOrEmptyOrDbNull();
         }
 
+
+        /// <summary>
+        /// Comparar valores con los indicados en parametro
+        /// </summary>
+        /// <param name="val">Valores externos a persistir<</param>
+        /// <param name="ignoreFields">Campos que seran ignorados en la comparacion<</param>
+        /// <param name="ignoreNull">Si el campo del parametro es nulo, sera ignorado en la comparacion<</param>
+        /// <param name="ignoreNonExistent">Si el campo no esta definido localmente, sera ignorado en la comparacion</param>
+
+        /// <returns>Valores del parametro que son diferentes o que no estan definidos localmente</returns>
+        /// <remarks>Solo compara fieldNames</remarks>
+        public virtual IDictionary<string, object?> Compare(CompareParams cp)
+        {
+            Dictionary<string, object?> dict1_ = new(values);
+            Dictionary<string, object?> dict2_ = new(cp.val.Values());
+            Dictionary<string, object?> response = new();
+
+
+            if (!cp.ignoreFields.IsNullOrEmpty())
+                foreach (var key in cp.ignoreFields!)
+                {
+                    dict1_.Remove(key);
+                    dict2_.Remove(key);
+                }
+
+            if (!cp.fieldsToCompare.IsNullOrEmpty())
+            {
+                foreach (var key in cp.fieldsToCompare!)
+                {
+                    if (!cp.fieldsToCompare.Contains(key))
+                        dict1_.Remove(key);
+                        dict2_.Remove(key);
+                }
+            }
+
+            foreach (var fieldName in fieldNames)
+            {
+                if (cp.ignoreNonExistent && (!dict1_.ContainsKey(fieldName) || !dict2_.ContainsKey(fieldName)))
+                    continue;
+
+                if (cp.ignoreNull && (!dict2_.ContainsKey(fieldName) || dict2_[fieldName].IsNullOrEmptyOrDbNull()))
+                    continue;
+
+                if (!dict1_.ContainsKey(fieldName) && dict2_.ContainsKey(fieldName))
+                {
+                    response[fieldName] = dict2_[fieldName];
+                    continue;
+                }
+
+                if (dict1_.ContainsKey(fieldName) && !dict2_.ContainsKey(fieldName))
+                {
+                    response[fieldName] = "UNDEFINED";
+                    continue;
+                }
+
+                if (dict1_[fieldName].IsNullOrEmptyOrDbNull() && dict2_[fieldName].IsNullOrEmptyOrDbNull())
+                    continue;
+
+                if (dict1_[fieldName].IsNullOrEmptyOrDbNull() && !dict2_[fieldName].IsNullOrEmptyOrDbNull())
+                {
+                    response[fieldName] = dict2_[fieldName];
+                    continue;
+                }
+
+                if (!dict1_[fieldName].IsNullOrEmptyOrDbNull() && dict2_[fieldName].IsNullOrEmptyOrDbNull())
+                {
+                    response[fieldName] = dict2_[fieldName];
+                    continue;
+                }
+
+                if (!dict1_[fieldName]!.ToString()!.ToLower().Trim()!.Equals(dict2_[fieldName]!.ToString()!.ToLower().Trim()!))
+                {
+                    response[fieldName] = dict2_[fieldName];
+                    continue;
+                }
+            }
+            return response;
+        }
+
     }
 
+
+    public class CompareParams
+    {
+        public EntityValues val  { get; set; }
+        public IEnumerable<string>? ignoreFields { get; set; } = null;
+        public bool ignoreNull { get; set; } = true;
+        public bool ignoreNonExistent { get; set; } = true;
+        public IEnumerable<string>? fieldsToCompare { get; set; } = null;
+    }
 
 }

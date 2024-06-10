@@ -369,7 +369,7 @@ namespace SqlOrganize
         }
 
 
-        public abstract EntitySql SelectMaxValueCast(string fieldName);
+        public abstract EntitySql SelectMaxValue(string fieldName);
 
         protected string SqlJoin()
         {

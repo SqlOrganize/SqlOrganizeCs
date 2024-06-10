@@ -207,7 +207,9 @@ WHERE " + id + " = @" + count + @";
         public EntityPersist UpdateValueWhere(string _entityName, string key, object value, string where, params object[] parameters)
         {
             IEnumerable<object> ids = Db.Sql(_entityName).Where(where).Parameters(parameters).Column<object>(Db.config.id);
-            return UpdateValueIds(_entityName, key, value, ids.ToArray());
+            if(ids.Any())
+                return UpdateValueIds(_entityName, key, value, ids.ToArray());
+            return this;
         }
 
         /// <summary>

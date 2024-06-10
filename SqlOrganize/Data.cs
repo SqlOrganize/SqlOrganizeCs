@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
+using Utils;
 
 namespace SqlOrganize
 {
@@ -8,6 +9,7 @@ namespace SqlOrganize
     /// </summary>
     public abstract class Data : INotifyPropertyChanged, IDataErrorInfo
     {
+        public string entityName;
 
         /// <summary>Propiedad opcional para indicar que se esta actualizando</summary>
         public bool _isUpdated = false;
@@ -22,6 +24,18 @@ namespace SqlOrganize
         /// Si se construye una instancia de data con valores por defecto, puede ser necesario acceder a la base de datos para definirlos.
         /// </summary>
         public Db? db;
+
+
+        public Data Db(Db db)
+        {
+            this.db = db;
+            return this;
+        }
+
+        public EntityValues Values()
+        {
+            return db!.Values(entityName).Set(this);
+        }
 
         public string this[string columnName]
         {

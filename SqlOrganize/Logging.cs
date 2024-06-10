@@ -6,41 +6,24 @@ using System.Reflection;
 
 namespace SqlOrganize
 {
-    /*
-    Mapear campos para que sean entendidos por el motor de base de datos.
-
-    Define SQL, cada motor debe tener su propia clase mapping de forma tal que
-    sea traducido de forma correcta.
-
-    Ejemplo de subclase opcional:
-
-    -class ComisionMapping: Mapping:
-        def numero(self):
-           return '''
-    CONCAT("+self.pf()+"sed.numero, "+self.pt()+".division)
-'''
-
-    Las subclases deben soportar la sintaxis del motor que se encuentran utilizando.
-    */
+    /// <summary>
+    /// Registro de errores
+    /// </summary>
     public class Logging
     {
 
-        /*
-        Ejemplo
-                   
-        [
-            "asignatura": {
-                {"level": LEVEL_ERROR, "msg": "No puede estar vacío", type: "required"}
-            }
-            "plan": [
-                {"level": LEVEL_WARNING, "msg: "No tiene cargas horarias asociadas", type: "user"}
-            }
-            "numero": {
-                {"level": LEVEL_ERROR, "msg": "No es unico", type:"not_unique"}
-                {"level": LEVEL_WARNING, "msg": "Esta fuera del rango permitido", type:"out_of_range"}
-            }
-        }
-        */
+
+        /// <summary>Atributo para registrar errores</summary>
+        /// <example>
+        /// [
+        ///   "asignatura": [  {"level": LEVEL_ERROR, "msg": "No puede estar vacío", type: "required"}  ]
+        ///   "plan": [ {"level": LEVEL_WARNING, "msg: "No tiene cargas horarias asociadas", type: "user"}  ]
+        ///   "numero": [
+        ///       { "level": LEVEL_ERROR, "msg": "No es unico", type: "not_unique"}
+        ///       { "level": LEVEL_WARNING, "msg": "Esta fuera del rango permitido", type: "out_of_range"}
+        ///   ]
+        /// ]
+        /// </example>
         public Dictionary<string, List<(Level level, string msg, string? type)>> logs { get; } = new ();
 
         public enum Level
@@ -51,16 +34,13 @@ namespace SqlOrganize
             Error,
         }
 
-        public List<(Level level, string msg, string? type)> LogsByKey(string key)
+        /// <summary>Logs de una determinada llave</summary>
+        public List<(Level level, string msg, string? type)>? LogsByKey(string key)
         {
             return logs.ContainsKey(key) ? logs[key] : null;
         }
 
-        /*
-        Vaciar logs de una determinada llave
-
-        Reasignar level
-        */
+        /// <summary>Vaciar logs de una determinada llave y reasignar level</summary>
         public void ClearByKey(string key)
         {
             if (logs.ContainsKey(key))
