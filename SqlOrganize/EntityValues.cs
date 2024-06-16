@@ -472,7 +472,7 @@ namespace SqlOrganize
             object? val = GetOrNull(tree.fieldName);
             if (!val.IsNullOrEmpty())
             {
-                var data = db.Sql(tree.refEntityName)._CacheById(val);
+                var data = db.Sql(tree.refEntityName).Cache()._Id(val);
                 return (!data.IsNullOrEmptyOrDbNull()) ? db.Values(tree.refEntityName).Set(data) : null;
             }
             return null;
@@ -486,7 +486,7 @@ namespace SqlOrganize
                 object? val = GetOrNull(rel.fieldName);
                 if (!val.IsNullOrEmpty())
                 {
-                    var data = db.Sql(rel.refEntityName)._CacheById(val!);
+                    var data = db.Sql(rel.refEntityName).Cache()._Id(val!);
                     return db.Values(rel.refEntityName).Set(data!);
                 }
             } 

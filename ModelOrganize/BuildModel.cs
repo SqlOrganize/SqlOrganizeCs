@@ -538,14 +538,12 @@ namespace ModelOrganize
                 sw.WriteLine("        {");
                 sw.WriteLine("        }");
                 sw.WriteLine("");
-                sw.WriteLine("        public Data_" + entityName + "(Db db, bool init = true)");
+                sw.WriteLine("        public Data_" + entityName + "(Db db)");
                 sw.WriteLine("        {");
                 sw.WriteLine("            this.db = db;");
-                sw.WriteLine("            if(init)");
-                sw.WriteLine("                Init();");
                 sw.WriteLine("        }");
                 sw.WriteLine("");
-                sw.WriteLine("        protected void Init()");
+                sw.WriteLine("        public Data_" + entityName + " Default()");
                 sw.WriteLine("        {");
                 sw.WriteLine("            EntityValues val = db!.Values(\"" + entityName + "\");");
 
@@ -558,6 +556,7 @@ namespace ModelOrganize
                         sw.WriteLine("            _" + fieldName + " = " + df + ";");
                     }
                 }
+                sw.WriteLine("            return this;");
 
                 sw.WriteLine("        }");
 
@@ -607,7 +606,7 @@ namespace ModelOrganize
                     if (entity.unique.Contains(field.name))
                     {
                         sw.WriteLine("                    if (!db.IsNullOrEmpty() && !_" + fieldName + ".IsNullOrEmptyOrDbNull()) {");
-                        sw.WriteLine("                        var row = db.Sql(\"" + entityName + "\").Where(\"$" + fieldName + " = @0\").Parameters(_" + fieldName + ").DictCache();");
+                        sw.WriteLine("                        var row = db.Sql(\"" + entityName + "\").Where(\"$" + fieldName + " = @0\").Parameters(_" + fieldName + ").Cache().Dict();");
                         sw.WriteLine("                        if (!row.IsNullOrEmpty() && !_" + Config.id + ".ToString().Equals(row![\"" + Config.id + "\"]!.ToString()))");
                         sw.WriteLine("                            return \"Valor existente.\";");
                         sw.WriteLine("                    }");
@@ -650,19 +649,13 @@ namespace ModelOrganize
                 sw.WriteLine("        {");
                 sw.WriteLine("        }");
                 sw.WriteLine("");
-                sw.WriteLine("        public Data_" + entityName + "_r (Db db, bool init = true) : base(db, init)");
+                sw.WriteLine("        public Data_" + entityName + "_r (Db db) : base(db)");
                 sw.WriteLine("        {");
                 sw.WriteLine("        }");
-                sw.WriteLine("");
-                sw.WriteLine("        public Data_" + entityName + "_r (Db db, bool init = true, params string[] fieldIds) : this(db, init)");
-                sw.WriteLine("        {");
-                sw.WriteLine("            Init(fieldIds);");
-                sw.WriteLine("        }");
-
                 sw.WriteLine("");
 
                 #region Generar valores por defecto (por el momento no generamos valores por defecto para las relaciones, puede dar lugar a confusion)
-                sw.WriteLine("        protected void Init(params string[] fieldIds)");
+                sw.WriteLine("        public Data_" + entityName + "_r DefaultRel(params string[] fieldIds)");
                 sw.WriteLine("        {");
                 sw.WriteLine("            EntityValues val;");
                 sw.WriteLine("            foreach(string fieldId in fieldIds)");
@@ -686,6 +679,8 @@ namespace ModelOrganize
                 }
                 sw.WriteLine("                }");
                 sw.WriteLine("            }");
+                sw.WriteLine("");
+                sw.WriteLine("            return this;");
                 sw.WriteLine("        }");
                 #endregion
                 foreach (var (fieldId, relation) in entities[entityName].relations)

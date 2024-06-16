@@ -49,12 +49,13 @@ namespace SqlOrganize
             return fields[entityName];
         }
 
-        /* 
-        configuracion de field
-
-        Si no existe el field consultado se devuelve una configuracion vacia
-        No es obligatorio que exista el field en la configuracion, se cargaran los parametros por defecto.
-        */
+        /// <summary>
+        /// Configuracion de field
+        /// </summary>
+        /// <remarks>
+        /// - Si no existe el field consultado se devuelve una configuracion vacia<br/>
+        /// - No es obligatorio que exista el field en la configuracion, se cargaran los parametros por defecto.
+        /// </remarks>
         public Field Field(string entityName, string fieldName)
         {
             Dictionary<string, Field> fe = FieldsEntity(entityName);
@@ -145,7 +146,6 @@ namespace SqlOrganize
             string fieldName = key.Substring(i + 2); //se suman 2 porque es la longitud de "__" (el string de separacion)
             return (fieldId, fieldName, refEntityName);
         }
-
 
     }
 

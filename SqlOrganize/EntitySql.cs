@@ -20,12 +20,9 @@ namespace SqlOrganize
         /// </summary>
         public Db Db { get; }
 
-
         public string entityName { get; set; }
 
         public string? where { get; set; } = "";
-        
-
 
         public string? having { get; set; }
 
@@ -45,8 +42,7 @@ namespace SqlOrganize
 
         public Dictionary<string, object> parametersDict = new ();
 
-
-
+        public string join { get; set; } = "";
 
         public EntitySql(Db db, string entityName)
         {
@@ -75,6 +71,15 @@ namespace SqlOrganize
         public EntitySql Where(string w)
         {
             where += w;
+            return this;
+        }
+
+        public EntitySql Equal(string fieldName, object param)
+        {
+            if (!fieldName.StartsWith("$"))
+                fieldName = "$" + fieldName;
+
+            Where(fieldName + " = " + parameters.Count()).Parameters(param);
             return this;
         }
 
@@ -368,6 +373,12 @@ namespace SqlOrganize
             return this;
         }
 
+        /// <summary>Codigo adicional que se anexa a join</summary>
+        public EntitySql Join(string j)
+        {
+            join += j;
+            return this;
+        }
 
         public abstract EntitySql SelectMaxValue(string fieldName);
 
@@ -376,6 +387,10 @@ namespace SqlOrganize
             string sql = "";
             if (!Db.Entity(entityName).tree.IsNullOrEmpty())
                 sql += SqlJoinFk(Db.Entity(entityName).tree!, "");
+
+            if (!join.IsNullOrEmpty())
+                sql += Traduce(join) + @"
+";
             return sql;
         }
 
@@ -473,7 +488,7 @@ namespace SqlOrganize
 
         public override string ToString()
         {
-            return Regex.Replace(entityName + where + having + fields + select + order + size + page + JsonConvert.SerializeObject(parameters), @"\s+", "");
+            return Regex.Replace(entityName + where + having + fields + select + order + size + page + join + JsonConvert.SerializeObject(parameters), @"\s+", "");
         }
 
         public abstract EntitySql Clone();
@@ -491,6 +506,7 @@ namespace SqlOrganize
             eq.fields = fields;
             eq.select = select;
             eq.order = order;
+            eq.join = join
             return eq;
         }
 

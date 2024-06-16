@@ -15,46 +15,47 @@ namespace Utils
         {
             _cacheDirectory = cacheDirectory;
             if (!Directory.Exists(_cacheDirectory))
-            {
                 Directory.CreateDirectory(_cacheDirectory);
-            }
         }
 
         public ICacheEntry CreateEntry(object key)
         {
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             return new FileSystemCacheEntry(GetCacheFilePath(key.ToString()), this);
         }
 
+        /// <summary>Eliminar archivos y directorios de cacheDirectory</summary>
         public void Dispose()
         {
-            // No resources to release
+            // Delete all files within the directory
+            foreach (string file in Directory.GetFiles(_cacheDirectory))
+            {
+                File.Delete(file);
+            }
+
+            // Delete all subdirectories and their contents
+            foreach (string subdirectory in Directory.GetDirectories(_cacheDirectory))
+            {
+                Directory.Delete(subdirectory, true);
+            }
         }
 
         public void Remove(object key)
         {
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             string cacheFilePath = GetCacheFilePath(key.ToString());
             if (File.Exists(cacheFilePath))
-            {
                 File.Delete(cacheFilePath);
-            }
         }
 
         public bool TryGetValue(object key, out object value)
         {
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             string cacheFilePath = GetCacheFilePath(key.ToString());
             if (File.Exists(cacheFilePath))
@@ -70,7 +71,8 @@ namespace Utils
 
         private string GetCacheFilePath(string key)
         {
-            string encodedKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(key));
+            //string encodedKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(key));
+            string encodedKey = ValueTypesUtils.GenerateHash(key);
             return Path.Combine(_cacheDirectory, encodedKey);
         }
 
@@ -123,7 +125,7 @@ namespace Utils
 
             public void Dispose()
             {
-                if (Value != null)
+                if (Value != null && _cacheFilePath.Length <= 260)
                 {
                     string json = JsonConvert.SerializeObject(Value);
                     File.WriteAllText(_cacheFilePath, json);

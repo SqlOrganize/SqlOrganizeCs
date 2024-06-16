@@ -167,8 +167,11 @@ namespace SqlOrganize
         // Method to close the connection
         public void CloseConnection()
         {
-            if (connection.State == ConnectionState.Open)
-                connection.Close();
+            if (connection != null)
+            { 
+                if (connection.State == ConnectionState.Open)
+                    connection.Close();
+            }
         }
 
         public void BeginTransaction()

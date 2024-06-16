@@ -7,49 +7,6 @@ namespace SqlOrganize
 {
     public static class ExtensionMethods
     {
-
-        #region EntitySql + Cache
-        public static IDictionary<string, object?> Get(this EntitySql entitySql, object id)
-        {
-            return entitySql.CacheByIds(id).ElementAt(0);
-        }
-
-        public static IEnumerable<Dictionary<string, object?>> ColOfDictCache(this EntitySql esql)
-        {
-            return esql.Cache().ColOfDictCache();
-        }
-
-        public static IDictionary<string, object?>? DictCache(this EntitySql esql)
-        {
-            return esql.Cache().DictCache();
-        }
-
-        public static IEnumerable<Dictionary<string, object?>> CacheByIds(this EntitySql esql, params object[] ids)
-        {
-            return esql.Cache().CacheByIds(ids);
-        }
-
-        public static IDictionary<string, object?>? CacheById(this EntitySql esql, object id)
-        {
-            return esql.Cache().CacheById(id);
-        }
-
-        public static IDictionary<string, object>? _CacheById(this EntitySql esql, object id)
-        {
-            return esql.Cache()._CacheById(id);
-        }
-
-
-        public static List<IDictionary<string, object?>> _CacheByIds(this EntitySql esql, params object[] ids)
-        {
-            return esql.Cache()._CacheByIds(ids);
-        }
-        public static IDictionary<string, object?>? GetByFieldValue(this EntitySql entitySql, string fieldName, object value)
-        {
-            return entitySql.Where("$" + fieldName + " = @0").Parameters(value).DictCache();
-        }
-        #endregion
-
         #region EntitySql + Query
         /// <summary>Ejecucion rapida de EntitySql</summary>
         public static IEnumerable<Dictionary<string, object?>> ColOfDict(this EntitySql esql)
@@ -219,7 +176,7 @@ namespace SqlOrganize
 
         public static IDictionary<string, object?>? RowByFieldValue(this EntityValues entityValues, string fieldName)
         {
-            return entityValues.db.Sql(entityValues.entityName).GetByFieldValue(fieldName, entityValues.Get(fieldName));
+            return entityValues.db.Sql(entityValues.entityName).Equal(fieldName, entityValues.Get(fieldName)).Cache().Dict();
         }
 
         public static EntityPersist PersistId(this EntityValues v)
@@ -362,7 +319,7 @@ namespace SqlOrganize
             if (source.ContainsKey(entitySql.Db.config.id) && !source[entitySql.Db.config.id]!.IsNullOrEmptyOrDbNull())
                 entitySql.And("$" + entitySql.Db.config.id + " != @" + entitySql.parameters.Count()).Parameters(source[entitySql.Db.config.id]!);
 
-            return entitySql.DictCache();
+            return entitySql.Cache().Dict();
         }
 
         public static IDictionary<string, object?>? RowByUnique(this EntityValues ev)
@@ -378,7 +335,7 @@ namespace SqlOrganize
                 Where(key + " = @0").
                 Parameters(value).
                 Size(0).
-                ColOfDictCache();
+                Cache().ColOfDict();
         }
         #endregion
 

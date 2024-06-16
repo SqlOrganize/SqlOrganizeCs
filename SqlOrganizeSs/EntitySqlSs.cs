@@ -40,9 +40,16 @@ FETCH FIRST " + size + " ROWS ONLY";
 
             string f = _SqlFieldsInit();
 
+
+            //En SQL SERVER a diferencia de otros motores, los campos de ordenamiento deben incluirse en los campos a consultar
             string o = order.Replace(" ASC", "").Replace(" asc", "").Replace(" DESC", "").Replace(" desc", "").Trim();
-            f += Concat(Traduce(o, true), @",
+
+            var to = Traduce(o, true);
+
+            if(!f.Contains(to)) //verificar si el campo de ordenamiento que se debe incluir no existe ya en la consulta
+                f += Concat(to, @",
 ", "", !f.IsNullOrEmpty());
+
             var f_aux = f.Split(',').ToList();
 
             var f_aux_duplicates = f_aux.GroupBy(x => x.Trim().Replace("\n",""))
@@ -57,6 +64,7 @@ FETCH FIRST " + size + " ROWS ONLY";
                         f_aux.RemoveAt(i);
                         break;
                     }
+
             return String.Join(',', f_aux) + @"
 ";
         }
@@ -67,7 +75,7 @@ FETCH FIRST " + size + " ROWS ONLY";
             return _Clone(eq);
         }
 
-        public override EntitySql SelectMaxValueCast(string fieldName)
+        public override EntitySql SelectMaxValue(string fieldName)
         {
             select += "ISNULL( MAX($" + fieldName + "), 0)";
             return this;

@@ -1,20 +1,14 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Utils;
 
 namespace SqlOrganize
 {
     public class EntityCache
     {
-
         Db Db;
         EntitySql Sql;
-
 
         /// <summary>
         /// Constructor para EntitySelect
@@ -26,75 +20,58 @@ namespace SqlOrganize
             Sql = sql;
         }
 
-
-
-        /// <summary>
-        /// Metodo de busqueda rapida en cache
-        /// </summary>
+        /// <summary>Metodo de busqueda rapida en cache</summary>
         /// <remarks>Solo analiza el atributo fields (devuelve relaciones)</remarks>
-        /// <param name="ids"></param>
-        /// <returns></returns>
-        public IEnumerable<Dictionary<string, object?>> CacheByIds(params object[] ids)
+        public IEnumerable<Dictionary<string, object?>> Ids(params object[] ids)
         {
             if (Sql.fields.IsNullOrEmpty())
                 Sql.Fields();
 
             List<string> _fields = Sql.fields!.Replace("$", "").Split(',').ToList().Select(s => s.Trim()).ToList();
 
-            return PreColOfDictCacheRecursive(_fields, ids);
+            return BuildColOfDict(_fields, ids);
         }
 
-        /// <summary>
-        /// Metodo de busqueda rapida en cache
-        /// </summary>
-        /// <remarks>Solo analiza el atributo fields (devuelve relaciones)</remarks>
-        /// <param name="ids"></param>
-        /// <returns></returns>
-        public IDictionary<string, object?>? CacheById(object id)
+        /// <summary>Idem Ids pero para un solo Id</summary>
+        public IDictionary<string, object?>? Id(object id)
         {
-            var list = CacheByIds(id);
+            var list = Ids(id);
             if (list.IsNullOrEmpty())
                 return null;
 
             return list.ElementAt(0);
         }
 
-        /// <summary>
-        /// Metodo de busqueda rapida en cache
-        /// </summary>
-        /// <remarks>Solo analiza el atributo fields (NO devuelve relaciones)</remarks>
-        /// <param name="ids"></param>
-        /// <returns></returns>
-        public IDictionary<string, object>? _CacheById(object id)
+        /// <summary>Similar a _Ids pero para un solo id</summary>
+        public IDictionary<string, object>? _Id(object id)
         {
-            var list = _CacheByIds(id);
+            var list = _Ids(id);
             if (list.IsNullOrEmpty())
                 return null;
 
             return list.ElementAt(0);
         }
 
-
-        /// <summary>
-        /// Obtener campos de una entidad (sin relaciones)<br/>
-        /// Si no encuentra valores en el Cache, realiza una consulta a la base de datos y lo almacena en Db.Cache.
-        /// </summary>
+        /// <summary>Obtener campos de una entidad (sin relaciones)<br/>
+        /// Si no encuentra valores en el Cache, realiza una consulta a la base de datos y lo almacena en Db.Cache.</summary>
         /// <param name="entityName"></param>
         /// <param name="ids"></param>
         /// <remarks>IMPORTANTE! No devuelve relaciones!!!</remarks>
         /// <returns></returns>
-        public List<IDictionary<string, object?>> _CacheByIds(params object[] ids)
+        public List<IDictionary<string, object?>> _Ids(params object[] ids)
         {
             ids.Distinct();
 
             List<IDictionary<string, object?>> response = new(ids.Count()); //respuesta que sera devuelta
 
+            List<string> stringIds = new(); //Transformar object a string para evitar problemas de tipos cuando se utiliza FileCache
             List<object> searchIds = new(); //ids que no se encuentran en cache y deben ser buscados
 
             for (var i = 0; i < ids.Count(); i++)
             {
+                stringIds.Add(ids[i].ToString());
                 object? data;
-                if (Db.cache!.TryGetValue(Sql.entityName + ids.ElementAt(i), out data))
+                if (Db.cache!.TryGetValue(Sql.entityName + stringIds.ElementAt(i), out data))
                 {
                     if (data is JObject)
                         data = (data as JObject).ToObject<IDictionary<string, object?>>();
@@ -104,38 +81,36 @@ namespace SqlOrganize
                 else
                 {
                     response.Insert(i, null);
-                    searchIds.Add(ids.ElementAt(i));
+                    searchIds.Add(stringIds.ElementAt(i));
                 }
             }
 
             if (searchIds.Count == 0)
                 return response;
 
+            #region acceso a la base de datos (faltan datos en cache)
             IEnumerable<Dictionary<string, object?>> rows = Db.Sql(Sql.entityName).
                 Size(0).
                 Where("$" + Db.config.id + " IN (@0)").
                 Parameters(searchIds).
                 ColOfDict();
+            #endregion 
 
-            if (rows.IsNullOrEmpty())
+            if (rows.Count() != searchIds.Count())
                 throw new Exception("La consulta a traves de ids existentes no arrojo ningun resultado. Se estan usando ids correspondientes a otra entidad? Existe el id utilizado en la base de datos?");
             
             foreach (Dictionary<string, object?> row in rows)
             {
-                int index = Array.IndexOf(ids.ToArray(), row[Db.config.id]);
+                int index = Array.IndexOf(stringIds.ToArray(), row[Db.config.id].ToString());
                 response[index] = Set(Sql.entityName, row);
             }
 
             return response;
         }
 
-
-
-        /// <summary>
-        /// Ejecuta consulta de datos (con relaciones).<br/>
-        /// Verifica la cache para obtener el resultado de la consulta, si no existe en cache accede a la base de datos.
-        /// </summary>
-        protected IDictionary<string, object?> DictCacheQuery()
+        /// <summary>Ejecuta consulta de datos (con relaciones).<br/>
+        /// Verifica la cache para obtener el resultado de la consulta, si no existe en cache accede a la base de datos.</summary>
+        public IDictionary<string, object?> DictQuery()
         {
             List<string> queries;
             if (!Db.cache.TryGetValue("queries", out queries))
@@ -145,7 +120,7 @@ namespace SqlOrganize
             string queryKey = Sql!.ToString();
             if (!Db.cache.TryGetValue(queryKey, out result))
             {
-                result = this.Dict();
+                result = Dict();
                 Db.cache.Set(queryKey, result);
                 queries!.Add(queryKey);
                 Db.cache.Set("queries", queries);
@@ -157,10 +132,10 @@ namespace SqlOrganize
         /// Consulta de datos (uso de cache para consulta y resultados)<br/>
         /// </summary>
         /// <param name="query">Consulta</param>
-        public IEnumerable<Dictionary<string, object?>> ColOfDictCache()
+        public IEnumerable<Dictionary<string, object?>> ColOfDict()
         {
-            if (!Sql.select.IsNullOrEmpty() || !Sql.group.IsNullOrEmpty())
-                return ColOfDictCacheQuery();
+            if (!Sql.select.IsNullOrEmpty() || !Sql.group.IsNullOrEmpty() || !Sql.join.IsNullOrEmpty())
+                return ColOfDictQuery();
 
             if (Sql.fields.IsNullOrEmpty())
                 Sql.Fields();
@@ -170,26 +145,23 @@ namespace SqlOrganize
             //si no se encuentra el Db.config.id, no se realiza cache.
             //Si por ejemplo se consultan solo campos de relacoines, no se aplicaria correctamente el distinct
             if (!_fields.Contains(Db.config.id))
-                return ColOfDictCacheQuery();
+                return ColOfDictQuery();
 
             EntitySql sqlAux = Sql.Clone();
             sqlAux.fields = Db.config.id;
 
-            IEnumerable<object> ids = Db.Cache(sqlAux).ColOfDictCacheQuery().ColOfVal<object>(Db.config.id);
+            IEnumerable<object> ids = Db.Cache(sqlAux).ColOfDictQuery().ColOfVal<object>(Db.config.id);
 
-            return PreColOfDictCacheRecursive(_fields, ids.ToArray());
+            return BuildColOfDict(_fields, ids.ToArray());
         }
 
-        /// <summary>
-        /// Efectua una consulta a la base de datos, la almacena en cache.<br/>
-        /// Dependiendo del tipo de consulta almacena la fila de resultado en cache.
-        /// </summary>
-        /// <param name="query">Consulta</param>
+        /// <summary>Efectua una consulta a la base de datos, la almacena en cache.<br/>
+        /// Dependiendo del tipo de consulta almacena la fila de resultado en cache.</summary>
         /// <remarks>Cuando se esta seguro de que se desea consultar una sola fila. Utilizar este metodo para evitar que se tenga que procesar un tamaño grande de resultado</remarks>
-        public IDictionary<string, object?>? DictCache()
+        public IDictionary<string, object?>? Dict()
         {
             if (!Sql.select.IsNullOrEmpty() || !Sql.group.IsNullOrEmpty())
-                return DictCacheQuery();
+                return DictQuery();
 
             if (Sql.fields.IsNullOrEmpty())
                 Sql.Fields();
@@ -204,20 +176,17 @@ namespace SqlOrganize
 
             List<string> fields = Sql.fields!.Replace("$", "").Split(',').ToList().Select(s => s.Trim()).ToList();
 
-            IEnumerable<Dictionary<string, object?>> response = PreColOfDictCacheRecursive(fields, id);
+            IEnumerable<Dictionary<string, object?>> response = BuildColOfDict(fields, id);
 
             return response.ElementAt(0);
         }
 
-
-        /// <summary>
-        /// Organiza los elementos a consultar y efectua la consulta a la base de datos.
-        /// </summary>
-        protected IEnumerable<Dictionary<string, object?>> PreColOfDictCacheRecursive(List<string> fields, params object[] ids)
+        /// <summary>Organiza los elementos a consultar y efectua la consulta a la base de datos.</summary>
+        protected IEnumerable<Dictionary<string, object?>> BuildColOfDict(List<string> fields, params object[] ids)
         {
             FieldsOrganize fo = new(Db, Sql.entityName, fields);
 
-            List<IDictionary<string, object?>> data = _CacheByIds(ids);
+            List<IDictionary<string, object?>> data = _Ids(ids);
 
             List<Dictionary<string, object?>> response = new();
 
@@ -230,13 +199,11 @@ namespace SqlOrganize
                     response[i][fo.FieldsMain[j]] = data[i][fo.FieldsMain[j]];
             }
 
-            return ColOfDictCacheRecursive(fo, response, 0);
+            return ColOfDictRecursive(fo, response, 0);
         }
 
-        /// <summary>
-        /// Analiza la respuesta de una consulta y re organiza los elementos para armar el resultado
-        /// </summary>
-        protected IEnumerable<Dictionary<string, object?>> ColOfDictCacheRecursive(FieldsOrganize fo, IEnumerable<Dictionary<string, object?>> response, int index)
+        /// <summary>Analiza la respuesta de una consulta y re organiza los elementos para armar el resultado </summary>
+        protected IEnumerable<Dictionary<string, object?>> ColOfDictRecursive(FieldsOrganize fo, IEnumerable<Dictionary<string, object?>> response, int index)
         {
             if (index >= fo.FieldsIdOrder.Count) return response;
             {
@@ -250,21 +217,21 @@ namespace SqlOrganize
                 string fkName = (!parentId.IsNullOrEmpty()) ? parentId + "-" + fieldName : fieldName;
 
                 List<object> ids = response.ColOfVal<object>(fkName).Distinct().ToList();
-                ids.RemoveAll(item => item == null || item == System.DBNull.Value);
+                ids.RemoveAll(item => item.IsNullOrEmptyOrDbNull());
                 IEnumerable<IDictionary<string, object?>> data;
-                if (ids.Count() == 1 && ids.ElementAt(0) == System.DBNull.Value)
+                if (ids.Count() == 1 && ids.ElementAt(0).IsNullOrEmptyOrDbNull())
                     return Enumerable.Empty<Dictionary<string, object?>>();
                 else
                 {
                     //Si las fk estan asociadas a una unica pk, debe indicarse para mayor eficiencia
                     if (Db.config.fkId)
                     {
-                        data = Db.Sql(refEntityName)._CacheByIds(ids.ToArray());
+                        data = Db.Sql(refEntityName).Cache()._Ids(ids.ToArray());
                     }
                     else
                     {
                         //data = Db.Query(refEntityName).Where("$"+Db.config.id+" IN (@0)").Parameters(ids).ColOfDictCacheQuery();
-                        data = Db.Sql(refEntityName).CacheByIds(ids.ToArray());
+                        data = Db.Sql(refEntityName).Cache().Ids(ids.ToArray());
                     }
                 }
 
@@ -286,15 +253,11 @@ namespace SqlOrganize
                     }
                 }
 
-                return (++index < fo.FieldsIdOrder.Count) ? ColOfDictCacheRecursive(fo, response, index) : response;
+                return (++index < fo.FieldsIdOrder.Count) ? ColOfDictRecursive(fo, response, index) : response;
             }
         }
 
-        /// <summary>
-        /// Analiza una fila de resultado y la almacena en cache.
-        /// </summary>
-        /// <param name="entityName">Nombre de la entidad principal de la fila</param>
-        /// <param name="row">Fila de datos (tupla)</param>
+        /// <summary> Analiza una fila de resultado y la almacena en cache.</summary>
         /// <returns>Resultado filtrado solo para la entidad principal</returns>
         protected Dictionary<string, object?> Set(string entityName, Dictionary<string, object?> row)
         {
@@ -305,11 +268,7 @@ namespace SqlOrganize
             return row;
         }
 
-        /// <summary>
-        /// Analiza una fila de resultado y la almacena en cache considerando cada entidad de las relaciones. 
-        /// </summary>
-        /// <param name="relations">Relaciones de una entidad</param>
-        /// <param name="row">Fila de datos (tupla)</param>
+        /// <summary> Analiza una fila de resultado y la almacena en cache considerando cada entidad de las relaciones. </summary>
         protected void SetRecursive(Dictionary<string, EntityRelation> relations, Dictionary<string, object?> row)
         {
             foreach (var (fieldId, rel) in relations)
@@ -331,7 +290,8 @@ namespace SqlOrganize
             }
         }
 
-        public IEnumerable<Dictionary<string, object?>> ColOfDictCacheQuery()
+        /// <summary>Verifica cache para ver si existe consulta, si no existe realiza la consulta y la almacena en Cache</summary>
+        public IEnumerable<Dictionary<string, object?>> ColOfDictQuery()
         {
             List<string> queries;
             object _queries;
@@ -349,10 +309,8 @@ namespace SqlOrganize
                 queries = new();
             }
 
-
-
             IEnumerable<Dictionary<string, object?>> result;
-            object _result;
+            object _result;            
             string queryKey = Sql!.ToString();
             res = Db.cache!.TryGetValue(queryKey, out _result);
 
@@ -365,17 +323,19 @@ namespace SqlOrganize
             }
             else
             {
+                #region acceso a la base de datos (no se encontro en cache)
                 result = Sql.ColOfDict();
                 Db.cache!.Set(queryKey, result);
                 queries!.Add(queryKey);
                 Db.cache!.Set("queries", queries);
+                #endregion
             }
             return result!;
         }
         
     }
 
-
+    /// <summary>Organizacion de Campos de la entidad para armar relaciones</summary>
     public class FieldsOrganize
     {
         Db Db;
