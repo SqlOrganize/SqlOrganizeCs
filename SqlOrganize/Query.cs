@@ -100,7 +100,7 @@ namespace SqlOrganize
             return reader.Obj<T>();
         }
 
-        public IEnumerable<T> Column<T>(string columnName)
+        public T[] Column<T>(string columnName)
         {
             using DbCommand command = NewCommand();
             Exec(connection!, command);

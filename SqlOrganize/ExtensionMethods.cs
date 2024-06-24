@@ -32,7 +32,7 @@ namespace SqlOrganize
             return query.Obj<T>();
         }
 
-        public static IEnumerable<T> Column<T>(this EntitySql esql, string columnName)
+        public static T[] Column<T>(this EntitySql esql, string columnName)
         {
             using Query query = esql.Query();
             using DbConnection connection = query.OpenConnection();
@@ -291,6 +291,15 @@ namespace SqlOrganize
             persist.Db.cache!.Remove(values.entityName + values.Get(persist.Db.config.id));
             return persist;
         }
+        #endregion
+
+        #region EntityPersist + Data
+        public static EntityPersist Delete(this Data data)
+        {
+            data.Dict();
+            return data.db.Persist().DeleteIds(data["entityName"], data["id"]);
+        }
+
         #endregion
 
         #region EntitySql + EntityValues

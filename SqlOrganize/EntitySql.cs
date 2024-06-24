@@ -432,6 +432,8 @@ namespace SqlOrganize
 ";
         }
 
+        /// <summary> Agrupamiento </summary>
+        /// <remarks> Incluir obligatoriamente el nombre del campo en la lista de fields </remarks>
         protected string SqlGroup()
         {
             return (group.IsNullOrEmpty()) ? "" : "GROUP BY " + Traduce(group!) + @"
@@ -456,8 +458,8 @@ namespace SqlOrganize
             f += Concat(Traduce(this.select), @",
 ", "", !f.IsNullOrEmpty());
 
-            f += Concat(Traduce(this.group, true), @",
-", "", !f.IsNullOrEmpty());
+            /*f += Concat(Traduce(this.group, true), @",
+", "", !f.IsNullOrEmpty());*/
 
             return f + @"
 ";
@@ -506,7 +508,7 @@ namespace SqlOrganize
             eq.fields = fields;
             eq.select = select;
             eq.order = order;
-            eq.join = join
+            eq.join = join;
             return eq;
         }
 

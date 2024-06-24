@@ -747,11 +747,13 @@ namespace SqlOrganize
 
             if (!cp.fieldsToCompare.IsNullOrEmpty())
             {
-                foreach (var key in cp.fieldsToCompare!)
+                foreach (var fieldName in fieldNames)
                 {
-                    if (!cp.fieldsToCompare.Contains(key))
-                        dict1_.Remove(key);
-                        dict2_.Remove(key);
+                    if (!cp.fieldsToCompare.Contains(fieldName))
+                    { 
+                        dict1_.Remove(fieldName);
+                        dict2_.Remove(fieldName);
+                    }
                 }
             }
 
