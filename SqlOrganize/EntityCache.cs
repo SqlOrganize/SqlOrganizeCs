@@ -169,7 +169,7 @@ namespace SqlOrganize
             EntitySql esqlAux = Sql.Clone();
             esqlAux.fields = Db.config.id;
 
-            object id = esqlAux.Value<object>();
+            object? id = esqlAux.Value<object>();
 
             if (id.IsNullOrEmpty())
                 return null;

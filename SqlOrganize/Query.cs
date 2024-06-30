@@ -100,7 +100,7 @@ namespace SqlOrganize
             return reader.Obj<T>();
         }
 
-        public T[] Column<T>(string columnName)
+        public IEnumerable<T> Column<T>(string columnName)
         {
             using DbCommand command = NewCommand();
             Exec(connection!, command);
@@ -108,7 +108,7 @@ namespace SqlOrganize
             return reader.ColumnValues<T>(columnName);
         }
 
-        public T[] Column<T>(int columnNumber = 0)
+        public IEnumerable<T> Column<T>(int columnNumber = 0)
         {
             using DbCommand command = NewCommand();
             Exec(connection!, command);
@@ -128,7 +128,7 @@ namespace SqlOrganize
 
         /// <summary>Value</summary>
         /// <remarks>La consulta debe retornar 1 o mas valores</remarks>
-        public T Value<T>(int columnNumber = 0)
+        public T? Value<T>(int columnNumber = 0)
         {
             using DbCommand command = NewCommand();
             Exec(connection!, command);
@@ -251,7 +251,7 @@ namespace SqlOrganize
         /// Cada motor debe tener su propia forma de definir Next Value!!! Derivar metodo a subclase
         /// </summary>
         /// <returns></returns>
-        public ulong GetNextValue(string entityName)
+        public object GetNextValue(string entityName)
         {
             var q = db.Query();
             q.connection = connection;

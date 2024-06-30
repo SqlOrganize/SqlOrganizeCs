@@ -49,6 +49,11 @@ namespace SqlOrganize
             }
         }
 
+        public virtual void Default()
+        {
+            //sobrescribir si se deben definir valores por defecto
+        }
+
         protected virtual string ValidateField(string columnName)
         {
             return "";

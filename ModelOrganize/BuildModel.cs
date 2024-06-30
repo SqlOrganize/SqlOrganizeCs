@@ -543,7 +543,7 @@ namespace ModelOrganize
                 sw.WriteLine("            this.db = db;");
                 sw.WriteLine("        }");
                 sw.WriteLine("");
-                sw.WriteLine("        public Data_" + entityName + " Default()");
+                sw.WriteLine("        public override void Default()");
                 sw.WriteLine("        {");
                 sw.WriteLine("            EntityValues val = db!.Values(\"" + entityName + "\");");
 
@@ -556,8 +556,6 @@ namespace ModelOrganize
                         sw.WriteLine("            _" + fieldName + " = " + df + ";");
                     }
                 }
-                sw.WriteLine("            return this;");
-
                 sw.WriteLine("        }");
 
                 sw.WriteLine("");
@@ -655,7 +653,7 @@ namespace ModelOrganize
                 sw.WriteLine("");
 
                 #region Generar valores por defecto (por el momento no generamos valores por defecto para las relaciones, puede dar lugar a confusion)
-                sw.WriteLine("        public Data_" + entityName + "_r DefaultRel(params string[] fieldIds)");
+                sw.WriteLine("        public void DefaultRel(params string[] fieldIds)");
                 sw.WriteLine("        {");
                 sw.WriteLine("            EntityValues val;");
                 sw.WriteLine("            foreach(string fieldId in fieldIds)");
@@ -679,8 +677,6 @@ namespace ModelOrganize
                 }
                 sw.WriteLine("                }");
                 sw.WriteLine("            }");
-                sw.WriteLine("");
-                sw.WriteLine("            return this;");
                 sw.WriteLine("        }");
                 #endregion
                 foreach (var (fieldId, relation) in entities[entityName].relations)

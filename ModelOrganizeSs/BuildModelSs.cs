@@ -26,7 +26,7 @@ namespace ModelOrganizeSs
             command.Parameters.AddWithValue("dbName", Config.dbName);
             command.ExecuteNonQuery();
             using SqlDataReader reader = command.ExecuteReader();
-            return SqlUtils.ColumnValues<string>(reader, "TABLE_NAME");
+            return SqlUtils.ColumnValues<string>(reader, "TABLE_NAME").ToArray();
         }
 
         protected override IEnumerable<Column> GetColumns(string tableName)

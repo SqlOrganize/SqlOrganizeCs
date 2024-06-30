@@ -168,9 +168,15 @@ WHERE " + id + " = @" + count + @";
         /// <returns></returns>
         public EntityPersist UpdateAll(string _entityName, Dictionary<string, object?> row)
         {
-            var ids = Db.Sql(_entityName).Fields(Db.config.id).Size(0).Column<object>();
+            object[] ids = Db.Sql(_entityName).Fields(Db.config.id).Size(0).Column<object>().ToArray();
             return (ids.Count() > 0) ? UpdateIds(_entityName, row, ids) : this;
         }
+
+        public EntityPersist UpdateValue(EntityValues values, string fieldName, object? newValue)
+        {
+            return UpdateValueIds(values.entityName, fieldName, newValue, values.Get("id"));
+        }
+
 
         /// <summary>
         /// Actualizar un unico campo
@@ -206,9 +212,9 @@ WHERE " + id + " = @" + count + @";
 
         public EntityPersist UpdateValueWhere(string _entityName, string key, object value, string where, params object[] parameters)
         {
-            IEnumerable<object> ids = Db.Sql(_entityName).Where(where).Parameters(parameters).Column<object>(Db.config.id);
+            object[] ids = Db.Sql(_entityName).Where(where).Parameters(parameters).Column<object>(Db.config.id).ToArray();
             if(ids.Any())
-                return UpdateValueIds(_entityName, key, value, ids.ToArray());
+                return UpdateValueIds(_entityName, key, value, ids);
             return this;
         }
 
@@ -234,12 +240,6 @@ WHERE " + id + " = @" + count + @";
 
             List<object> ids = new() { source[idKey]! };
             return UpdateValueIds(_entityName, key, value, ids);
-        }
-
-        /// <summary>Insercion de value</summary>
-        public EntityPersist Insert(string _entityName, EntityValues val)
-        {
-            return Insert(_entityName, val.Values());
         }
 
         /// <summary>Insercion de objeto</summary>

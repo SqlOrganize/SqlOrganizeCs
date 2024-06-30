@@ -40,7 +40,7 @@ namespace SqlOrganizeMy
             command.Connection = connection;
             command.ExecuteNonQuery();
             using DbDataReader reader = command.ExecuteReader();
-            return SqlUtils.ColumnValues<string>(reader, 0);
+            return SqlUtils.ColumnValues<string>(reader, 0).ToArray();
         }
     }
 

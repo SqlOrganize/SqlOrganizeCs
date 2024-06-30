@@ -152,10 +152,10 @@ namespace Utils
                 return string.IsNullOrEmpty(value as string);
 
             // Special case for numeric types to check for default value (0)
-            if (IsNumericType(type))
-            {
-                return value!.ToString()!.Equals("0");
-            }
+            //if (IsNumericType(type))
+            //{
+                //return value!.ToString()!.Equals("0");
+            //}
 
             // Special case for collections to check for empty collection
             if (value is ICollection collection)

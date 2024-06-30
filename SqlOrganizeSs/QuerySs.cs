@@ -45,7 +45,7 @@ namespace SqlOrganizeSs
             ((SqlCommand)command).Parameters.AddWithValue("dbName", db.config.dbName);
             command.ExecuteNonQuery();
             using DbDataReader reader = command.ExecuteReader();
-            return SqlUtils.ColumnValues<string>(reader, "TABLE_NAME");
+            return SqlUtils.ColumnValues<string>(reader, "TABLE_NAME").ToArray();
         }
     }
 

@@ -32,14 +32,14 @@ namespace SqlOrganize
             return query.Obj<T>();
         }
 
-        public static T[] Column<T>(this EntitySql esql, string columnName)
+        public static IEnumerable<T> Column<T>(this EntitySql esql, string columnName)
         {
             using Query query = esql.Query();
             using DbConnection connection = query.OpenConnection();
             return query.Column<T>(columnName);
         }
 
-        public static T[] Column<T>(this EntitySql esql, int columnNumber = 0)
+        public static IEnumerable<T> Column<T>(this EntitySql esql, int columnNumber = 0)
         {
             using Query query = esql.Query();
             using DbConnection connection = query.OpenConnection();
@@ -54,7 +54,7 @@ namespace SqlOrganize
             return query.Value<T>(columnName);
         }
 
-        public static T Value<T>(this EntitySql esql, int columnNumber = 0)
+        public static T? Value<T>(this EntitySql esql, int columnNumber = 0)
         {
             using Query query = esql.Query();
             using DbConnection connection = query.OpenConnection();
@@ -143,9 +143,9 @@ namespace SqlOrganize
             List<Field> fieldsOmPersona = persist.Db.Entity(entityName).FieldsOm();
             foreach (var field in fieldsOmPersona)
             {
-                IEnumerable<object> ids = persist.Db.Sql(field.entityName).Where(field.name + " = @0").Parameters(origenId).Column<object>("id");
+                object[] ids = persist.Db.Sql(field.entityName).Where(field.name + " = @0").Parameters(origenId).Column<object>("id").ToArray();
                 if(ids.Any())
-                    persist.UpdateValueIds(field.entityName, field.name, destinoId!, ids.ToArray());
+                    persist.UpdateValueIds(field.entityName, field.name, destinoId!, ids);
             }
             return persist;
         }
@@ -348,21 +348,14 @@ namespace SqlOrganize
         }
         #endregion
 
+        #region Data
+        /// <summary> Metodos especiales para facilitar el uso de subclases sin necesidad de cast </summary>
+        public static T DefaultData<T>(this T data) where T : Data
+        {
+            data.Default();
+            return data;
+        }
+        #endregion
 
-
-
-
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
     }
 }

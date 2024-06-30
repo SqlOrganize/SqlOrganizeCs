@@ -367,5 +367,34 @@ namespace Utils
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <example>
+        /// string source = "olá mundo";
+        /// string substring = "ola";
+        /// // Normalize and remove diacritics from both strings
+        /// string processedSource = RemoveDiacritics(source.Normalize(NormalizationForm.FormD));
+        /// string processedSubstring = RemoveDiacritics(substring.Normalize(NormalizationForm.FormD));
+        /// // Check if the processed source string contains the processed substring
+        /// bool contains = processedSource.Contains(processedSubstring, StringComparison.OrdinalIgnoreCase);
+        /// 
+        /// Console.WriteLine($"Does \"{source}\" contain \"{substring}\" (ignoring accents)? {contains}");</example>
+        public static string RemoveDiacritics(this string text)
+        {
+            var stringBuilder = new StringBuilder();
+
+            foreach (var c in text)
+            {
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
+        }
+
     }
 }

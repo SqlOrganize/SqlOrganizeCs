@@ -700,7 +700,7 @@ namespace SqlOrganize
         {
             if (field.defaultValue.ToString()!.ToLower().Contains("next"))
             {
-                ulong next = db.Query().GetNextValue(field.entityName);
+                ulong next = (ulong)db.Query().GetNextValue(field.entityName);
                 return next;
             }
             else if (field.defaultValue.ToString()!.ToLower().Contains("max"))
