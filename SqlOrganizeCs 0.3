@@ -1,0 +1,45 @@
+CHANGELOG
+
+0.3
+	* Mover todo el proyecto SqlOrganize a SqlOrganize.Sql
+	* Mover todo el proyecto ModelOrganize a SqlOrganize.ModelOrganise
+	* Mover todo el proyecto SqlOrganizeSs a SqlOrganizeSs/SqlOrganize.Sql
+	* Mover todo el proyecto ModelOrganizeSs a SqlOrganizeSs/SqlOrganize.Model
+	* Mover todo el proyecto Utils a SqlOrganize.Utils
+
+0.2
+	* Clase Mapping: 
+		- Incorporar interpretación de funciones "especiales" en los campos, ej ".str" (utiliza CastString).
+	* EntitySql: 
+		- Incorporar métodos MasValueAsBigint, Query, Cache.
+	* EntityPersist: 
+		- Incorporar métodos Query, PersistCondition.
+	* EntityValues: 
+		- Renombrar DefaultField por GetDefault. 
+		- Corregir definicion de valor por defecto GUID. 
+		- Incorporar extension methods Persist y PersistCondition para EntityValues. 
+		- Modificar método Compare, incorporar clase CompareParams.
+	* EntityQuery: 
+		- Eliminar uso de atributo parametersDict. 
+		- Cuando el contructor se llame con EntitySql, parametersDict será asignado a parameters en el constructor.
+	* Data: 
+		- Nueva estructura de clases de datos, independiente de ContainerApp, debe recibir en el constructor opcionalmente una instancia de Db.
+		- Incorporar propiedad de uso opcional IsUpdated. 
+		- Incorporar método Db. 
+		- Cambiar constructores. 
+		- Cambiar método Init por Default.
+	* Query: 
+		- Eliminar constructores con atributos EntitySql y EntityPersist. 
+		- Agregar método CloseConnection. 
+		- Modificar OpenConnection.	
+	
+0.1 
+	* Reemplazo EntityQuery por EntitySql (Definir Sql), la ejecución de Sql se realiza a través de extension methods y clase Query.
+	* Eliminar clase DAO, reemplazar por ExtensionMethods.
+	* Incorporar clase EntityCache para diferenciar uso de Cache de Query.
+	* Cambio en EntityPersist, solo define SQL, la ejecución de consultas de persistencia directamente como ExtensionMethods.
+	* Implementar IDisposable en clase Query.
+	* Transformar metodos de DataGridUtils como extension methods.
+	
+0.0 
+	* Estructura inicial.
