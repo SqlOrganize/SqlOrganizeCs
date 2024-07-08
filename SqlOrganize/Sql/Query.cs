@@ -83,7 +83,7 @@ namespace SqlOrganize.Sql
             return reader.ColOfObj<T>();
         }
 
-        public Dictionary<string, object?>? Dict()
+        public IDictionary<string, object?>? Dict()
         {
             using DbCommand command = NewCommand();
             Exec(connection!, command);
